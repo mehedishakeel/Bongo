@@ -9,14 +9,6 @@ directly in your applications and keeps typing data on your device.
 
 [Download the latest release](https://github.com/mehedishakeel/Bongo/releases)
 
-## Platform status
-
-| Platform | Status |
-|---|---|
-| macOS 13+, Apple Silicon | Working native input source |
-| Debian/Ubuntu with IBus | Source and DEB packaging ready for native testing |
-| Windows | Source port; release dependencies and runtime files are still required |
-
 ## Install Bongo
 
 ### macOS
