@@ -5,6 +5,15 @@ BONGO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 [ "${EUID:-$(id -u)}" -ne 0 ] || { echo "Run this command without sudo." >&2; exit 1; }
 [ "$(uname -s)" = Darwin ] || { echo "macOS required" >&2; exit 1; }
 [ "$(uname -m)" = arm64 ] || { echo "Apple Silicon required" >&2; exit 1; }
+missing_apple_tools=()
+for tool in swiftc clang codesign lipo ditto hdiutil; do
+    command -v "$tool" >/dev/null 2>&1 || missing_apple_tools+=("$tool")
+done
+if [ "${#missing_apple_tools[@]}" -ne 0 ]; then
+    echo "Missing Apple developer tools: ${missing_apple_tools[*]}" >&2
+    echo "Install them with: xcode-select --install" >&2
+    exit 1
+fi
 if [ -x "/opt/homebrew/opt/rustup/bin/cargo" ]; then
     export PATH="/opt/homebrew/opt/rustup/bin:$PATH"
 elif [ -x "/opt/homebrew/opt/rust/bin/cargo" ]; then
@@ -34,10 +43,15 @@ echo ""
 if ! command -v cargo &>/dev/null; then
     source "$HOME/.cargo/env" 2>/dev/null || true
 fi
-command -v cargo >/dev/null 2>&1 || {
-    echo "Install Rust first: brew install rustup && /opt/homebrew/opt/rustup/bin/rustup default stable" >&2
+command -v cargo >/dev/null 2>&1 && command -v rustc >/dev/null 2>&1 || {
+    echo "Install Rust first: brew install rustup && rustup default stable" >&2
+    echo "See docs/BUILDING.md if Homebrew's rustup bin directory is not in PATH." >&2
     exit 1
 }
+if command -v rustup >/dev/null 2>&1 && ! rustup target list --installed | grep -qx 'aarch64-apple-darwin'; then
+    echo "Missing Rust target. Run: rustup target add aarch64-apple-darwin" >&2
+    exit 1
+fi
 
 # Step 1: Build Rust static library
 echo ">>> Building Rust engine..."
@@ -54,6 +68,10 @@ cargo build --locked $CARGO_ARGS --target aarch64-apple-darwin
 AARCH64_LIB="$ENGINE_DIR/target/aarch64-apple-darwin/${BUILD_TYPE}/libavrobangla_engine.a"
 
 if [ "$BUILD_UNIVERSAL" = "true" ]; then
+    if command -v rustup >/dev/null 2>&1 && ! rustup target list --installed | grep -qx 'x86_64-apple-darwin'; then
+        echo "Missing Rust target. Run: rustup target add x86_64-apple-darwin" >&2
+        exit 1
+    fi
     echo ">>> Building for Intel (x86_64)..."
     cargo build --locked $CARGO_ARGS --target x86_64-apple-darwin
     X86_LIB="$ENGINE_DIR/target/x86_64-apple-darwin/${BUILD_TYPE}/libavrobangla_engine.a"

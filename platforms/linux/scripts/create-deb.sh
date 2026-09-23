@@ -2,8 +2,28 @@
 set -euo pipefail
 BONGO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 [ "$(uname -s)" = Linux ] || { echo 'Linux required.' >&2; exit 1; }
-for tool in cmake cargo pkg-config; do command -v "$tool" >/dev/null || { echo "Missing: $tool" >&2; exit 1; }; done
-pkg-config --exists ibus-1.0 Qt5Widgets libzstd || { echo 'Install libibus-1.0-dev qtbase5-dev libzstd-dev.' >&2; exit 1; }
+missing_tools=()
+for tool in cmake cpack cargo rustc rustdoc pkg-config make dpkg-shlibdeps; do
+  command -v "$tool" >/dev/null 2>&1 || missing_tools+=("$tool")
+done
+if [ "${#missing_tools[@]}" -ne 0 ]; then
+  echo "Missing build tools: ${missing_tools[*]}" >&2
+  echo 'On Ubuntu/Debian, run:' >&2
+  echo '  sudo apt update' >&2
+  echo '  sudo apt install build-essential cmake cargo rustc pkg-config dpkg-dev qtbase5-dev libibus-1.0-dev libzstd-dev' >&2
+  exit 1
+fi
+if ! command -v c++ >/dev/null 2>&1 && ! command -v g++ >/dev/null 2>&1; then
+  echo 'Missing: C++ compiler.' >&2
+  echo 'On Ubuntu/Debian, run:' >&2
+  echo '  sudo apt install build-essential' >&2
+  exit 1
+fi
+pkg-config --exists ibus-1.0 Qt5Widgets libzstd || {
+  echo 'Missing Linux development libraries. On Ubuntu/Debian, run:' >&2
+  echo '  sudo apt install qtbase5-dev libibus-1.0-dev libzstd-dev' >&2
+  exit 1
+}
 BONGO_GITHUB_REPOSITORY="${BONGO_GITHUB_REPOSITORY:-mehedishakeel/Bongo}"
 UPDATE_ARGS=(
   "-DBONGO_UPDATE_URL=https://github.com/${BONGO_GITHUB_REPOSITORY}/releases/latest/download/linux.json"

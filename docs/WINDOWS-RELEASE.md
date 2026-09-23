@@ -9,6 +9,9 @@ The upstream Readme.txt specifies **Delphi 2010**, plus **DISQLite3**, **ICS**,
 listed by upstream as freeware rather than open source. Obtain appropriate
 versions/licenses independently; this repository does not fabricate those dependencies.
 
+Install and configure every prerequisite in [BUILDING.md](BUILDING.md) before
+running the EXE creation script.
+
 Maintainers with the required Delphi environment create the release executable with:
 
 ```powershell

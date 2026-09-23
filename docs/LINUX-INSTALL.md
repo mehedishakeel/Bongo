@@ -2,6 +2,8 @@
 
 Download the current `.deb` from the project's GitHub Releases page.
 
+## Install the DEB
+
 Install the resulting package, then restart IBus:
 
 ```sh
