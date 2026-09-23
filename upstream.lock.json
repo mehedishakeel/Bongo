@@ -1,0 +1,22 @@
+{
+  "Lekho": {
+    "url": "https://github.com/ARahim3/Lekho.git",
+    "commit": "8ecbf8c4e9abddf33227fbaf9d910d4198cf81fc"
+  },
+  "OpenBangla-Keyboard": {
+    "url": "https://github.com/OpenBangla/OpenBangla-Keyboard.git",
+    "commit": "ad7eb41f37744a161e5378223c4b123629c90571"
+  },
+  "Avro-Keyboard": {
+    "url": "https://github.com/omicronlab/Avro-Keyboard.git",
+    "commit": "d4c4c0e1bd72e5e79a3a4cb5f4a28d57d86f483e"
+  },
+  "riti-macos": {
+    "url": "https://github.com/OpenBangla/riti",
+    "commit": "9afef322d29807e7c93ff589e910b0794f3812ec"
+  },
+  "riti-linux": {
+    "url": "https://github.com/OpenBangla/riti",
+    "commit": "1d0dd1cc6cb78bda64219116ef71a63329d627a3"
+  }
+}

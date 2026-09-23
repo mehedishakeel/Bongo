@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="inputmethod">
+    <id>org.bongo.keyboard</id>
+    <metadata_license>FSFAP</metadata_license>
+    <name>Bongo</name>
+    <summary>A modern Bangla keyboard for Linux</summary>
+    <description>
+        <p>
+            Bongo is an open-source, Unicode-compliant Bangla input method for GNU/Linux.
+            It types directly in applications through IBus and includes phonetic and fixed
+            keyboard layouts, suggestions, autocorrection, and user preferences.
+        </p>
+        <p>
+            Bongo works locally and keeps its settings separate from other keyboards.
+        </p>
+    </description>
+    <project_license>GPL-3.0+</project_license>
+    <icon type="stock">bongo</icon>
+</component>

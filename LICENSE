@@ -1,0 +1,9 @@
+Bongo is a collection of separately licensed native keyboard applications.
+
+New Bongo orchestration scripts and documentation: MPL-2.0 (licenses/MPL-2.0.txt).
+macOS: Lekho-derived files remain MPL-2.0.
+Linux: OpenBangla-derived application remains GPL-3.0-or-later; its riti engine is MPL-2.0.
+Windows: Avro-derived files remain MPL-1.1; bundled third-party components retain their licenses.
+
+This notice does not relicense upstream files. Original copyright notices and
+licenses are retained in each platform source tree. See THIRD_PARTY_NOTICES.md.
