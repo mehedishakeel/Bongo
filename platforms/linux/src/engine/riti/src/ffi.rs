@@ -17,7 +17,7 @@ pub extern "C" fn riti_context_free(ptr: *mut RitiContext) {
         return;
     }
     unsafe {
-        Box::from_raw(ptr);
+        drop(Box::from_raw(ptr));
     }
 }
 
@@ -112,7 +112,7 @@ pub extern "C" fn riti_suggestion_free(ptr: *mut Suggestion) {
         return;
     }
     unsafe {
-        Box::from_raw(ptr);
+        drop(Box::from_raw(ptr));
     }
 }
 

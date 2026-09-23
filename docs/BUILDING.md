@@ -74,8 +74,10 @@ Create the DEB from the repository root:
 ./platforms/linux/scripts/create-deb.sh
 ```
 
-The package is written under `platforms/linux/build/`. Install it separately as
-described in [LINUX-INSTALL.md](LINUX-INSTALL.md).
+The package is written under `platforms/linux/build/` as
+`Bongo_1.0-ARCHITECTURE.deb`. The script uses one build job by default so compiler
+errors remain readable. Set `BONGO_BUILD_JOBS` to use more jobs. Install the
+package separately as described in [LINUX-INSTALL.md](LINUX-INSTALL.md).
 
 ## Windows EXE
 

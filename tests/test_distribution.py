@@ -57,6 +57,8 @@ class DistributionTests(unittest.TestCase):
         self.assertIn('api.github.com/repos/', mac)
         linux = (ROOT / 'platforms/linux/src/frontend/TopBar.cpp').read_text()
         self.assertIn('BONGO_UPDATE_URL', linux)
+        self.assertIn('gSettings->getUpdateCheck()', linux)
+        self.assertNotIn('gSettings->getCheckUpdate()', linux)
         self.assertIn('updater->checkForUpdates(DEFS_URL)', linux)
         win = (ROOT / 'platforms/windows/Keyboard and Spell checker/Classes/clsUpdateInfoDownloader.pas').read_text()
         self.assertEqual(win.count('Exit; { Bongo: upstream updates disabled. }'), 2)

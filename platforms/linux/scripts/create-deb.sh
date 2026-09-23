@@ -3,7 +3,7 @@ set -euo pipefail
 BONGO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 [ "$(uname -s)" = Linux ] || { echo 'Linux required.' >&2; exit 1; }
 missing_tools=()
-for tool in cmake cpack cargo rustc rustdoc pkg-config make dpkg-shlibdeps; do
+for tool in cmake cpack cargo rustc rustdoc pkg-config make dpkg dpkg-shlibdeps; do
   command -v "$tool" >/dev/null 2>&1 || missing_tools+=("$tool")
 done
 if [ "${#missing_tools[@]}" -ne 0 ]; then
@@ -25,11 +25,12 @@ pkg-config --exists ibus-1.0 Qt5Widgets libzstd || {
   exit 1
 }
 BONGO_GITHUB_REPOSITORY="${BONGO_GITHUB_REPOSITORY:-mehedishakeel/Bongo}"
+export DIST="${DIST:-$(dpkg --print-architecture)}"
 UPDATE_ARGS=(
   "-DBONGO_UPDATE_URL=https://github.com/${BONGO_GITHUB_REPOSITORY}/releases/latest/download/linux.json"
   "-DBONGO_GITHUB_REPOSITORY=${BONGO_GITHUB_REPOSITORY}"
 )
 BUILD_DIR="$BONGO_ROOT/platforms/linux/build"
 cmake -S "$BONGO_ROOT/platforms/linux" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release "${UPDATE_ARGS[@]}"
-cmake --build "$BUILD_DIR" --parallel
+cmake --build "$BUILD_DIR" --parallel "${BONGO_BUILD_JOBS:-1}"
 (cd "$BUILD_DIR" && cpack -G DEB)

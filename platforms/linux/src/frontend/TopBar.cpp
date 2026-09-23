@@ -58,7 +58,7 @@ TopBar::TopBar(QWidget *parent) :
   SetupTrayIcon();
   DataMigration();
 
-  if (!DEFS_URL.isEmpty() && gSettings->getCheckUpdate()) {
+  if (!DEFS_URL.isEmpty() && gSettings->getUpdateCheck()) {
     updater->setNotifyOnUpdate(DEFS_URL, true);
     updater->setNotifyOnFinish(DEFS_URL, false);
     updater->setDownloaderEnabled(DEFS_URL, false);
