@@ -31,7 +31,7 @@ and visible text. The legacy upstream updater remains disabled. Until the native
 release is complete, check the project's GitHub Releases feed with:
 
 ```powershell
-./platforms/windows/scripts/check-update.ps1 -Repository owner/Bongo -Open
+./platforms/windows/scripts/check-update.ps1 -Open
 ```
 
 The phonetic method still

@@ -23,7 +23,7 @@
 	<key>CFBundleVersion</key>
 	<string>6</string>
 	<key>BongoGitHubRepository</key>
-	<string></string>
+	<string>mehedishakeel/Bongo</string>
 	<key>InputMethodConnectionName</key>
 	<string>org.bongo.inputmethod.Bongo_Connection</string>
 	<key>InputMethodServerControllerClass</key>

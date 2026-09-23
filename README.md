@@ -57,16 +57,18 @@ start Bongo, and choose its Bangla typing mode from the tray icon. See the
 Release builds check **GitHub Releases** and open the release page when a newer
 version exists. Bongo never silently replaces a running input method.
 
+[Open Bongo Releases](https://github.com/mehedishakeel/Bongo/releases)
+
 - macOS: Bongo → Preferences → **Check for Updates**.
 - Linux: Bongo menu → **Check for updates**. The optional startup check follows
   the existing preference.
 - Windows development build:
-  `./platforms/windows/scripts/check-update.ps1 -Repository owner/Bongo -Open`.
+  `./platforms/windows/scripts/check-update.ps1 -Open`.
 
 Repository owners should read [the release guide](docs/RELEASING.md). Set
-`BONGO_GITHUB_REPOSITORY=owner/Bongo` while building; GitHub Actions does this
-automatically. The release workflow generates the Linux update manifest from the
-real repository and version tag.
+`BONGO_GITHUB_REPOSITORY=mehedishakeel/Bongo` to override the repository used by
+release packaging. The packaged defaults already point to the official Bongo
+repository.
 
 ## Source layout
 
