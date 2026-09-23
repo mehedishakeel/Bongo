@@ -17,6 +17,7 @@
  */
 
 #include "FileSystem.h"
+#include <QSaveFile>
 
 QString LayoutsFilePath() {
     return "/usr/share/bongo/layouts";
@@ -57,12 +58,28 @@ QString environmentVariable(const char *varName, const QString &defaultValue)
 /// Copy the `fileName` from `src` to `dst`.
 /// This function overwrites if the file already exists in the destination.
 bool migrateFile(const QString &fileName, const QDir &src, const QDir &dst) {
-    QString srcFile = src.filePath(fileName);
-    QString dstFile = dst.filePath(fileName);
-    
-    if(QFile::exists(srcFile) && QFile::exists(dstFile)) {
-        QFile::remove(dstFile);
+    const QString srcFile = src.filePath(fileName);
+    const QString dstFile = dst.filePath(fileName);
+    if (!QFile::exists(srcFile)) {
+        return true;
     }
 
-    return QFile::copy(srcFile, dstFile);
+    QFile input(srcFile);
+    QSaveFile output(dstFile);
+    if (!input.open(QIODevice::ReadOnly) || !output.open(QIODevice::WriteOnly)) {
+        return false;
+    }
+
+    while (!input.atEnd()) {
+        const QByteArray chunk = input.read(64 * 1024);
+        if (chunk.isEmpty() && input.error() != QFile::NoError) {
+            output.cancelWriting();
+            return false;
+        }
+        if (output.write(chunk) != chunk.size()) {
+            output.cancelWriting();
+            return false;
+        }
+    }
+    return output.commit();
 }

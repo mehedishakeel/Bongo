@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 $root = (Resolve-Path (Join-Path $PSScriptRoot "../../..")).Path
 $project = Join-Path $root "platforms/windows/Keyboard and Spell checker"
 if (-not (Get-Command $Dcc32 -ErrorAction SilentlyContinue)) {
-  throw "Delphi 2010 dcc32 is required with DISQLite3, ICS, JCL and JVCL installed. Read docs/BUILDING.md."
+  throw "Delphi 2010 dcc32 is required with DISQLite3, JCL and JVCL installed. Read docs/BUILDING.md."
 }
 $dccCommand = Get-Command $Dcc32
 $brcc = Join-Path (Split-Path $dccCommand.Source) "brcc32.exe"

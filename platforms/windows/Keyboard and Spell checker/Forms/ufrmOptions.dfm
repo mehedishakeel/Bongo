@@ -3,7 +3,7 @@ object frmOptions: TfrmOptions
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'Customize Avro Keyboard...'
+  Caption = 'Customize Bongo...'
   ClientHeight = 396
   ClientWidth = 585
   Color = clBtnFace
@@ -401,7 +401,7 @@ object frmOptions: TfrmOptions
           Top = 70
           Width = 210
           Height = 13
-          Caption = 'At stratup, Avro Keyboard will run as:'
+          Caption = 'At startup, Bongo will run as:'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -414,7 +414,7 @@ object frmOptions: TfrmOptions
           Top = 24
           Width = 201
           Height = 17
-          Caption = 'Start Avro Keyboard with Windows'
+          Caption = 'Start Bongo with Windows'
           TabOrder = 0
         end
         object CheckShowSplash: TCheckBox
@@ -455,7 +455,7 @@ object frmOptions: TfrmOptions
         Top = 233
         Width = 257
         Height = 18
-        Caption = 'Close Avro Keyboard'
+        Caption = 'Close Bongo'
         TabOrder = 1
       end
       object optTopBarXButton_Minimize: TRadioButton
@@ -463,7 +463,7 @@ object frmOptions: TfrmOptions
         Top = 213
         Width = 257
         Height = 18
-        Caption = 'Minimize Avro Keyboard to the System Tray'
+        Caption = 'Minimize Bongo to the System Tray'
         TabOrder = 2
       end
       object optTopBarXButton_ShowMenu: TRadioButton
@@ -473,14 +473,6 @@ object frmOptions: TfrmOptions
         Height = 18
         Caption = 'Show option for both'
         TabOrder = 3
-      end
-      object CheckUpdate: TCheckBox
-        Left = 29
-        Top = 170
-        Width = 300
-        Height = 17
-        Caption = 'Automatically check for update every week (anonymous)'
-        TabOrder = 4
       end
     end
     object Interface_Panel: TPanel
@@ -629,7 +621,7 @@ object frmOptions: TfrmOptions
           Top = 33
           Width = 321
           Height = 17
-          Caption = 'Do not change Keyboard Mode when I type with Avro Mouse'
+          Caption = 'Do not change Keyboard Mode when I type with Bongo Mouse'
           TabOrder = 0
         end
         object optAvroMouseKeyboardMode_Change: TRadioButton
@@ -1137,7 +1129,7 @@ object frmOptions: TfrmOptions
           Top = 25
           Width = 224
           Height = 13
-          Caption = 'Avro Bangla spell checker launcher key:'
+          Caption = 'Bongo spell checker launcher key:'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11

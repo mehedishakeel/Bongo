@@ -18,7 +18,7 @@ The desktop entry opens Bongo settings. IBus must be configured by the desktop:
 this is not a standalone key-injection daemon. Wayland compatibility depends on
 that desktop/application's IBus integration. Fcitx is not implemented.
 
-Release builds check the `linux.json` attached to the latest GitHub Release when
+Release builds check the latest GitHub Release when
 requested, and optionally at startup when that preference is enabled. The updater
 opens a release page and does not replace packages. Native typing and package
 removal should be validated on supported Linux desktops before each release.

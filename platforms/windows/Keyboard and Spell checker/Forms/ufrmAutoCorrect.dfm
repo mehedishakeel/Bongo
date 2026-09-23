@@ -3,7 +3,7 @@ object frmAutoCorrect: TfrmAutoCorrect
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'Auto Correct Entries for Avro Phonetic'
+  Caption = 'Auto Correct Entries for Bongo Phonetic'
   ClientHeight = 371
   ClientWidth = 308
   Color = clBtnFace

@@ -90,7 +90,7 @@ Begin
   TempList := TStringList.Create;
   TempList.Assign(SpellCustomDict);
   TempList.Sorted := False;
-  TempList.Insert(0, '// Custom Bangla Dictionary for Avro Spell Checker (Do not remove this line)');
+  TempList.Insert(0, '// Custom Bangla Dictionary for Bongo Spell Checker (Do not remove this line)');
   Try
     TempList.SaveToFile(GetAvroDataDir + 'CustomSpellingDictionary.dat',TEncoding.UTF8);
   Except

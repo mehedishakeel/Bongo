@@ -58,11 +58,9 @@ uses
 		 ufrmAvroMouse in 'Forms\ufrmAvroMouse.pas' { frmAvroMouse } ,
 		 ufrmOptions in 'Forms\ufrmOptions.pas' { frmOptions } ,
 		 ufrmPrevW in 'Forms\ufrmPrevW.pas' { frmPrevW } ,
-		 ufrmUpdateNotify in 'Forms\ufrmUpdateNotify.pas' { frmUpdateNotify } ,
 		 uLayoutViewer in 'Forms\uLayoutViewer.pas' { LayoutViewer } ,
 		 uProcessHandler in 'Units\uProcessHandler.pas',
 		 uWindowHandlers in 'Units\uWindowHandlers.pas',
-		 clsUpdateInfoDownloader in 'Classes\clsUpdateInfoDownloader.pas',
 		 clsFileVersion in 'Classes\clsFileVersion.pas',
 		 WindowsVersion in 'Units\WindowsVersion.pas',
 		 uLocale in 'Units\uLocale.pas',
@@ -126,7 +124,7 @@ Begin
 		 Application.Initialize;
 
 		 // Hide Application from taskbar
-		 Application.Title := 'Launching Avro Keyboard...';
+		 Application.Title := 'Launching Bongo...';
 		 SetWindowLong(Application.Handle, GWL_EXSTYLE, GetWindowLong(Application.Handle, GWL_EXSTYLE) Or WS_EX_TOOLWINDOW);
 		 Application.MainFormOnTaskBar := False;
 

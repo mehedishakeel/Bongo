@@ -2,7 +2,7 @@ object frmSplash: TfrmSplash
   Left = 0
   Top = 0
   BorderStyle = bsNone
-  Caption = 'Starting Avro Keyboard...'
+  Caption = 'Starting Bongo...'
   ClientHeight = 338
   ClientWidth = 505
   Color = clBtnFace

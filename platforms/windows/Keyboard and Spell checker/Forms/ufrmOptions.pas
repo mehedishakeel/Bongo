@@ -16,7 +16,7 @@
 	The Initial Developer of the Original Code is
 	Mehdi Hasan Khan (mhasan@omicronlab.com).
 
-	Copyright (C) OmicronLab (http://www.omicronlab.com). All Rights Reserved.
+	Copyright (C) OmicronLab (https://github.com/mehedishakeel/Bongo). All Rights Reserved.
 
 
 	Contributor(s): ______________________________________.
@@ -91,7 +91,6 @@ Type
 					optTopBarXButton_Close: TRadioButton;
 					optTopBarXButton_Minimize: TRadioButton;
 					optTopBarXButton_ShowMenu: TRadioButton;
-					CheckUpdate: TCheckBox;
 					Interface_Panel: TPanel;
 					Captionl_Transparency: TLabel;
 					Label_Transparency: TLabel;
@@ -501,7 +500,7 @@ End;
 
 Procedure TfrmOptions.cmdDownloadSkinClick(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=8');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 { =============================================================================== }
@@ -665,11 +664,6 @@ Begin
 					optStartupUIMode_Tray.Checked := True
 		 Else
 					optStartupUIMode_Last.Checked := True;
-
-		 If AvroUpdateCheck = 'YES' Then
-					CheckUpdate.Checked := True
-		 Else
-					CheckUpdate.Checked := False;
 
 		 If TopBarXButton = 'MINIMIZE' Then
 					optTopBarXButton_Minimize.Checked := True
@@ -971,11 +965,6 @@ Begin
 					DefaultUIMode := 'ICON'
 		 Else
 					DefaultUIMode := 'LASTUI';
-
-		 If CheckUpdate.Checked = True Then
-					AvroUpdateCheck := 'YES'
-		 Else
-					AvroUpdateCheck := 'NO';
 
 		 If optTopBarXButton_Minimize.Checked = True Then
 					TopBarXButton := 'MINIMIZE'

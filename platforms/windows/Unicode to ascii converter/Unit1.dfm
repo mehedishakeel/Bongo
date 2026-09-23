@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  Caption = 'Avro Unicode to Bijoy Converter'
+  Caption = 'Bongo Unicode to Bijoy Converter'
   ClientHeight = 299
   ClientWidth = 570
   Color = clBtnFace
@@ -76,7 +76,7 @@ object Form1: TForm1
     Width = 81
     Height = 13
     Cursor = crHandPoint
-    Caption = 'OmicronLab.'
+    Caption = 'Mehedi Shakeel'
     Font.Charset = ANSI_CHARSET
     Font.Color = clBlue
     Font.Height = -11

@@ -1196,7 +1196,7 @@ object AvroMainForm1: TBongoMainForm1
     Left = 320
     Top = 72
     object CheckupdateforAvroKeyboard1: TMenuItem
-      Caption = 'Check update for Avro Keyboard'
+      Caption = 'Check for Bongo updates'
       ImageIndex = 1
       OnClick = CheckupdateforAvroKeyboard1Click
     end
@@ -1231,12 +1231,12 @@ object AvroMainForm1: TBongoMainForm1
       OnClick = AvroKeyboardontheweb1Click
     end
     object PortableAvroKeyboardontheweb1: TMenuItem
-      Caption = 'Portable Avro Keyboard on the web'
+      Caption = 'Bongo on GitHub'
       ImageIndex = 15
       OnClick = PortableAvroKeyboardontheweb1Click
     end
     object wwwOmicronLabcom1: TMenuItem
-      Caption = 'www.OmicronLab.com'
+      Caption = 'Bongo on GitHub'
       ImageIndex = 15
       OnClick = wwwOmicronLabcom1Click
     end
@@ -1254,7 +1254,7 @@ object AvroMainForm1: TBongoMainForm1
       OnClick = AvroKeyboardonFacebook1Click
     end
     object OmicronLabonTwitter1: TMenuItem
-      Caption = 'OmicronLab on Twitter'
+      Caption = 'Bongo on GitHub'
       ImageIndex = 28
       OnClick = OmicronLabonTwitter1Click
     end
@@ -1265,7 +1265,7 @@ object AvroMainForm1: TBongoMainForm1
     Left = 176
     Top = 72
     object AvroPhoneticEnglishtoBangla1: TMenuItem
-      Caption = 'Avro Phonetic (English to Bangla)'
+      Caption = 'Bongo Phonetic (English to Bangla)'
       RadioItem = True
       OnClick = AvroPhoneticEnglishtoBangla3Click
     end
@@ -1281,7 +1281,7 @@ object AvroMainForm1: TBongoMainForm1
       Caption = '-'
     end
     object AvroMouseClicknType2: TMenuItem
-      Caption = 'Avro Mouse - Click '#39'n Type!'
+      Caption = 'Bongo Mouse - Click '#39'n Type!'
       ImageIndex = 9
       OnClick = AvroMouseClicknType2Click
     end
@@ -1312,7 +1312,7 @@ object AvroMainForm1: TBongoMainForm1
       OnClick = Configuringyoursystem1Click
     end
     object OTFBanglaFontscamewithAvroKeyboard1: TMenuItem
-      Caption = 'Bangla Fonts came with Avro Keyboard'
+      Caption = 'Bangla fonts included with Bongo'
       ImageIndex = 16
       OnClick = OTFBanglaFontscamewithAvroKeyboard1Click
     end
@@ -1335,12 +1335,12 @@ object AvroMainForm1: TBongoMainForm1
       OnClick = Overview1Click
     end
     object CustomizingAvroKeyboard1: TMenuItem
-      Caption = 'Customizing Avro Keyboard'
+      Caption = 'Customizing Bongo'
       ImageIndex = 7
       OnClick = CustomizingAvroKeyboard1Click
     end
     object BanglaTypingwithAvroPhonetic1: TMenuItem
-      Caption = 'Bangla Typing with Avro Phonetic'
+      Caption = 'Bangla typing with Bongo Phonetic'
       ImageIndex = 7
       OnClick = BanglaTypingwithAvroPhonetic1Click
     end
@@ -1350,7 +1350,7 @@ object AvroMainForm1: TBongoMainForm1
       OnClick = BanglaTypingwithFixedKeyboardLayouts1Click
     end
     object BanglaTypingwithAvroMouse1: TMenuItem
-      Caption = 'Bangla Typing with Avro Mouse'
+      Caption = 'Bangla typing with Bongo Mouse'
       ImageIndex = 7
       OnClick = BanglaTypingwithAvroMouse1Click
     end
@@ -1438,7 +1438,7 @@ object AvroMainForm1: TBongoMainForm1
       OnClick = AboutCurrentskin1Click
     end
     object AboutAvroKeyboard1: TMenuItem
-      Caption = 'About Avro Keyboard...'
+      Caption = 'About Bongo...'
       ImageIndex = 20
       OnClick = AboutAvroKeyboard1Click
     end
@@ -1468,7 +1468,7 @@ object AvroMainForm1: TBongoMainForm1
       Caption = 'Select keyboard layout'
       ImageIndex = 22
       object AvroPhoneticEnglishtoBangla2: TMenuItem
-        Caption = 'Avro Phonetic (English to Bangla)'
+        Caption = 'Bongo Phonetic (English to Bangla)'
         RadioItem = True
         OnClick = AvroPhoneticEnglishtoBangla3Click
       end
@@ -1482,7 +1482,7 @@ object AvroMainForm1: TBongoMainForm1
       end
     end
     object AvroMouseClicknType3: TMenuItem
-      Caption = 'Avro Mouse - Click '#39'n Type!'
+      Caption = 'Bongo Mouse - Click '#39'n Type!'
       ImageIndex = 9
       OnClick = AvroMouseClicknType2Click
     end
@@ -1502,7 +1502,7 @@ object AvroMainForm1: TBongoMainForm1
       Caption = 'On the web'
       ImageIndex = 23
       object CheckupdateforAvroKeyboard2: TMenuItem
-        Caption = 'Check update for Avro Keyboard'
+        Caption = 'Check for Bongo updates'
         ImageIndex = 1
         OnClick = CheckupdateforAvroKeyboard1Click
       end
@@ -1517,7 +1517,7 @@ object AvroMainForm1: TBongoMainForm1
           OnClick = FreeBanglaFonts1Click
         end
         object AvroConverter2: TMenuItem
-          Caption = 'Avro Converter...'
+          Caption = 'Text Converter...'
           ImageIndex = 2
           Visible = False
         end
@@ -1542,12 +1542,12 @@ object AvroMainForm1: TBongoMainForm1
         OnClick = AvroKeyboardontheweb1Click
       end
       object PortableAvroKeyboardontheweb2: TMenuItem
-        Caption = 'Portable Avro Keyboard on the web'
+        Caption = 'Bongo on GitHub'
         ImageIndex = 15
         OnClick = PortableAvroKeyboardontheweb1Click
       end
       object wwwOmicronLabcom2: TMenuItem
-        Caption = 'www.OmicronLab.com'
+        Caption = 'Bongo on GitHub'
         ImageIndex = 15
         OnClick = wwwOmicronLabcom1Click
       end
@@ -1565,7 +1565,7 @@ object AvroMainForm1: TBongoMainForm1
         OnClick = AvroKeyboardonFacebook1Click
       end
       object OmicronLabonTwitter3: TMenuItem
-        Caption = 'OmicronLab on Twitter'
+        Caption = 'Bongo on GitHub'
         ImageIndex = 28
         OnClick = OmicronLabonTwitter1Click
       end
@@ -1590,7 +1590,7 @@ object AvroMainForm1: TBongoMainForm1
         OnClick = Configuringyoursystem1Click
       end
       object OTFBanglaFontscamewithAvroKeyboard2: TMenuItem
-        Caption = 'Bangla Fonts came with Avro Keyboard'
+        Caption = 'Bangla fonts included with Bongo'
         ImageIndex = 16
         OnClick = OTFBanglaFontscamewithAvroKeyboard1Click
       end
@@ -1613,12 +1613,12 @@ object AvroMainForm1: TBongoMainForm1
         OnClick = Overview1Click
       end
       object CustomizingAvroKeyboard2: TMenuItem
-        Caption = 'Customizing Avro Keyboard'
+        Caption = 'Customizing Bongo'
         ImageIndex = 7
         OnClick = CustomizingAvroKeyboard1Click
       end
       object BanglaTypingwithAvroPhonetic2: TMenuItem
-        Caption = 'Bangla Typing with Avro Phonetic'
+        Caption = 'Bangla typing with Bongo Phonetic'
         ImageIndex = 7
         OnClick = BanglaTypingwithAvroPhonetic1Click
       end
@@ -1628,7 +1628,7 @@ object AvroMainForm1: TBongoMainForm1
         OnClick = BanglaTypingwithFixedKeyboardLayouts1Click
       end
       object BanglaTypingwithAvroMouse2: TMenuItem
-        Caption = 'Bangla Typing with Avro Mouse'
+        Caption = 'Bangla typing with Bongo Mouse'
         ImageIndex = 7
         OnClick = BanglaTypingwithAvroMouse1Click
       end
@@ -1706,7 +1706,7 @@ object AvroMainForm1: TBongoMainForm1
       end
     end
     object AboutAvroKeyboard2: TMenuItem
-      Caption = 'About Avro Keyboard...'
+      Caption = 'About Bongo...'
       ImageIndex = 20
       OnClick = AboutAvroKeyboard1Click
     end
@@ -1767,7 +1767,7 @@ object AvroMainForm1: TBongoMainForm1
       OnClick = Showactivekeyboardlayout1Click
     end
     object AvroMouseClicknType1: TMenuItem
-      Caption = 'Avro Mouse : Click '#39'n Type!'
+      Caption = 'Bongo Mouse : Click '#39'n Type!'
       ImageIndex = 9
       OnClick = AvroMouseClicknType2Click
     end
@@ -1785,7 +1785,7 @@ object AvroMainForm1: TBongoMainForm1
       Caption = '-'
     end
     object AvroPhonetic1: TMenuItem
-      Caption = 'Avro Phonetic Options'
+      Caption = 'Bongo Phonetic Options'
       ImageIndex = 8
       object ShowPreviewWindow1: TMenuItem
         Caption = 'Show Preview Window'
@@ -1892,7 +1892,7 @@ object AvroMainForm1: TBongoMainForm1
       OnClick = ogglekeyboardmode2Click
     end
     object RestoreAvroTopBar1: TMenuItem
-      Caption = 'Restore Avro Top Bar'
+      Caption = 'Restore Bongo Top Bar'
       OnClick = RestoreAvroTopBar1Click
     end
     object N29: TMenuItem
@@ -1902,7 +1902,7 @@ object AvroMainForm1: TBongoMainForm1
       Caption = 'Select keyboard layout'
       ImageIndex = 22
       object AvroPhoneticEnglishtoBangla3: TMenuItem
-        Caption = 'Avro Phonetic (English to Bangla)'
+        Caption = 'Bongo Phonetic (English to Bangla)'
         RadioItem = True
         OnClick = AvroPhoneticEnglishtoBangla3Click
       end
@@ -1916,7 +1916,7 @@ object AvroMainForm1: TBongoMainForm1
       end
     end
     object AvroMouseClicknType4: TMenuItem
-      Caption = 'Avro Mouse - Click '#39'n Type!'
+      Caption = 'Bongo Mouse - Click '#39'n Type!'
       ImageIndex = 9
       OnClick = AvroMouseClicknType2Click
     end
@@ -1969,7 +1969,7 @@ object AvroMainForm1: TBongoMainForm1
         OnClick = Showactivekeyboardlayout1Click
       end
       object AvroMouseClicknType5: TMenuItem
-        Caption = 'Avro Mouse : Click '#39'n Type!'
+        Caption = 'Bongo Mouse : Click '#39'n Type!'
         ImageIndex = 9
         OnClick = AvroMouseClicknType2Click
       end
@@ -1987,7 +1987,7 @@ object AvroMainForm1: TBongoMainForm1
         Caption = '-'
       end
       object AvroPhonetic2: TMenuItem
-        Caption = 'Avro Phonetic Options'
+        Caption = 'Bongo Phonetic Options'
         ImageIndex = 8
         object ShowPreviewWindow2: TMenuItem
           Caption = 'Show Preview Window'
@@ -2090,7 +2090,7 @@ object AvroMainForm1: TBongoMainForm1
       Caption = 'On the web'
       ImageIndex = 23
       object CheckupdateforAvroKeyboard3: TMenuItem
-        Caption = 'Check update for Avro Keyboard'
+        Caption = 'Check for Bongo updates'
         ImageIndex = 1
         OnClick = CheckupdateforAvroKeyboard1Click
       end
@@ -2105,7 +2105,7 @@ object AvroMainForm1: TBongoMainForm1
           OnClick = FreeBanglaFonts1Click
         end
         object AvroConverter3: TMenuItem
-          Caption = 'Avro Converter...'
+          Caption = 'Text Converter...'
           ImageIndex = 2
           Visible = False
         end
@@ -2130,12 +2130,12 @@ object AvroMainForm1: TBongoMainForm1
         OnClick = AvroKeyboardontheweb1Click
       end
       object PortableAvroKeyboardontheweb3: TMenuItem
-        Caption = 'Portable Avro Keyboard on the web'
+        Caption = 'Bongo on GitHub'
         ImageIndex = 15
         OnClick = PortableAvroKeyboardontheweb1Click
       end
       object wwwOmicronLabcom3: TMenuItem
-        Caption = 'www.OmicronLab.com'
+        Caption = 'Bongo on GitHub'
         ImageIndex = 15
         OnClick = wwwOmicronLabcom1Click
       end
@@ -2153,7 +2153,7 @@ object AvroMainForm1: TBongoMainForm1
         OnClick = AvroKeyboardonFacebook1Click
       end
       object OmicronLabonTwitter2: TMenuItem
-        Caption = 'OmicronLab on Twitter'
+        Caption = 'Bongo on GitHub'
         ImageIndex = 28
         OnClick = OmicronLabonTwitter1Click
       end
@@ -2170,7 +2170,7 @@ object AvroMainForm1: TBongoMainForm1
         OnClick = Configuringyoursystem1Click
       end
       object OTFBanglaFontscamewithAvroKeyboard3: TMenuItem
-        Caption = 'Bangla Fonts came with Avro Keyboard'
+        Caption = 'Bangla fonts included with Bongo'
         ImageIndex = 16
         OnClick = OTFBanglaFontscamewithAvroKeyboard1Click
       end
@@ -2193,12 +2193,12 @@ object AvroMainForm1: TBongoMainForm1
         OnClick = Overview1Click
       end
       object CustomizingAvroKeyboard3: TMenuItem
-        Caption = 'Customizing Avro Keyboard'
+        Caption = 'Customizing Bongo'
         ImageIndex = 7
         OnClick = CustomizingAvroKeyboard1Click
       end
       object BanglaTypingwithAvroPhonetic3: TMenuItem
-        Caption = 'Bangla Typing with Avro Phonetic'
+        Caption = 'Bangla typing with Bongo Phonetic'
         ImageIndex = 7
         OnClick = BanglaTypingwithAvroPhonetic1Click
       end
@@ -2208,7 +2208,7 @@ object AvroMainForm1: TBongoMainForm1
         OnClick = BanglaTypingwithFixedKeyboardLayouts1Click
       end
       object BanglaTypingwithAvroMouse3: TMenuItem
-        Caption = 'Bangla Typing with Avro Mouse'
+        Caption = 'Bangla typing with Bongo Mouse'
         ImageIndex = 7
         OnClick = BanglaTypingwithAvroMouse1Click
       end
@@ -2297,7 +2297,7 @@ object AvroMainForm1: TBongoMainForm1
       end
     end
     object AboutAvroKeyboard3: TMenuItem
-      Caption = 'About Avro Keyboard...'
+      Caption = 'About Bongo...'
       ImageIndex = 20
       OnClick = AboutAvroKeyboard1Click
     end
@@ -2316,13 +2316,6 @@ object AvroMainForm1: TBongoMainForm1
     OnTimer = WindowCheckTimer
     Left = 208
     Top = 192
-  end
-  object InternetCheck: TTimer
-    Enabled = False
-    Interval = 60000
-    OnTimer = InternetCheckTimer
-    Left = 208
-    Top = 240
   end
   object IdleTimer: TTimer
     Interval = 30000

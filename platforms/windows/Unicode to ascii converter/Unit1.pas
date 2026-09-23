@@ -16,7 +16,7 @@
 	The Initial Developer of the Original Code is
 	Mehdi Hasan Khan <mhasan@omicronlab.com>.
 
-	Copyright (C) OmicronLab <http://www.omicronlab.com>. All Rights Reserved.
+	Copyright (C) OmicronLab <https://github.com/mehedishakeel/Bongo>. All Rights Reserved.
 
 
 	Contributor(s): ______________________________________.
@@ -129,7 +129,7 @@ End;
 
 Procedure TForm1.Label_OmicronLabClick(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 { =============================================================================== }

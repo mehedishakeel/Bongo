@@ -16,7 +16,7 @@
 	The Initial Developer of the Original Code is
 	Mehdi Hasan Khan <mhasan@omicronlab.com>.
 
-	Copyright (C) OmicronLab <http://www.omicronlab.com>. All Rights Reserved.
+	Copyright (C) OmicronLab <https://github.com/mehedishakeel/Bongo>. All Rights Reserved.
 
 
 	Contributor(s): ______________________________________.
@@ -468,7 +468,7 @@ End;
 
 Procedure TfrmSkinCreator.LabelShareLinkClick(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=7');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 Function TfrmSkinCreator.ValidateNext(Val: Integer): Boolean;

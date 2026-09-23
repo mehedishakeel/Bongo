@@ -26,6 +26,11 @@
 #include "LayoutConverter.h"
 #include "base.hpp"
 
+namespace {
+constexpr qint64 MaximumLayoutFileSize = 32LL * 1024LL * 1024LL;
+constexpr int MaximumImageSize = 16 * 1024 * 1024;
+}
+
 // This map is used for when converting from previous layout format(version 1) or Avro keyboard layout.
 QMap<QString, QString> keyConversionMap = {
     {"Key_0_AltGr", "Key_0_AltGr"},
@@ -308,33 +313,31 @@ QString LayoutConverter::unescapeXML(QString escaped) {
 /** Convert Avro layout format into OBK's layout format. **/
 ConversionResult LayoutConverter::convertAvroLayout(QString path) {
   QFile xmlFile(path);
-  if (!xmlFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+  if (!xmlFile.open(QIODevice::ReadOnly | QIODevice::Text) ||
+      xmlFile.size() > MaximumLayoutFileSize) {
     return OpenError;
   }
   QByteArray xmlData = xmlFile.readAll();
-  QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlData);
+  QXmlStreamReader xmlReader(xmlData);
   QJsonObject layoutDev, infoLayout, info, keys;
 
-  while (!xmlReader->atEnd() && !xmlReader->hasError()) {
-    xmlReader->readNext();
-    if (xmlReader->isStartDocument()) {
+  while (!xmlReader.atEnd() && !xmlReader.hasError()) {
+    xmlReader.readNext();
+    if (xmlReader.isStartDocument()) {
       continue;
     }
 
-    if (xmlReader->isStartElement()) {
-      QStringRef name = xmlReader->name();
+    if (xmlReader.isStartElement()) {
+      QStringRef name = xmlReader.name();
       if (name == "Layout" || name == "KeyData") {
         continue;
       }
 
-      QString data = xmlReader->readElementText().trimmed();
+      QString data = xmlReader.readElementText().trimmed();
 
       // Check layout version, we only support Avro Keyboard 5 layout.
       if (name == "AvroKeyboardVersion") {
         if (data != "5") {
-          xmlReader->clear();
-          xmlFile.close();
-          delete xmlReader;
           return UnsupportedLayout;
         }
       }
@@ -385,6 +388,10 @@ ConversionResult LayoutConverter::convertAvroLayout(QString path) {
     }
   }
 
+  if (xmlReader.hasError()) {
+    return OpenError;
+  }
+
   info["type"] = "fixed";
   info["version"] = "2";
   infoLayout["developer"] = layoutDev;
@@ -393,10 +400,6 @@ ConversionResult LayoutConverter::convertAvroLayout(QString path) {
   QJsonObject layout;
   layout["info"] = info;
   layout["layout"] = keys;
-
-  xmlReader->clear();
-  xmlFile.close();
-  delete xmlReader;
 
   QFileInfo fileInfo(xmlFile);
   QString savePath = folders.getUserLayoutPath() + fileInfo.baseName() + ".json";
@@ -422,14 +425,19 @@ ConversionResult LayoutConverter::saveLayout(QJsonObject obj, QString path) {
  **/
 QString LayoutConverter::decodeCompressAndEncode(QString &data) {
     QByteArray image = QByteArray::fromBase64(data.toUtf8());
+    if (image.size() > MaximumImageSize) {
+      return {};
+    }
     size_t cap = ZSTD_compressBound(image.size());
-    char *dst = (char *)malloc(cap);
+    QByteArray compressed;
+    compressed.resize(static_cast<int>(cap));
 
-    size_t ret = ZSTD_compress(dst, cap, image.data(), image.size(), 20);
+    size_t ret = ZSTD_compress(compressed.data(), cap, image.data(), image.size(), 20);
+    if (ZSTD_isError(ret)) {
+      return {};
+    }
+    compressed.resize(static_cast<int>(ret));
 
-    std::string imgCompressed = std::string(dst, ret);
-    QString imgEncoded = QString::fromStdString(base91::encode(imgCompressed));
-    free(dst);
-
-    return imgEncoded;
+    return QString::fromStdString(base91::encode(
+        std::string(compressed.constData(), compressed.size())));
 }

@@ -44,7 +44,7 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.Title := 'Keyboard Layout Editor for Avro Keyboard';
+  Application.Title := 'Keyboard Layout Editor for Bongo';
   Application.CreateForm(TfrmMain, frmMain);
   Application.Run;
 end.

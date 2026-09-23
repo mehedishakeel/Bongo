@@ -16,7 +16,7 @@
      The Initial Developer of the Original Code is
      Mehdi Hasan Khan (mhasan@omicronlab.com).
 
-     Copyright (C) OmicronLab (http://www.omicronlab.com). All Rights Reserved.
+     Copyright (C) OmicronLab (https://github.com/mehedishakeel/Bongo). All Rights Reserved.
 
 
      Contributor(s): ______________________________________.
@@ -103,7 +103,7 @@ Begin
      Version := TFileVersion.Create();
      LabelVersion.Caption := Version.AsString{$IFDEF BetaVersion} + ' BETA'{$ENDIF}{$IFDEF PortableOn} + ' (Portable)'{$ENDIF};
      Version.Free;
-     self.Caption:='About Avro Spell Checker';
+     self.Caption:='About Bongo Spell Checker';
      TOPMOST(self.Handle);
 End;
 
@@ -111,7 +111,7 @@ End;
 
 Procedure TfrmAbout.Label_OmicronLabClick(Sender: TObject);
 Begin
-     Execute_Something('http://www.omicronlab.com');
+     Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 End.

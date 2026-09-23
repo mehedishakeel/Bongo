@@ -48,7 +48,7 @@ uses
 Begin
      Application.Initialize;
      Application.MainFormOnTaskbar := True;
-     Application.Title := 'Avro Spell Checker';
+     Application.Title := 'Bongo Spell Checker';
      Application.CreateForm(TfrmSpell, frmSpell);
   Application.Run;
 End.

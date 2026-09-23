@@ -44,9 +44,10 @@ function(cargo_build)
 		list(APPEND CARGO_ARGS "--target" ${LIB_TARGET})
 	endif()
 
-    if(${LIB_BUILD_TYPE} STREQUAL "release")
+	if(${LIB_BUILD_TYPE} STREQUAL "release")
         list(APPEND CARGO_ARGS "--release")
     endif()
+    list(APPEND CARGO_ARGS "--locked")
 
     file(GLOB_RECURSE LIB_SOURCES "*.rs")
 

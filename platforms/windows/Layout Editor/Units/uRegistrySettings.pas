@@ -95,7 +95,7 @@ Begin
      Reg := TMyRegistry.create;
      Reg.RootKey := HKEY_CURRENT_USER;
 
-     If Reg.OpenKey('Software\OmicronLab\Layout Editor', True) = True Then Begin
+     If Reg.OpenKey('Software\Bongo\Layout Editor', True) = True Then Begin
           LETop := REG.ReadStringDef('LETop', '50');
           LELeft := REG.ReadStringDef('LELeft', '50');
           LEFontName := UpperCase(REG.ReadStringDef('LEFontName', 'Siyam Rupali'));
@@ -133,7 +133,7 @@ Begin
      Reg := TMyRegistry.Create;
      Reg.RootKey := HKEY_CURRENT_USER;
 
-     If Reg.OpenKey('Software\OmicronLab\Layout Editor', True) = True Then Begin
+     If Reg.OpenKey('Software\Bongo\Layout Editor', True) = True Then Begin
           REG.WriteString('AppPath', ExtractFileDir(Application.ExeName));
           REG.WriteString('AppExeName', ExtractFileName(Application.ExeName));
 

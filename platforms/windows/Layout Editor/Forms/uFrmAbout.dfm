@@ -74,7 +74,7 @@ object frmAbout: TfrmAbout
     Width = 72
     Height = 13
     Cursor = crHandPoint
-    Caption = 'OmicronLab.'
+    Caption = 'Mehedi Shakeel'
     Font.Charset = ANSI_CHARSET
     Font.Color = clNavy
     Font.Height = -11
@@ -420,7 +420,7 @@ object frmAbout: TfrmAbout
       Top = 8
       Width = 305
       Height = 16
-      Caption = 'Keyboard Layout Editor for Avro Keyboard'
+      Caption = 'Keyboard Layout Editor for Bongo'
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
       Font.Height = -13

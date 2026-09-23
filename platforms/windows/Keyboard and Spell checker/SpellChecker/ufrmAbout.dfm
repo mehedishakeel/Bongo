@@ -3,7 +3,7 @@ object frmAbout: TfrmAbout
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
-  Caption = 'About Avro Spell Checker'
+  Caption = 'About Bongo Spell Checker'
   ClientHeight = 343
   ClientWidth = 459
   Color = clBtnFace
@@ -75,7 +75,7 @@ object frmAbout: TfrmAbout
     Width = 72
     Height = 13
     Cursor = crHandPoint
-    Caption = 'OmicronLab.'
+    Caption = 'Mehedi Shakeel'
     Font.Charset = ANSI_CHARSET
     Font.Color = clBlue
     Font.Height = -11
@@ -414,7 +414,7 @@ object frmAbout: TfrmAbout
       Top = 12
       Width = 122
       Height = 16
-      Caption = 'Avro Spell Checker'
+      Caption = 'Bongo Spell Checker'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -434,7 +434,7 @@ object frmAbout: TfrmAbout
       Top = 44
       Width = 163
       Height = 13
-      Caption = 'An integral part of Avro Keyboard'
+      Caption = 'An optional companion for Bongo'
     end
     object Label4: TLabel
       Left = 79

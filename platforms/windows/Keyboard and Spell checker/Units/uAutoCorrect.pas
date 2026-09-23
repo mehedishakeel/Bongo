@@ -92,8 +92,8 @@ Begin
 					Except
 							 On E: Exception Do Begin
 										Application.MessageBox(Pchar('Cannot load auto-correct dictionary!' + #10 + '' + #10 + '-> Make sure ''autodict.dct'' file is present in ' + Path + ' folder, or' + #10 +
-																'-> ''autodict.dct'' file is not corrupt.' + #10 + '' + #10 + 'Reinstalling Avro Keyboard may solve this problem.' + #10 +
-																'You may contact OmicronLab (http://www.omicronlab.com/forum/) for free support.'), 'Bongo', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
+																'-> ''autodict.dct'' file is not corrupt.' + #10 + '' + #10 + 'Reinstalling Bongo may solve this problem.' + #10 +
+																'Visit the Bongo GitHub repository for support.'), 'Bongo', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
 							 End;
 					End;
 		 Finally

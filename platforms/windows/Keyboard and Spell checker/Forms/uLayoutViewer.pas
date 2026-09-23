@@ -431,7 +431,7 @@ Var
 Begin
      KeyboardLayout := AvroMainForm1.GetMyCurrentLayout;
      If Lowercase(KeyboardLayout) = 'avrophonetic*' Then Begin
-          Caption := 'Avro Phonetic :: Layout Viewer';
+          Caption := 'Bongo Phonetic :: Layout Viewer';
           KeyboardLayoutPath := KeyboardLayout;
      End
      Else Begin

@@ -607,11 +607,11 @@ Begin
      ImgButtonMode.Hint := 'Click to start typing Bangla' + #13 + 'or Press ' + ModeSwitchKey + '.';
      ImgButtonLayoutDown.Hint := 'Select your Bangla keyboard layout.';
      ImgButtonLayout.Hint := 'View current keyboard layout with Layout Viewer.';
-     ImgButtonMouse.Hint := 'Click and type Bangla with Avro Mouse (onscreen Bangla keyboard).';
+     ImgButtonMouse.Hint := 'Click and type Bangla with Bongo Mouse (onscreen Bangla keyboard).';
      ImgButtonTools.Hint := 'Tools and settings.';
-     ImgButtonWWW.Hint := 'Check for update or visit OmicronLab';
+     ImgButtonWWW.Hint := 'Check for updates or visit Bongo on GitHub';
      ImgButtonHelp.Hint := 'Help menu';
-     ImgButtonMinimize.Hint := 'Minimize or exit Avro Keyboard';
+     ImgButtonMinimize.Hint := 'Minimize or exit Bongo';
 End;
 
 Procedure TTopBar.SetButtonModeState(ST: ButtonState);

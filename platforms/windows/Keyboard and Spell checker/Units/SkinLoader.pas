@@ -107,7 +107,7 @@ Begin
                //----------------------------------------------
                //Check if the skin is a compatible one
                If trim(Xml.Root.FindNode('AvroKeyboardVersion').ValueAsUnicodeString) <> '5' Then Begin
-                    Application.MessageBox('This Skin is not compatible with current version of Avro Keyboard.', 'Error loading skin...', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
+                    Application.MessageBox('This skin is not compatible with this version of Bongo.', 'Error loading skin...', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
                     Result := False;
                     Exit;
                End;
@@ -395,7 +395,7 @@ Begin
                //----------------------------------------------
                //Check if the skin is a compatible one
                If trim(Xml.Root.FindNode('AvroKeyboardVersion').ValueAsUnicodeString) <> '5' Then Begin
-                    Application.MessageBox('This Skin is not compatible with current version of Avro Keyboard.', 'Error loading skin...', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
+                    Application.MessageBox('This skin is not compatible with this version of Bongo.', 'Error loading skin...', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
                     Exit;
                End;
                //----------------------------------------------
@@ -444,7 +444,7 @@ Begin
                //----------------------------------------------
                //Check if the skin is a compatible one
                If trim(Xml.Root.FindNode('AvroKeyboardVersion').ValueAsUnicodeString) <> '5' Then Begin
-                    Application.MessageBox('This Skin is not compatible with current version of Avro Keyboard.', 'Error loading skin...', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
+                    Application.MessageBox('This skin is not compatible with this version of Bongo.', 'Error loading skin...', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
                     Exit;
                End;
                //----------------------------------------------

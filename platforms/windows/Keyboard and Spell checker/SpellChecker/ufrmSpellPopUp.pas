@@ -313,7 +313,7 @@ End;
 
 Procedure TfrmSpellPopUp.FormShow(Sender: TObject);
 Begin
-		 Self.Caption := 'Avro Spell Checker';
+		 Self.Caption := 'Bongo Spell Checker';
 
 		 If FullSuggestion = 'YES' Then Begin
 					CheckLessPreffered.Checked := True;

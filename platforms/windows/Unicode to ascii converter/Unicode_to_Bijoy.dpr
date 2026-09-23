@@ -39,7 +39,7 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.Title := 'Avro Unicode to Bijoy Converter';
+  Application.Title := 'Bongo Unicode to Bijoy Converter';
   Application.CreateForm(TForm1, Form1);
   Application.Run;
 end.

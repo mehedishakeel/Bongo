@@ -3,7 +3,7 @@ object frmMain: TfrmMain
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'Layout Creator for Avro Keyboard'
+  Caption = 'Layout Creator for Bongo'
   ClientHeight = 505
   ClientWidth = 793
   Color = clBtnFace
@@ -4112,7 +4112,7 @@ object frmMain: TfrmMain
       Width = 302
       Height = 13
       Alignment = taRightJustify
-      Caption = 'You can share your layout with Avro Keyboard users'
+      Caption = 'You can share your layout with Bongo users'
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -4146,7 +4146,7 @@ object frmMain: TfrmMain
     DefaultExt = 'avrolayout'
     Filter = 'Layout Files (*.avrolayout)|*.avrolayout'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofNoReadOnlyReturn, ofNoNetworkButton, ofEnableSizing, ofForceShowHidden]
-    Title = 'Save Avro Keyboard Layout'
+    Title = 'Save Bongo Keyboard Layout'
     Left = 344
     Top = 256
   end
@@ -4164,7 +4164,7 @@ object frmMain: TfrmMain
     DefaultExt = 'avrolayout'
     Filter = 'Layout Files (*.avrolayout)|*.avrolayout'
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing, ofForceShowHidden]
-    Title = 'Open Avro Keyboard Layout'
+    Title = 'Open Bongo Keyboard Layout'
     Left = 312
     Top = 256
   end

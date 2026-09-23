@@ -24,6 +24,11 @@
 #include "base.hpp"
 #include "ui_LayoutViewer.h"
 
+namespace {
+constexpr int MaximumEncodedImageSize = 32 * 1024 * 1024;
+constexpr unsigned long long MaximumImageSize = 16ULL * 1024ULL * 1024ULL;
+}
+
 LayoutViewer::LayoutViewer(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::LayoutViewer) {
@@ -102,15 +107,22 @@ void LayoutViewer::on_viewAltGr_clicked() {
   ui->viewAltGr->setChecked(true);
 }
 
-QByteArray LayoutViewer::decodeAndDecompress(QByteArray &data) {
+QByteArray LayoutViewer::decodeAndDecompress(const QByteArray &data) {
+  if (data.size() > MaximumEncodedImageSize) {
+    return {};
+  }
   std::string decoded = base91::decode(std::string(data.data(), data.size()));
-  // Use ZSTD_getFrameContentSize() function when we can hard depend on zstd 1.3.0
-  unsigned long long cap = ZSTD_getDecompressedSize(decoded.data(), decoded.size());
-  char *imgData = (char *)malloc(cap);
+  const unsigned long long size = ZSTD_getFrameContentSize(decoded.data(), decoded.size());
+  if (size == ZSTD_CONTENTSIZE_ERROR || size == ZSTD_CONTENTSIZE_UNKNOWN ||
+      size > MaximumImageSize) {
+    return {};
+  }
 
-  size_t decompressed = ZSTD_decompress(imgData, cap, decoded.data(), decoded.size());
-  QByteArray img = QByteArray(imgData, decompressed);
-  free(imgData);
-
-  return img;
+  QByteArray imageData;
+  imageData.resize(static_cast<int>(size));
+  const size_t decompressed = ZSTD_decompress(imageData.data(), size, decoded.data(), decoded.size());
+  if (ZSTD_isError(decompressed) || decompressed != size) {
+    return {};
+  }
+  return imageData;
 }

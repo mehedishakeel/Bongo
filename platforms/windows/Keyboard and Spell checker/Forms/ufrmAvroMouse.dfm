@@ -3,7 +3,7 @@ object frmAvroMouse: TfrmAvroMouse
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'Avro Mouse - Click '#39'n Type!'
+  Caption = 'Bongo Mouse - Click '#39'n Type!'
   ClientHeight = 280
   ClientWidth = 631
   Color = clBtnFace

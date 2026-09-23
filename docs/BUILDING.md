@@ -86,7 +86,7 @@ package separately as described in [LINUX-INSTALL.md](LINUX-INSTALL.md).
 - Windows with Windows PowerShell 5.1 or later
 - Embarcadero Delphi 2010 Win32 compiler
 - `dcc32.exe` and `brcc32.exe` available in `PATH`
-- Compatible DISQLite3, ICS, JCL and JVCL packages installed and configured in
+- Compatible DISQLite3, JCL and JVCL packages installed and configured in
   Delphi 2010
 - The runtime database, layouts, skins, dictionaries and support DLLs required
   by the legacy application

@@ -79,7 +79,7 @@ object frmAbout: TfrmAbout
     Width = 60
     Height = 13
     Cursor = crHandPoint
-    Caption = 'OmicronLab.'
+    Caption = 'Mehedi Shakeel'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
     Font.Height = -11
@@ -418,7 +418,7 @@ object frmAbout: TfrmAbout
       Top = 8
       Width = 253
       Height = 24
-      Caption = 'Skin Designer for Avro Keyboard'
+      Caption = 'Skin Designer for Bongo'
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
       Font.Height = -13

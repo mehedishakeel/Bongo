@@ -7,14 +7,13 @@ set(APP_NAME "Bongo")
 
 ## Set versions
 add_definitions(-DPROJECT_VERSION="${PROJECT_VERSION}")
-set(BONGO_UPDATE_URL "" CACHE STRING "HTTPS URL of Bongo's QSimpleUpdater JSON feed")
 set(BONGO_GITHUB_REPOSITORY "" CACHE STRING "GitHub owner/repository for package metadata")
 if (BONGO_GITHUB_REPOSITORY)
     set(BONGO_HOMEPAGE "https://github.com/${BONGO_GITHUB_REPOSITORY}")
 else ()
     set(BONGO_HOMEPAGE "")
 endif ()
-add_definitions(-DBONGO_UPDATE_URL="${BONGO_UPDATE_URL}")
+add_definitions(-DBONGO_GITHUB_REPOSITORY="${BONGO_GITHUB_REPOSITORY}")
 
 ## Set Compiler Standard
 set(CMAKE_CXX_STANDARD 11)

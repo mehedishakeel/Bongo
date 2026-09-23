@@ -61,7 +61,7 @@ private:
   LayoutDesc desc;
   QByteArray image0, image1;
 
-  QByteArray decodeAndDecompress(QByteArray &data);
+  QByteArray decodeAndDecompress(const QByteArray &data);
 };
 
 #endif // LAYOUTVIEWER_H

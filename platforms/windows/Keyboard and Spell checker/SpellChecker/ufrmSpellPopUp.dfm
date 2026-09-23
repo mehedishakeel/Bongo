@@ -3,7 +3,7 @@ object frmSpellPopUp: TfrmSpellPopUp
   Top = 0
   BorderIcons = []
   BorderStyle = bsSingle
-  Caption = 'Avro Spell Check'
+  Caption = 'Bongo Spell Check'
   ClientHeight = 288
   ClientWidth = 421
   Color = clBtnFace

@@ -83,7 +83,7 @@ object FrameImageAdd: TFrameImageAdd
       Top = 5
       Width = 99
       Height = 13
-      Caption = 'Avro Icon Button:'
+      Caption = 'Bongo Icon Button:'
       Color = clWhite
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -723,7 +723,7 @@ object FrameImageAdd: TFrameImageAdd
       Top = 5
       Width = 111
       Height = 13
-      Caption = 'Avro Mouse Button:'
+      Caption = 'Bongo Mouse Button:'
       Color = clWhite
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText

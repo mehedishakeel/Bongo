@@ -193,4 +193,8 @@ cp "$BONGO_ROOT/THIRD_PARTY_NOTICES.md" "$STAGE/"
 cp -R "$BONGO_ROOT/licenses" "$STAGE/"
 ln -s '/Library/Input Methods' "$STAGE/Input Methods"
 VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP_BUNDLE/Contents/Info.plist")
-hdiutil create -volname Bongo -srcfolder "$STAGE" -ov -format UDZO "$BONGO_ROOT/dist/Bongo-${VERSION}-macos-arm64.dmg"
+DMG_ARCH="arm64"
+if [ "$BUILD_UNIVERSAL" = "true" ]; then
+    DMG_ARCH="universal"
+fi
+hdiutil create -volname Bongo -srcfolder "$STAGE" -ov -format UDZO "$BONGO_ROOT/dist/Bongo-${VERSION}-macos-${DMG_ARCH}.dmg"

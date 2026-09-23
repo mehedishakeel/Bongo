@@ -3,7 +3,7 @@ object frmSkinCreator: TfrmSkinCreator
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'Skin designer for Avro Keyboard'
+  Caption = 'Skin designer for Bongo'
   ClientHeight = 471
   ClientWidth = 517
   Color = clBtnFace
@@ -148,7 +148,7 @@ object frmSkinCreator: TfrmSkinCreator
       Top = 196
       Width = 97
       Height = 17
-      Caption = 'Avro Icon'
+      Caption = 'Bongo Icon'
       Checked = True
       Enabled = False
       State = cbChecked
@@ -190,7 +190,7 @@ object frmSkinCreator: TfrmSkinCreator
       Top = 220
       Width = 97
       Height = 17
-      Caption = 'Avro Mouse'
+      Caption = 'Bongo Mouse'
       Checked = True
       State = cbChecked
       TabOrder = 8

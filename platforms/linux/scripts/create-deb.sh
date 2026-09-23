@@ -27,7 +27,6 @@ pkg-config --exists ibus-1.0 Qt5Widgets libzstd || {
 BONGO_GITHUB_REPOSITORY="${BONGO_GITHUB_REPOSITORY:-mehedishakeel/Bongo}"
 export DIST="${DIST:-$(dpkg --print-architecture)}"
 UPDATE_ARGS=(
-  "-DBONGO_UPDATE_URL=https://github.com/${BONGO_GITHUB_REPOSITORY}/releases/latest/download/linux.json"
   "-DBONGO_GITHUB_REPOSITORY=${BONGO_GITHUB_REPOSITORY}"
 )
 BUILD_DIR="$BONGO_ROOT/platforms/linux/build"

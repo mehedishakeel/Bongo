@@ -51,8 +51,10 @@ learned-word data stay on your device.
 ## For developers
 
 - [Build DMG, DEB and EXE files from source](docs/BUILDING.md)
+- [Understand the native architecture](docs/ARCHITECTURE.md)
 - [Prepare a GitHub release](docs/RELEASING.md)
 - [Run validation checks](docs/VALIDATION.md)
+- [Review the latest project audit](docs/AUDIT.md)
 - [Review the Windows release checklist](docs/WINDOWS-RELEASE.md)
 
 Each release script must run on its matching operating system. The build guide

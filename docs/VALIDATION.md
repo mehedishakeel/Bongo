@@ -1,30 +1,35 @@
-# Validation status
+# Validate Bongo
 
-## macOS ARM64
+Run repository checks from the project root:
 
-The native Swift/InputMethodKit app and Rust engine compiled on Apple Silicon.
-The inherited controller integration suite passed all assertions against a mock
-IMKTextInput client: phonetic output, candidate ordering and selection, remembered
-choices, punctuation, emoji settings, smart/phonetic modes, backspace, digits, tab,
-composition commit, changing clients, switching modes and corrupt-data recovery.
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
+```
 
-These tests exercise the real input controller and engine. They do not establish
-compatibility with every real app. Bongo has also been installed as a macOS input
-source and verified after logging back in. Broader third-party application coverage,
-secure fields, restart behavior, and signed/notarized distribution remain manual
-acceptance steps for each release.
+Run the Linux Rust engine tests serially because its upstream tests temporarily
+change process-wide environment variables:
 
-The setup window and typing-settings tab were also opened and visually checked.
-The app executable is Mach-O arm64 and its ad-hoc signature verifies.
+```sh
+cd platforms/linux/src/engine/riti
+cargo test --locked -- --test-threads=1
+```
 
-## Linux / Windows
+GitHub Actions repeats these checks, runs the macOS InputMethodKit integration
+suite on Apple Silicon, and builds the Debian package on each push and pull
+request.
 
-Source identity/resource checks only. Native OS compilation and end-to-end typing
-are unverified. Windows additionally requires the documented proprietary toolchain,
-third-party dependencies and missing runtime assets. No binaries are claimed.
+## Release checks
 
-## Before release
+Automated tests cover macOS phonetic output, candidates, learned choices,
+punctuation, emoji settings, typing modes, editing, composition handoff, and
+corrupt-data recovery. They do not establish compatibility with every real app.
 
-Create artifacts on each OS, complete real-app typing and installation tests, audit inherited
-legacy behavior, resolve runtime payloads, replace remaining legacy artwork, sign the
-binaries where applicable, and publish corresponding source and license notices.
+Before a release, create artifacts on each matching OS and test installation,
+uninstallation, input-source registration, real-app typing, update prompts, and
+restart behavior. Sign and notarize macOS builds and Authenticode-sign Windows
+builds when those channels are ready.
+
+Windows also requires the proprietary Delphi toolchain, its third-party
+packages, the runtime payload, and the native checks in
+[WINDOWS-RELEASE.md](WINDOWS-RELEASE.md). A successful Delphi compile by itself
+is not enough for distribution.

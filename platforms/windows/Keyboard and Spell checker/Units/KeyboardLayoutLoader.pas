@@ -374,7 +374,7 @@ Begin
 
 										// Check again
 										If trim(XML.Root.FindNode('AvroKeyboardVersion').ValueAsUnicodeString) <> '5' Then Begin
-												 Application.MessageBox('This Keyboard Layout is not compatible with current version of Avro Keyboard.', 'Error loading keyboard layout...',
+												 Application.MessageBox('This keyboard layout is not compatible with this version of Bongo.', 'Error loading keyboard layout...',
 															MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
 												 Result := False;
 												 Exit;
@@ -460,7 +460,7 @@ Begin
 
 												 // Check again
 												 If trim(XML.Root.FindNode('AvroKeyboardVersion').ValueAsUnicodeString) <> '5' Then Begin
-															Application.MessageBox('This Keyboard Layout is not compatible with current version of Avro Keyboard.', 'Error loading keyboard layout...',
+															Application.MessageBox('This keyboard layout is not compatible with this version of Bongo.', 'Error loading keyboard layout...',
 																	 MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
 															Exit;
 												 End;
@@ -552,7 +552,7 @@ Begin
 
 												 // Check again
 												 If trim(XML.Root.FindNode('AvroKeyboardVersion').ValueAsUnicodeString) <> '5' Then Begin
-															Application.MessageBox('This Keyboard Layout is not compatible with current version of Avro Keyboard.', 'Error loading keyboard layout...',
+															Application.MessageBox('This keyboard layout is not compatible with this version of Bongo.', 'Error loading keyboard layout...',
 																	 MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
 															Exit;
 												 End;
@@ -570,11 +570,10 @@ Begin
 										Application.ProcessMessages;
 							 End
 							 Else Begin
-										InternalName := 'Avro Phonetic';
-										Developer := 'Mehdi Hasan (OmicronLab)';
+										InternalName := 'Bongo Phonetic';
+										Developer := 'Mehedi Shakeel';
 										Version := '4';
-										Comment := 'In technical definition, Avro Phonetic is not a fixed keyboard layout. ' + 'This is actually a text parser which takes input as english text and produce bangla ' +
-											'characters with similarity matching phonetic converter algorithm of OmicronLab.';
+										Comment := 'Bongo Phonetic converts English keystrokes into Bangla text.';
 							 End;
 
 							 CheckCreateForm(TfrmAboutSkinLayout, frmAboutSkinLayout, 'frmAboutSkinLayout');

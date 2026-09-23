@@ -372,7 +372,7 @@ Var
 Begin
 		 If Not((Length(MEMO.Text) <= 0) And (fFileName = '')) Then Begin
 					If (MemoChanged = True) Then Begin
-							 MSG := Application.MessageBox('The text in the current file has changed.' + #10 + '' + #10 + 'Do you want to save the changes first?', 'Avro Pad', MB_YESNOCANCEL + MB_ICONQUESTION + MB_DEFBUTTON1 + MB_APPLMODAL);
+							 MSG := Application.MessageBox('The text in the current file has changed.' + #10 + '' + #10 + 'Do you want to save the changes first?', 'Bongo Pad', MB_YESNOCANCEL + MB_ICONQUESTION + MB_DEFBUTTON1 + MB_APPLMODAL);
 							 If MSG = ID_YES Then Begin
 										Save1Click(Nil);
 										If MemoChanged = False Then
@@ -447,7 +447,7 @@ End;
 
 Procedure TfrmSpell.MP_CompleteParsing;
 Begin
-		 Application.MessageBox('Spelling check is complete.', 'Avro Bangla Spell Checker', MB_OK + MB_ICONEXCLAMATION + MB_DEFBUTTON1 + MB_APPLMODAL);
+		 Application.MessageBox('Spelling check is complete.', 'Bongo Bangla Spell Checker', MB_OK + MB_ICONEXCLAMATION + MB_DEFBUTTON1 + MB_APPLMODAL);
 		 Avro_ForgetChangeIgnore;
 		 Progress.Visible := False;
 		 CheckingSpell := False;
@@ -460,7 +460,7 @@ Begin
 		 Avro_HideSpeller;
 
 
-		 Application.MessageBox('Document has been modified above the current spell checking position.' + #10 + '' + #10 + '' + #10 + 'Avro Pad will resume spell checking from the beginning.', 'Avro Pad',
+		 Application.MessageBox('Document has been modified above the current spell checking position.' + #10 + '' + #10 + '' + #10 + 'Bongo Pad will resume spell checking from the beginning.', 'Bongo Pad',
 					MB_OK + MB_ICONEXCLAMATION + MB_DEFBUTTON1 + MB_APPLMODAL);
 
 		 MP.ResetAll;
@@ -498,11 +498,11 @@ Begin
 					BOM_UnicodeBE := False;
 					BOM_UTF8 := False;
 					MEMO.Clear;
-					Self.Caption := 'Untitled - Avro Pad';
+					Self.Caption := 'Untitled - Bongo Pad';
 		 End
 		 Else Begin
 					If (MemoChanged = True) Then Begin
-							 MSG := Application.MessageBox('The text in the current file has changed.' + #10 + '' + #10 + 'Do you want to save the changes first?', 'Avro Pad', MB_YESNOCANCEL + MB_ICONQUESTION + MB_DEFBUTTON1 + MB_APPLMODAL);
+							 MSG := Application.MessageBox('The text in the current file has changed.' + #10 + '' + #10 + 'Do you want to save the changes first?', 'Bongo Pad', MB_YESNOCANCEL + MB_ICONQUESTION + MB_DEFBUTTON1 + MB_APPLMODAL);
 							 If MSG = ID_YES Then Begin
 										Save1Click(Nil);
 							 End
@@ -513,7 +513,7 @@ Begin
 										BOM_UnicodeBE := False;
 										BOM_UTF8 := False;
 										MEMO.Clear;
-										Self.Caption := 'Untitled - Avro Pad';
+										Self.Caption := 'Untitled - Bongo Pad';
 							 End
 							 Else
 										Exit;
@@ -525,7 +525,7 @@ Begin
 							 BOM_UnicodeBE := False;
 							 BOM_UTF8 := False;
 							 MEMO.Clear;
-							 Self.Caption := 'Untitled - Avro Pad';
+							 Self.Caption := 'Untitled - Bongo Pad';
 					End;
 		 End;
 End;
@@ -541,7 +541,7 @@ Begin
 		 End
 		 Else Begin
 					If (MemoChanged = True) Then Begin
-							 MSG := Application.MessageBox('The text in the current file has changed.' + #10 + '' + #10 + 'Do you want to save the changes first?', 'Avro Pad', MB_YESNOCANCEL + MB_ICONQUESTION + MB_DEFBUTTON1 + MB_APPLMODAL);
+							 MSG := Application.MessageBox('The text in the current file has changed.' + #10 + '' + #10 + 'Do you want to save the changes first?', 'Bongo Pad', MB_YESNOCANCEL + MB_ICONQUESTION + MB_DEFBUTTON1 + MB_APPLMODAL);
 							 If MSG = ID_YES Then Begin
 										Save1Click(Nil);
 										If MemoChanged = False Then
@@ -574,10 +574,10 @@ Begin
 					FreeAndNil(fs);
 					MemoChanged := False;
 					fFileName := fFile;
-					Self.Caption := ExtractFileName(fFile) + ' - Avro Pad';
+					Self.Caption := ExtractFileName(fFile) + ' - Bongo Pad';
 		 Except
 					On e: exception Do Begin
-							 Application.MessageBox(PChar('Error opening specified file:' + #10 + fFile), 'Avro Pad', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
+							 Application.MessageBox(PChar('Error opening specified file:' + #10 + fFile), 'Bongo Pad', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
 					End;
 		 End;
 End;
@@ -626,10 +626,10 @@ Begin
 					FreeAndNil(fs);
 					fFileName := fFile;
 					MemoChanged := False;
-					Self.Caption := ExtractFileName(fFile) + ' - Avro Pad';
+					Self.Caption := ExtractFileName(fFile) + ' - Bongo Pad';
 		 Except
 					On e: exception Do Begin
-							 Application.MessageBox('Error occured while saving file!', 'Avro Pad', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
+							 Application.MessageBox('Error occured while saving file!', 'Bongo Pad', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
 					End;
 		 End;
 End;

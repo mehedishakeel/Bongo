@@ -4,8 +4,8 @@ Bongo uses OmicronLab's actual Avro Win32 keyboard implementation, preserving
 its phonetic engine, system-wide hook, candidates, layouts and Unicode output.
 This is a legacy Delphi source target, not a tested Windows release.
 
-The upstream Readme.txt specifies **Delphi 2010**, plus **DISQLite3**, **ICS**,
-**JCL** and **JVCL**. They are not all included or installed here. DISQLite3 is
+The upstream Readme.txt specifies **Delphi 2010**, plus **DISQLite3**, **JCL**
+and **JVCL**. They are not all included or installed here. DISQLite3 is
 listed by upstream as freeware rather than open source. Obtain appropriate
 versions/licenses independently; this repository does not fabricate those dependencies.
 
@@ -30,12 +30,8 @@ until the runtime payload is assembled with appropriate redistribution rights.
 
 Bongo changes the registry to `Software\Bongo\Keyboard`, application data to
 Bongo, startup entry, mutex, main window class/IPC identity, resource metadata,
-and visible text. The legacy upstream updater remains disabled. Until the native
-release is complete, check the project's GitHub Releases feed with:
-
-```powershell
-./platforms/windows/scripts/check-update.ps1 -Open
-```
+and visible text. **Check for updates** opens the Bongo GitHub Releases page;
+the obsolete HTTP updater, its timer, and its ICS dependency were removed.
 
 The phonetic method still
 uses the accurate name **Avro Phonetic** and the original author credits remain.

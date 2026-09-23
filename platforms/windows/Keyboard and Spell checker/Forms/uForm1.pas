@@ -47,9 +47,7 @@ Uses
 		 Menus,
 		 clsLayout,
 		 Generics.Collections,
-		 StrUtils,
-		 clsUpdateInfoDownloader,
-		 DateUtils;
+		 StrUtils;
 
 Type
 		 TMenuItemExtended = Class(TMenuItem)
@@ -242,7 +240,6 @@ Type
 					N40: TMenuItem;
 					GetAcrobatReader3: TMenuItem;
 					WindowCheck: TTimer;
-					InternetCheck: TTimer;
 					Spellcheck1: TMenuItem;
 					N41: TMenuItem;
 					Spellcheck2: TMenuItem;
@@ -371,7 +368,6 @@ Type
 					Procedure ManageAutoCorrectentries1Click(Sender: TObject);
 					Procedure KeyboardLayoutEditorBuildcustomlayouts1Click(Sender: TObject);
 					Procedure SkinDesignerDesignyourownskin1Click(Sender: TObject);
-					Procedure InternetCheckTimer(Sender: TObject);
 					Procedure TrayDblClick(Sender: TObject);
 					Procedure TrayClick(Sender: TObject);
 					Procedure WindowCheckTimer(Sender: TObject);
@@ -421,11 +417,10 @@ Type
 
 
 					Procedure WMCopyData(Var Msg: TWMCopyData); Message WM_COPYDATA;
-		 Public
+			 Public
 					{ Public declarations }
 					KeyboardModeChanged: Boolean;
 					KeyLayout: TLayout;
-					Updater: TUpdateCheck;
 
 					Function GetMyCurrentKeyboardMode: enumMode;
 					Procedure ExitApp;
@@ -526,12 +521,12 @@ End;
 
 Procedure TBongoMainForm1.AvroKeyboardonFacebook1Click(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=39');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 Procedure TBongoMainForm1.AvroKeyboardontheweb1Click(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=1');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 Procedure TBongoMainForm1.AvroMouseClicknType2Click(Sender: TObject);
@@ -582,8 +577,7 @@ End;
 
 Procedure TBongoMainForm1.CheckupdateforAvroKeyboard1Click(Sender: TObject);
 Begin
-		 Updater.Check;
-		 AvroUpdateLastCheck := Now;
+		 Execute_Something('https://github.com/mehedishakeel/Bongo/releases/latest');
 End;
 
 
@@ -660,12 +654,12 @@ End;
 
 Procedure TBongoMainForm1.Downloadmorekeyboardlayouts1Click(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=6');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 Procedure TBongoMainForm1.Downloadmoreskins1Click(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=8');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 { =============================================================================== }
@@ -712,14 +706,11 @@ Begin
 		 SaveSettings;
 
 		 WindowCheck.Enabled := False;
-		 InternetCheck.Enabled := False;
-
 		 Tray.Visible := False;
 
 		 FreeAndNil(WindowDict);
 		 FreeAndNil(KeyLayout);
 		 RemoveHook;
-		 FreeAndNil(Updater);
 		 DestroyDict;
 		 Destroy_KeyboardLayoutData;
 		 FreeAndNil(KeyboardLayouts);
@@ -783,7 +774,7 @@ End;
 
 Procedure TBongoMainForm1.FreeBanglaFonts1Click(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=4');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 Procedure TBongoMainForm1.FrequentlyAskedQuestionsFAQ1Click(Sender: TObject);
@@ -797,7 +788,7 @@ End;
 
 Procedure TBongoMainForm1.GetAcrobatReader1Click(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=13');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 Function TBongoMainForm1.GetMyCurrentKeyboardMode: enumMode;
@@ -954,31 +945,6 @@ Begin
 							 TempMenu3.OnClick := MenuFixedLayoutClick;
 							 Popup_LayoutList.Items.Insert(AvroPhoneticEnglishtoBangla1.MenuIndex + 1, TempMenu3);
 					End;
-		 End;
-End;
-
-{$HINTS Off}
-
-Procedure TBongoMainForm1.InternetCheckTimer(Sender: TObject);
-Var
-		 HowMayDay: Integer;
-Begin
-		 HowMayDay := 0;
-		 If AvroUpdateCheck <> 'YES' Then
-					exit;
-
-		 Try
-					HowMayDay := DaysBetween(Now, AvroUpdateLastCheck);
-		 Except
-					HowMayDay := 7;
-		 End;
-
-		 If HowMayDay >= 7 Then Begin
-					If Updater.IsConnected = False Then
-							 exit;
-
-					Updater.CheckSilent;
-					AvroUpdateLastCheck := Now;
 		 End;
 End;
 
@@ -1187,7 +1153,21 @@ Begin
 		 LoadKeyboardLayoutNames;
 		 Initmenu;
 
-		 Updater := TUpdateCheck.Create;
+		 { Hide optional companion tools unless they are actually packaged. }
+		 Spellcheck1.Visible := FileExists(ExtractFilePath(Application.ExeName) + 'Avro Spell checker.exe');
+		 Spellcheck2.Visible := Spellcheck1.Visible;
+		 Spellcheck3.Visible := Spellcheck1.Visible;
+		 KeyboardLayoutEditorBuildcustomlayouts1.Visible := FileExists(ExtractFilePath(Application.ExeName) + 'Layout Editor.exe');
+		 KeyboardLayoutEditorBuildcustomlayouts2.Visible := KeyboardLayoutEditorBuildcustomlayouts1.Visible;
+		 SkinDesignerDesignyourownskin1.Visible := FileExists(ExtractFilePath(Application.ExeName) + 'Skin Designer.exe');
+		 SkinDesignerDesignyourownskin2.Visible := SkinDesignerDesignyourownskin1.Visible;
+		 UnicodetoBijoytextconverter1.Visible := FileExists(ExtractFilePath(Application.ExeName) + 'Unicode to Bijoy.exe');
+		 UnicodetoBijoytextconverter2.Visible := UnicodetoBijoytextconverter1.Visible;
+		 FontFixerSetdefaultBanglafont1.Visible := FileExists(ExtractFilePath(Application.ExeName) + 'Font Fixer.exe');
+		 FontFixerSetdefaultBanglafont2.Visible := FontFixerSetdefaultBanglafont1.Visible;
+		 iComplexInstallcomplexscriptsupportinWindows1.Visible := FileExists(ExtractFilePath(Application.ExeName) + 'icomplex\IComplex.exe');
+		 iComplexInstallcomplexscriptsupportinWindows2.Visible := iComplexInstallcomplexscriptsupportinWindows1.Visible;
+
 		 WindowDict := TDictionary<HWND, TWindowRecord>.Create;
 		 WindowCheck.Enabled := True;
 
@@ -1238,11 +1218,6 @@ Begin
 
 		 {$ENDIF}
 
-		 If AvroUpdateCheck = 'YES' Then
-					InternetCheck.Enabled := True
-		 Else
-					InternetCheck.Enabled := False;
-
 		 If (ShowOutputwarning <> 'NO') And (OutputIsBijoy = 'YES') Then Begin
 					CheckCreateForm(TfrmEncodingWarning, frmEncodingWarning, 'frmEncodingWarning');
 					frmEncodingWarning.ShowModal;
@@ -1270,7 +1245,7 @@ End;
 
 Procedure TBongoMainForm1.Moredocumentsontheweb1Click(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=12');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 
@@ -1284,7 +1259,7 @@ End;
 
 Procedure TBongoMainForm1.OmicronLabonTwitter1Click(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=40');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 { =============================================================================== }
@@ -1296,79 +1271,79 @@ Begin
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'Before You Start.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'Before You Start.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 
 					24:
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'Overview.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'Overview.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 
 					25:
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'Customizing Avro Keyboard.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'Customizing Avro Keyboard.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 
 					26:
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'Bangla Typing with Avro Phonetic.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'Bangla Typing with Avro Phonetic.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 
 					27:
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'Bangla Typing with Fixed Keyboard Layouts.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'Bangla Typing with Fixed Keyboard Layouts.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 
 					28:
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'Bangla Typing with Avro Mouse.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'Bangla Typing with Avro Mouse.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 
 					29:
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'faq.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'faq.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 
 					30:
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'How to- Bangla File Folder Name.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'How to- Bangla File Folder Name.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 
 					31:
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'How to- Bangla Chat.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'How to- Bangla Chat.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 
 					32:
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'How to- Searching Web in Bangla.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'How to- Searching Web in Bangla.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 
 					33:
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'How to- Bangla Web Page.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'How to- Bangla Web Page.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 
 					34:
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'How to- Embed Bangla font in Web Pages.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'How to- Embed Bangla font in Web Pages.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 
 					35:
 							 If FileExists(ExtractFilePath(Application.ExeName) + 'Editing Keyboard Layout.pdf') Then
 										Execute_Something(ExtractFilePath(Application.ExeName) + 'Editing Keyboard Layout.pdf')
 							 Else
-										Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(HelpID));
+										Execute_Something('https://github.com/mehedishakeel/Bongo');
 		 End;
 End;
 
@@ -1420,7 +1395,7 @@ End;
 
 Procedure TBongoMainForm1.PortableAvroKeyboardontheweb1Click(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=22');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 { =============================================================================== }
@@ -1686,12 +1661,6 @@ Begin
 					Topbar.TransparencyTimer.Enabled := True
 		 Else
 					Topbar.TransparencyTimer.Enabled := False;
-
-
-		 If AvroUpdateCheck = 'YES' Then
-					InternetCheck.Enabled := True
-		 Else
-					InternetCheck.Enabled := False;
 
 
 		 If OutputIsBijoy = 'YES' Then Begin
@@ -1960,7 +1929,7 @@ End;
 
 Procedure TBongoMainForm1.UsefultoolsforBangla1Click(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=15');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 Procedure TBongoMainForm1.UseModernStyleTyping1Click(Sender: TObject);
@@ -1975,7 +1944,7 @@ End;
 
 Procedure TBongoMainForm1.UserForum1Click(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=3');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 Procedure TBongoMainForm1.UseTabforBrowsingSuggestions1Click(Sender: TObject);
@@ -2112,7 +2081,7 @@ End;
 
 Procedure TBongoMainForm1.wwwOmicronLabcom1Click(Sender: TObject);
 Begin
-		 Execute_Something('http://www.omicronlab.com/go.php?id=2');
+		 Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 { =============================================================================== }

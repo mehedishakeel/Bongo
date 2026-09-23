@@ -263,7 +263,7 @@ Begin
 
      If Lowercase(Value) <> 'avrophonetic*' Then Begin
           If Init_KeyboardLayout(Value) = False Then Begin
-               Application.MessageBox(PChar('Error Loading ' + Value + ' keyboard layout!' + #10 + '' + #10 + 'Layout switched back to Avro Phonetic.'), 'Bongo', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
+               Application.MessageBox(PChar('Error Loading ' + Value + ' keyboard layout!' + #10 + '' + #10 + 'Layout switched back to Bongo Phonetic.'), 'Bongo', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
                Value := 'AvroPhonetic*';
           End;
      End;

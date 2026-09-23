@@ -28,6 +28,9 @@ class DistributionTests(unittest.TestCase):
         ipc = (ROOT / 'platforms/linux/src/frontend/main.cpp').read_text()
         self.assertIn('"org.bongo.keyboard"', ipc)
         self.assertNotIn('"com.openbangla.keyboard"', ipc)
+        self.assertTrue((ROOT / 'platforms/linux/src/engine/riti/Cargo.lock').is_file())
+        cargo_cmake = (ROOT / 'platforms/linux/cmake/CMakeCargo.cmake').read_text()
+        self.assertIn('list(APPEND CARGO_ARGS "--locked")', cargo_cmake)
 
     def test_qt_resources_resolve(self):
         for qrc in (ROOT / 'platforms/linux').rglob('*.qrc'):
@@ -43,6 +46,24 @@ class DistributionTests(unittest.TestCase):
         self.assertNotIn('Software\\OmicronLab\\Avro Keyboard', settings)
         self.assertTrue((base / 'Bongo.ico').is_file())
 
+    def test_windows_ui_and_optional_tools(self):
+        base = ROOT / 'platforms/windows/Keyboard and Spell checker'
+        main = (base / 'Forms/uForm1.pas').read_text(errors='replace')
+        main_form = (base / 'Forms/uForm1.dfm').read_text(errors='replace')
+        self.assertNotIn('InternetCheck', main + main_form)
+        self.assertNotIn('TUpdateCheck', main)
+        self.assertFalse((base / 'Classes/clsUpdateInfoDownloader.pas').exists())
+        self.assertFalse((base / 'Forms/ufrmUpdateNotify.pas').exists())
+        self.assertIn("Spellcheck1.Visible := FileExists", main)
+        self.assertIn("Layout Editor.exe", main)
+        for form in (ROOT / 'platforms/windows').rglob('*.dfm'):
+            captions = '\n'.join(
+                line for line in form.read_text(errors='replace').splitlines()
+                if 'Caption =' in line or 'Hint =' in line
+            )
+            self.assertNotIn('OmicronLab', captions, str(form))
+            self.assertNotIn('Avro Keyboard', captions, str(form))
+
     def test_release_artifacts_require_manual_installation(self):
         for name in ['install.sh', 'uninstall.sh', 'create_dmg.sh']:
             self.assertFalse((ROOT / 'platforms/macos/scripts' / name).exists())
@@ -56,13 +77,16 @@ class DistributionTests(unittest.TestCase):
         self.assertIn('BongoGitHubRepository', mac)
         self.assertIn('api.github.com/repos/', mac)
         linux = (ROOT / 'platforms/linux/src/frontend/TopBar.cpp').read_text()
-        self.assertIn('BONGO_UPDATE_URL', linux)
+        self.assertIn('BONGO_GITHUB_REPOSITORY', linux)
         self.assertIn('gSettings->getUpdateCheck()', linux)
         self.assertNotIn('gSettings->getCheckUpdate()', linux)
-        self.assertIn('updater->checkForUpdates(DEFS_URL)', linux)
-        win = (ROOT / 'platforms/windows/Keyboard and Spell checker/Classes/clsUpdateInfoDownloader.pas').read_text()
-        self.assertEqual(win.count('Exit; { Bongo: upstream updates disabled. }'), 2)
-        combined = mac + linux
+        self.assertIn('api.github.com/repos/', linux)
+        self.assertNotIn('QSimpleUpdater', linux)
+        self.assertIn('timeout->start(15000)', linux)
+        win = (ROOT / 'platforms/windows/Keyboard and Spell checker/Forms/uForm1.pas').read_text()
+        self.assertIn('github.com/mehedishakeel/Bongo/releases/latest', win)
+        self.assertNotIn('clsUpdateInfoDownloader', win)
+        combined = mac + linux + win
         self.assertNotIn('openbangla.github.io', combined)
         self.assertNotIn('omicronlab.com/download/liveupdate', combined)
 

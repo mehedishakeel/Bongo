@@ -31,19 +31,14 @@ class QAction;
 
 class QMenu;
 
-class QSystemTrayIcon;
-
 class LayoutViewer;
 
 class AboutDialog;
 
-class AboutFile;
-
 class SettingsDialog;
 
-class AutoCorrectDialog;
-
-class QSimpleUpdater;
+class QNetworkAccessManager;
+class QNetworkReply;
 
 class TopBar : public QMainWindow {
 Q_OBJECT
@@ -68,10 +63,6 @@ private slots:
 
   void iconMenuAbout_clicked();
 
-  void iconMenuOnTray_clicked();
-
-  void trayMenuRestore_clicked();
-
   void on_buttonIcon_clicked();
 
   void on_buttonSetLayout_clicked();
@@ -87,8 +78,9 @@ private:
   bool canMoveTopbar = false;
   bool positionChanged = false;
   int pressedMouseX, pressedMouseY;
-  QSystemTrayIcon *tray;
-  QSimpleUpdater *updater;
+  QNetworkAccessManager *networkManager;
+  QNetworkReply *updateReply = nullptr;
+  bool notifyWhenCurrent = false;
 
   /* Dialogs */
   AboutDialog *aboutDialog;
@@ -105,22 +97,15 @@ private:
   QAction *layoutMenuInstall;
   /* Icon Button Popup Menu */
   QMenu *iconMenu;
-  QAction *iconMenuOnTray;
   QAction *iconMenuLayout;
   QAction *iconMenuAbout;
   QAction *iconMenuUpdate;
-
-  /* Tray Popup Menu */
-  QMenu *trayMenu;
-  QAction *trayMenuRestore;
 
   void SetupTopBar();
 
   void SetupPopupMenus();
 
-  void SetupTrayIcon();
-
-  void checkForUpdate();
+  void checkForUpdate(bool notifyIfCurrent = true);
 
   void RefreshLayouts();
 

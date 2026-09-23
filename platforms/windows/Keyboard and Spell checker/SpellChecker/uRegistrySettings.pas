@@ -111,7 +111,7 @@ Var
 Begin
      Reg := TMyRegistry.create;
      Reg.RootKey := HKEY_CURRENT_USER;
-     If Reg.OpenKey('Software\OmicronLab\Avro Spell Checker', True) = True Then Begin
+     If Reg.OpenKey('Software\Bongo\Spell Checker', True) = True Then Begin
 
 
           {$IFNDEF SpellCheckerDll}
@@ -176,7 +176,7 @@ Var
 Begin
      Reg := TMyRegistry.Create;
      Reg.RootKey := HKEY_CURRENT_USER;
-     If Reg.OpenKey('Software\OmicronLab\Avro Spell Checker', True) = True Then Begin
+     If Reg.OpenKey('Software\Bongo\Spell Checker', True) = True Then Begin
 
           {$IFNDEF SpellCheckerDll}
           REG.WriteString('AppPath', ExtractFileDir(Application.ExeName));

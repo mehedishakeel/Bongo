@@ -16,13 +16,22 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QSystemTrayIcon>
-#include <QDesktopWidget>
+#include <QApplication>
+#include <QDesktopServices>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QFileDialog>
 #include <QMenu>
 #include <QDir>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QScreen>
+#include <QTimer>
+#include <QUrl>
+#include <QVersionNumber>
 #include "TopBar.h"
 #include "Layout.h"
 #include "Settings.h"
@@ -31,11 +40,9 @@
 #include "AboutDialog.h"
 #include "SettingsDialog.h"
 #include "LayoutConverter.h"
-#include "AutoCorrectDialog.h"
-#include "QSimpleUpdater.h"
 #include "ui_TopBar.h"
 
-static const QString DEFS_URL = BONGO_UPDATE_URL;
+static const QString GITHUB_REPOSITORY = BONGO_GITHUB_REPOSITORY;
 
 TopBar::TopBar(QWidget *parent) :
     QMainWindow(parent),
@@ -44,7 +51,7 @@ TopBar::TopBar(QWidget *parent) :
 
   gLayout = new Layout();
   gSettings = new Settings();
-  updater = QSimpleUpdater::getInstance();
+  networkManager = new QNetworkAccessManager(this);
 
   /* Dialogs */
   aboutDialog = new AboutDialog(Q_NULLPTR);
@@ -55,14 +62,10 @@ TopBar::TopBar(QWidget *parent) :
 
   SetupTopBar();
   SetupPopupMenus();
-  SetupTrayIcon();
   DataMigration();
 
-  if (!DEFS_URL.isEmpty() && gSettings->getUpdateCheck()) {
-    updater->setNotifyOnUpdate(DEFS_URL, true);
-    updater->setNotifyOnFinish(DEFS_URL, false);
-    updater->setDownloaderEnabled(DEFS_URL, false);
-    updater->checkForUpdates(DEFS_URL);
+  if (!GITHUB_REPOSITORY.isEmpty() && gSettings->getUpdateCheck()) {
+    checkForUpdate(false);
   }
 }
 
@@ -85,26 +88,81 @@ void TopBar::SetupTopBar() {
   if (gSettings->getTopBarWindowPosition() == QPoint(0, 0)) {
     int width = this->frameGeometry().width();
     int height = this->frameGeometry().height();
-    QDesktopWidget wid;
-
-    int screenWidth = wid.screen()->width();
-    int screenHeight = wid.screen()->height();
-
-    this->setGeometry((screenWidth / 2) - (width / 2), (screenHeight / 2) - (height / 2), width, height);
+    if (QScreen *screen = QGuiApplication::primaryScreen()) {
+      const QRect available = screen->availableGeometry();
+      this->setGeometry(available.center().x() - (width / 2),
+                        available.center().y() - (height / 2), width, height);
+    }
   } else {
     move(gSettings->getTopBarWindowPosition());
   }
 }
 
-void TopBar::checkForUpdate() {
-  if (DEFS_URL.isEmpty()) {
+void TopBar::checkForUpdate(bool notifyIfCurrent) {
+  if (GITHUB_REPOSITORY.isEmpty()) {
     QMessageBox::information(this, "Bongo", "Updates are not configured for this local build. See README.md for release-build instructions.");
     return;
   }
-  updater->setNotifyOnUpdate(DEFS_URL, true);
-  updater->setNotifyOnFinish(DEFS_URL, true);
-  updater->setDownloaderEnabled(DEFS_URL, false);
-  updater->checkForUpdates(DEFS_URL);
+  notifyWhenCurrent = notifyWhenCurrent || notifyIfCurrent;
+  if (updateReply) {
+    return;
+  }
+
+  const QUrl url(QString("https://api.github.com/repos/%1/releases/latest").arg(GITHUB_REPOSITORY));
+  QNetworkRequest request(url);
+  request.setRawHeader("Accept", "application/vnd.github+json");
+  request.setRawHeader("User-Agent", QString("Bongo-Linux/%1").arg(qApp->applicationVersion()).toUtf8());
+  updateReply = networkManager->get(request);
+  QTimer *timeout = new QTimer(updateReply);
+  timeout->setSingleShot(true);
+  connect(timeout, &QTimer::timeout, updateReply, &QNetworkReply::abort);
+  timeout->start(15000);
+
+  connect(updateReply, &QNetworkReply::finished, this, [this]() {
+    QNetworkReply *reply = updateReply;
+    updateReply = nullptr;
+    const bool reportCurrent = notifyWhenCurrent;
+    notifyWhenCurrent = false;
+
+    if (!reply) {
+      return;
+    }
+    const QByteArray response = reply->readAll();
+    const bool failed = reply->error() != QNetworkReply::NoError;
+    reply->deleteLater();
+
+    const QJsonObject release = QJsonDocument::fromJson(response).object();
+    const QString tag = release.value("tag_name").toString();
+    const QUrl releaseUrl(release.value("html_url").toString());
+    if (failed || tag.isEmpty() || !releaseUrl.isValid()) {
+      if (reportCurrent) {
+        QMessageBox::warning(this, "Bongo", "Couldn’t check for updates. Check your internet connection and the GitHub Releases page, then try again.");
+      }
+      return;
+    }
+
+    QString latest = tag;
+    if (latest.startsWith('v', Qt::CaseInsensitive)) {
+      latest.remove(0, 1);
+    }
+    const QVersionNumber currentVersion = QVersionNumber::fromString(qApp->applicationVersion());
+    const QVersionNumber latestVersion = QVersionNumber::fromString(latest);
+    if (latestVersion.isNull() || currentVersion.isNull()) {
+      if (reportCurrent) {
+        QMessageBox::warning(this, "Bongo", "The release version could not be read. Open GitHub Releases and check manually.");
+      }
+    } else if (QVersionNumber::compare(latestVersion, currentVersion) > 0) {
+      const QMessageBox::StandardButton choice = QMessageBox::information(
+          this, "Bongo update available",
+          QString("Bongo %1 is available. Open the release page to download it?").arg(latest),
+          QMessageBox::Open | QMessageBox::Cancel, QMessageBox::Open);
+      if (choice == QMessageBox::Open) {
+        QDesktopServices::openUrl(releaseUrl);
+      }
+    } else if (reportCurrent) {
+      QMessageBox::information(this, "Bongo", QString("Bongo %1 is up to date.").arg(qApp->applicationVersion()));
+    }
+  });
 }
 
 void TopBar::SetupPopupMenus() {
@@ -128,11 +186,6 @@ void TopBar::SetupPopupMenus() {
   connect(layoutMenuInstall, SIGNAL(triggered()), this, SLOT(layoutMenuInstall_clicked()));
 
   // Icon Button Popup Menu
-#if 0
-  iconMenuOnTray = new QAction("Jump to system tray", this);
-  connect(iconMenuOnTray, SIGNAL(triggered()), this, SLOT(iconMenuOnTray_clicked()));
-#endif
-
   iconMenuLayout = new QAction("About current keyboard layout", this);
   connect(iconMenuLayout, SIGNAL(triggered()), this, SLOT(iconMenuLayout_clicked()));
 
@@ -141,47 +194,21 @@ void TopBar::SetupPopupMenus() {
 
   iconMenuUpdate = new QAction("Check for updates", this);
   connect(iconMenuUpdate, &QAction::triggered, [=]() {
-    checkForUpdate();
+    checkForUpdate(true);
   });
 
   iconMenu = new QMenu(this);
-  //iconMenu->addAction(iconMenuOnTray);
   iconMenu->addAction(iconMenuLayout);
   iconMenu->addAction(iconMenuAbout);
   iconMenu->addAction(iconMenuUpdate);  
 }
 
-void TopBar::SetupTrayIcon() {
-#if 0
-  /* TODO: Fix Crash... */
-  tray = new QSystemTrayIcon(QIcon(":/images/keyboard_layout_viewer.png"), this);
-  tray->setToolTip("Bongo");
-
-  /* Tray Menu */
-  trayMenuRestore = new QAction("Restore TopBar", this);
-  connect(trayMenuRestore, SIGNAL(triggered()), this, SLOT(trayMenuRestore_clicked()));
-
-  trayMenu = new QMenu(this);
-  trayMenu->addAction(trayMenuRestore);
-  trayMenu->addMenu(layoutMenu); // Layout Menu
-  /*
-  trayMenu->addSeparator();
-  trayMenu->addAction(iconMenuAbout);*/
-  trayMenu->addSeparator();
-  trayMenu->addAction(iconMenuQuit);
-
-  tray->setContextMenu(trayMenu);
-#endif
-}
-
 void TopBar::RefreshLayouts() {
+  layoutMenu->clear();
   LayoutList list;
   list = gLayout->searchLayouts();
 
   QString selectedLayout = gSettings->getLayoutName();
-
-  // This loop need to be rewritten to use `for each` loop, which is unnecessary. Skipping.
-
 
   for (int k = 0; k < MaxLayoutFiles; ++k) {
     if (k < list.count()) {
@@ -262,17 +289,6 @@ void TopBar::iconMenuAbout_clicked() {
   aboutDialog->show();
 }
 
-void TopBar::iconMenuOnTray_clicked() {
-  this->setVisible(false);
-  tray->setVisible(true);
-  tray->showMessage("Bongo", "Bongo is now running on system tray");
-}
-
-void TopBar::trayMenuRestore_clicked() {
-  tray->setVisible(false);
-  this->setVisible(true);
-}
-
 void TopBar::on_buttonIcon_clicked() {
   // Check if this is not a position change event. If it is, then ignore it.
   if(!positionChanged) {
@@ -349,8 +365,9 @@ void TopBar::DataMigration() {
     QDir previousUserDataPath = QDir(environmentVariable("HOME", "") + "/.Bongo");
     if(previousUserDataPath.exists()) {
       // Handle the data files.
-      migrateFile("phonetic-candidate-selection.json", previousUserDataPath, usr.dataPath());
-      migrateFile("autocorrect.json", previousUserDataPath, usr.dataPath());
+      bool migrationSucceeded =
+          migrateFile("phonetic-candidate-selection.json", previousUserDataPath, usr.dataPath()) &&
+          migrateFile("autocorrect.json", previousUserDataPath, usr.dataPath());
       // Convert old layout files if present.
       previousUserDataPath.cd("Layouts");
       QStringList list = previousUserDataPath.entryList(QStringList("*.json"));
@@ -359,19 +376,24 @@ void TopBar::DataMigration() {
           QString path = previousUserDataPath.path() + "/" + file;
 
           if(converter.convertLayoutFormat(path) != Ok) {
+            migrationSucceeded = false;
             QMessageBox::critical(Q_NULLPTR, "Bongo",
                             QString("An error occurred while converting %1 layout!").arg(file), QMessageBox::Ok);
-            return;
+            break;
           }
         }
       }
-      QMessageBox::information(Q_NULLPTR, "Bongo", "User data files has been migrated successfully.",
-                               QMessageBox::Ok);
-      // Delete the previous user directory.
-      previousUserDataPath.cdUp();
-      previousUserDataPath.removeRecursively();
-      gSettings->setPreviousUserDataRemains(false);
-      RefreshLayouts();
+      if (migrationSucceeded) {
+        QMessageBox::information(Q_NULLPTR, "Bongo", "User data files were migrated successfully.",
+                                 QMessageBox::Ok);
+        // Keep the legacy directory as a backup; do not delete user data automatically.
+        gSettings->setPreviousUserDataRemains(false);
+        RefreshLayouts();
+      } else {
+        QMessageBox::critical(Q_NULLPTR, "Bongo",
+                              "Some user data could not be migrated. The original files were left unchanged.",
+                              QMessageBox::Ok);
+      }
     }
   }
 }

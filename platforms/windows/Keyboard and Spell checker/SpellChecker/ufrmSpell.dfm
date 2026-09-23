@@ -1,7 +1,7 @@
 object frmSpell: TfrmSpell
   Left = 0
   Top = 0
-  Caption = 'Untitled - Avro Pad'
+  Caption = 'Untitled - Bongo Pad'
   ClientHeight = 256
   ClientWidth = 491
   Color = clBtnFace

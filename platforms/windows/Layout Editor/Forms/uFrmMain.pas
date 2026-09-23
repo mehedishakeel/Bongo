@@ -16,7 +16,7 @@
      The Initial Developer of the Original Code is
      Mehdi Hasan Khan <mhasan@omicronlab.com>.
 
-     Copyright (C) OmicronLab <http://www.omicronlab.com>. All Rights Reserved.
+     Copyright (C) OmicronLab <https://github.com/mehedishakeel/Bongo>. All Rights Reserved.
 
 
      Contributor(s): ______________________________________.
@@ -466,7 +466,7 @@ Begin
      If FileExists(ExtractFilePath(Application.ExeName) + 'Editing Keyboard Layout.pdf') Then
           Execute_Something(ExtractFilePath(Application.ExeName) + 'Editing Keyboard Layout.pdf')
      Else
-          Execute_Something('http://www.omicronlab.com/go.php?id=' + IntToStr(35));
+          Execute_Something('https://github.com/mehedishakeel/Bongo);
 End;
 
 {===============================================================================}
@@ -542,7 +542,7 @@ Begin
                //----------------------------------------------
                //Check if the layout is a compatible one
                If trim(Xml.Root.FindNode('AvroKeyboardVersion').ValueAsUnicodeString) <> '5' Then Begin
-                    Application.MessageBox('This Keyboard Layout is not compatible with current version of Avro Keyboard.', 'Error loading keyboard layout...', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
+                    Application.MessageBox('This keyboard layout is not compatible with this version of Bongo.', 'Error loading keyboard layout...', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
                     Exit;
                End;
                //----------------------------------------------
@@ -848,7 +848,7 @@ End;
 
 Procedure TfrmMain.Label15Click(Sender: TObject);
 Begin
-     Execute_Something('http://www.omicronlab.com/go.php?id=5');
+     Execute_Something('https://github.com/mehedishakeel/Bongo');
 End;
 
 {===============================================================================}
@@ -899,11 +899,11 @@ Begin
           exit;
      End;
      If trim(txtImageNormalShift.Text) = '' Then Begin
-          Application.MessageBox('Please add bitmap images for Layout Viewer of Avro Keyboard before building keyboard layout.', 'Layout Editor', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
+          Application.MessageBox('Please add bitmap images for the Bongo Layout Viewer before building the keyboard layout.', 'Layout Editor', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
           exit;
      End;
      If trim(txtImageAltGrShift.Text) = '' Then Begin
-          Application.MessageBox('Please add bitmap images for Layout Viewer of Avro Keyboard before building keyboard layout.', 'Layout Editor', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
+          Application.MessageBox('Please add bitmap images for the Bongo Layout Viewer before building the keyboard layout.', 'Layout Editor', MB_OK + MB_ICONHAND + MB_DEFBUTTON1 + MB_APPLMODAL);
           exit;
      End;
      result := True;

@@ -67,8 +67,6 @@ Var
 		 TopHintShowTimes: String;
 
 		 // Webbuddy Options
-		 AvroUpdateCheck: String;
-		 AvroUpdateLastCheck: TDateTime;
 
 
 		 // Hotkey settings
@@ -181,8 +179,6 @@ Begin
 
 
 		 // Webbuddy Options
-		 AvroUpdateCheck := UpperCase(XML.GetValue('AvroUpdateCheck', 'No'));
-		 AvroUpdateLastCheck := XML.GetValue('AvroUpdateLastCheck', Now);
 
 
 		 // Hotkey settings
@@ -266,8 +262,6 @@ Begin
 
 
 		 // Webbuddy Options
-		 XML.SetValue('AvroUpdateCheck', AvroUpdateCheck);
-		 XML.SetValue('AvroUpdateLastCheck', AvroUpdateLastCheck);
 
 		 // Hotkey settings
 		 XML.SetValue('ModeSwitchKey', ModeSwitchKey);
@@ -349,8 +343,6 @@ Begin
 					TopBarPosX := UpperCase(Reg.ReadStringDef('TopBarPosX', '1000000'));
 					TopBarXButton := UpperCase(Reg.ReadStringDef('TopBarXButton', 'Show Menu'));
 					TopBarTransparent := UpperCase(Reg.ReadStringDef('TopBarTransparent', 'Yes'));
-					AvroUpdateCheck := UpperCase(Reg.ReadStringDef('AvroUpdateCheck', 'No'));
-					AvroUpdateLastCheck := Reg.ReadDateDef('AvroUpdateLastCheck', Now);
 
 					// Inteface Settings
 					InterfaceSkin := Reg.ReadStringDef('InterfaceSkin', 'internalskin*');
@@ -447,8 +439,6 @@ Begin
 
 
 					// Webbuddy Options
-					Reg.WriteString('AvroUpdateCheck', AvroUpdateCheck);
-					Reg.WriteDateTime('AvroUpdateLastCheck', AvroUpdateLastCheck);
 
 					// Hotkeys settings
 					Reg.WriteString('ModeSwitchKey', ModeSwitchKey);
