@@ -81,39 +81,6 @@ The package is written under `platforms/linux/release/` as
 errors remain readable. Set `BONGO_BUILD_JOBS` to use more jobs. Install the
 package separately as described in [LINUX-INSTALL.md](LINUX-INSTALL.md).
 
-## Windows EXE
-
-### Requirements
-
-- Windows with Windows PowerShell 5.1 or later
-- Embarcadero Delphi 2010 Win32 compiler
-- `dcc32.exe` and `brcc32.exe` available in `PATH`
-- Compatible DISQLite3, JCL and JVCL packages installed and configured in
-  Delphi 2010
-- The runtime database, layouts, skins, dictionaries and support DLLs required
-  by the legacy application
-- Appropriate redistribution rights for every third-party dependency and
-  runtime file
-
-The third-party Delphi packages and the complete runtime payload are not bundled
-in this repository. Obtain compatible versions and configure their Delphi search
-paths before building.
-
-Create the executable from the repository root:
-
-```powershell
-./platforms/windows/scripts/create-exe.ps1
-```
-
-If `dcc32.exe` is not in `PATH`, pass its full path:
-
-```powershell
-./platforms/windows/scripts/create-exe.ps1 -Dcc32 "C:\Program Files (x86)\Embarcadero\RAD Studio\7.0\bin\dcc32.exe"
-```
-
-The output is `platforms/windows/release/Bongo.exe`. A successful compile alone is not a
-release-ready Windows package. Complete the runtime, signing and native test
-checklist in [WINDOWS-RELEASE.md](WINDOWS-RELEASE.md) before distribution.
 
 ## Validation
 

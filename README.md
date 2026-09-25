@@ -4,7 +4,7 @@
   <img src="assets/Bongo-logo-v2.png" width="144" alt="Bongo logo">
 </p>
 
-**Bongo** is a native Bangla keyboard for macOS, Linux and Windows. It types
+**Bongo** is a native Bangla keyboard for macOS and Linux. It types
 directly in your applications and keeps typing data on your device.
 
 [Website](https://mehedishakeel.github.io/Bongo/) · [Download the latest release](https://github.com/mehedishakeel/Bongo/releases)
@@ -38,11 +38,6 @@ Keyboard/Input Sources settings.
 
 [Full Linux instructions](docs/LINUX-INSTALL.md)
 
-### Windows
-
-The Windows port is still under development. It should not be distributed as a
-supported release until its Delphi dependencies, runtime files and native tests
-are complete.
 
 ## Updates and privacy
 
@@ -57,7 +52,6 @@ learned-word data stay on your device.
 - [Prepare a GitHub release](docs/RELEASING.md)
 - [Run validation checks](docs/VALIDATION.md)
 - [Review the latest project audit](docs/AUDIT.md)
-- [Review the Windows release checklist](docs/WINDOWS-RELEASE.md)
 
 Each release script must run on its matching operating system. The build guide
 lists every required compiler, tool and development package before the commands.

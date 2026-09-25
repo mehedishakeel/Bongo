@@ -28,8 +28,3 @@ Before a release, create artifacts on each matching OS and test installation,
 uninstallation, input-source registration, real-app typing, update prompts, and
 restart behavior. Sign and notarize macOS builds and Authenticode-sign Windows
 builds when those channels are ready.
-
-Windows also requires the proprietary Delphi toolchain, its third-party
-packages, the runtime payload, and the native checks in
-[WINDOWS-RELEASE.md](WINDOWS-RELEASE.md). A successful Delphi compile by itself
-is not enough for distribution.
