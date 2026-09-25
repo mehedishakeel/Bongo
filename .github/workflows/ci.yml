@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate repository
+        run: |
+          python3 -m unittest discover -s tests -v
+          bash -n platforms/macos/scripts/create-dmg.sh
+          bash -n platforms/linux/scripts/create-deb.sh
+
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install build requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends build-essential cmake cargo rustc pkg-config dpkg-dev qtbase5-dev libibus-1.0-dev libzstd-dev
+      - name: Test Rust engine
+        working-directory: platforms/linux/src/engine/riti
+        run: cargo test --locked -- --test-threads=1
+      - name: Build Debian package
+        run: ./platforms/linux/scripts/create-deb.sh
+
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Select Apple Silicon Rust target
+        run: rustup target add aarch64-apple-darwin
+      - name: Run native integration tests
+        run: |
+          (cd platforms/macos/engine && cargo build --locked --release --target aarch64-apple-darwin)
+          mkdir -p platforms/macos/build/test
+          swiftc -O -module-name BongoTest \
+            platforms/macos/Bongo/Sources/InputController.swift \
+            platforms/macos/Bongo/Sources/Engine.swift \
+            platforms/macos/Bongo/Sources/CandidatePanel.swift \
+            platforms/macos/tests/integration/main.swift \
+            -import-objc-header platforms/macos/Bongo/Sources/BridgeHeader.h \
+            -I platforms/macos/engine/include \
+            -L platforms/macos/engine/target/aarch64-apple-darwin/release \
+            -lavrobangla_engine -framework Cocoa -framework InputMethodKit \
+            -target arm64-apple-macos13.0 \
+            -o platforms/macos/build/test/bongo_test
+          test_user_dir="$(mktemp -d "${TMPDIR:-/tmp}/bongo-test.XXXXXX")"
+          trap 'rm -rf "$test_user_dir"' EXIT
+          BONGO_USER_DIR="$test_user_dir" platforms/macos/build/test/bongo_test

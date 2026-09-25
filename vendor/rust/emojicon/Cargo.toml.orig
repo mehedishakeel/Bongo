@@ -1,0 +1,20 @@
+[package]
+name = "emojicon"
+version = "0.5.0"
+authors = ["Muhammad Mominul Huque <mominul2082@gmail.com>"]
+description = "Find Emoji by using Emoticons and GitHub's, Bengali emoji names."
+license = "MIT"
+keywords = ["emoji", "gemoji", "emoticon", "unicode", "bengali"]
+categories = ["text-processing"]
+repository = "https://github.com/mominul/emojicon"
+edition = "2021"
+rust-version = "1.56.0"
+exclude = ["/data", "/generate", "/gemoji"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[features]
+custom = []
+internal =[]

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LayoutViewer</class>
+ <widget class="QDialog" name="LayoutViewer">
+  <property name="geometry"><rect><x>0</x><y>0</y><width>980</width><height>390</height></rect></property>
+  <property name="windowTitle"><string>Bongo Layout Viewer</string></property>
+  <property name="sizeGripEnabled"><bool>false</bool></property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin"><number>14</number></property>
+   <property name="topMargin"><number>14</number></property>
+   <property name="rightMargin"><number>14</number></property>
+   <property name="bottomMargin"><number>14</number></property>
+   <item>
+    <widget class="QLabel" name="labelImage">
+     <property name="minimumSize"><size><width>460</width><height>120</height></size></property>
+     <property name="styleSheet"><string notr="true">background: #f7faf9; border: 1px solid #cfe2e4; border-radius: 12px; color: #48656b; padding: 0;</string></property>
+     <property name="text"><string>Loading layout guide…</string></property>
+     <property name="alignment"><set>Qt::AlignCenter</set></property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources><include location="images.qrc"/></resources>
+ <connections/>
+</ui>

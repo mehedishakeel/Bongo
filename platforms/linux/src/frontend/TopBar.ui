@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TopBar</class>
+ <widget class="QMainWindow" name="TopBar">
+  <property name="geometry"><rect><x>0</x><y>0</y><width>238</width><height>46</height></rect></property>
+  <property name="windowTitle"><string>Bongo</string></property>
+  <property name="windowIcon"><iconset resource="images.qrc"><normaloff>:/images/Bongo.png</normaloff>:/images/Bongo.png</iconset></property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet"><string notr="true">QWidget#centralwidget { background: #ffffff; border: 1px solid #dbe4ea; border-radius: 12px; }
+QPushButton { background: transparent; border: 0; border-radius: 8px; padding: 4px; }
+QPushButton:hover { background: #e7f7fa; }
+QPushButton:pressed, QPushButton:checked { background: #c8f0f5; }</string></property>
+   <widget class="QPushButton" name="buttonIcon">
+    <property name="geometry"><rect><x>6</x><y>5</y><width>36</width><height>36</height></rect></property>
+    <property name="toolTip"><string>Bongo menu — drag to move</string></property>
+    <property name="icon"><iconset resource="images.qrc"><normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset></property>
+    <property name="iconSize"><size><width>22</width><height>22</height></size></property>
+   </widget>
+   <widget class="QLabel" name="brandLabel">
+    <property name="geometry"><rect><x>44</x><y>5</y><width>62</width><height>36</height></rect></property>
+    <property name="font"><font><pointsize>11</pointsize><weight>75</weight><bold>true</bold></font></property>
+    <property name="styleSheet"><string notr="true">border: 0; color: #15323a;</string></property>
+    <property name="text"><string>Bongo</string></property>
+    <property name="alignment"><set>Qt::AlignVCenter|Qt::AlignLeft</set></property>
+   </widget>
+   <widget class="QPushButton" name="buttonSetLayout">
+    <property name="geometry"><rect><x>106</x><y>5</y><width>32</width><height>36</height></rect></property>
+    <property name="toolTip"><string>Choose keyboard layout</string></property>
+    <property name="icon"><iconset resource="images.qrc"><normaloff>:/images/outline_keyboard_hide_black_24dp.png</normaloff>:/images/outline_keyboard_hide_black_24dp.png</iconset></property>
+    <property name="iconSize"><size><width>20</width><height>20</height></size></property>
+    <property name="checkable"><bool>true</bool></property>
+   </widget>
+   <widget class="QPushButton" name="buttonViewLayout">
+    <property name="geometry"><rect><x>138</x><y>5</y><width>32</width><height>36</height></rect></property>
+    <property name="toolTip"><string>Open layout viewer</string></property>
+    <property name="icon"><iconset resource="images.qrc"><normaloff>:/images/outline_keyboard_black_24dp.png</normaloff>:/images/outline_keyboard_black_24dp.png</iconset></property>
+    <property name="iconSize"><size><width>20</width><height>20</height></size></property>
+   </widget>
+   <widget class="QPushButton" name="buttonSettings">
+    <property name="geometry"><rect><x>170</x><y>5</y><width>32</width><height>36</height></rect></property>
+    <property name="toolTip"><string>Open settings</string></property>
+    <property name="icon"><iconset resource="images.qrc"><normaloff>:/images/outline_settings_black_24dp.png</normaloff>:/images/outline_settings_black_24dp.png</iconset></property>
+    <property name="iconSize"><size><width>20</width><height>20</height></size></property>
+   </widget>
+   <widget class="QPushButton" name="buttonShutdown">
+    <property name="geometry"><rect><x>202</x><y>5</y><width>30</width><height>36</height></rect></property>
+    <property name="toolTip"><string>Quit Bongo</string></property>
+    <property name="icon"><iconset resource="images.qrc"><normaloff>:/images/outline_close_black_24dp.png</normaloff>:/images/outline_close_black_24dp.png</iconset></property>
+    <property name="iconSize"><size><width>20</width><height>20</height></size></property>
+   </widget>
+  </widget>
+ </widget>
+ <resources><include location="images.qrc"/></resources>
+ <connections/>
+</ui>

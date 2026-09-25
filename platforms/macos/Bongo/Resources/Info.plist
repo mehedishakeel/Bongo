@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Bongo</string>
+	<key>CFBundleExecutable</key>
+	<string>Bongo</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.bongo.inputmethod.Bongo</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Bongo</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>9</string>
+	<key>BongoGitHubRepository</key>
+	<string>mehedishakeel/Bongo</string>
+	<key>InputMethodConnectionName</key>
+	<string>org.bongo.inputmethod.Bongo_Connection</string>
+	<key>InputMethodServerControllerClass</key>
+	<string>BongoInputController</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>tsInputMethodCharacterRepertoireKey</key>
+	<array>
+		<string>Beng</string>
+	</array>
+	<key>tsInputMethodIconFileKey</key>
+	<string>iconTemplate</string>
+	<key>TISIconIsTemplate</key>
+	<true/>
+	<key>TISIntendedLanguage</key>
+	<string>bn</string>
+	<key>TISInputSourceID</key>
+	<string>org.bongo.inputmethod.Bongo</string>
+</dict>
+</plist>

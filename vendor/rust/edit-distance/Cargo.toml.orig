@@ -1,0 +1,17 @@
+[package]
+name = "edit-distance"
+version = "2.2.2"
+authors = ["Florian Ebeling <mail@florianebeling.com>"]
+edition = "2021"
+rust-version = "1.56"
+
+description = "Levenshtein edit distance between strings, a measure for similarity."
+repository = "https://github.com/febeling/edit-distance"
+documentation = "http://febeling.github.io/edit-distance/edit_distance/"
+readme = "README.md"
+keywords = ["text-processing", "search", "spelling"]
+
+license = "Apache-2.0"
+
+[dev-dependencies]
+quickcheck = "1.0"

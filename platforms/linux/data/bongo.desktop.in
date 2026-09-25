@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Bongo
+Comment=An OpenSource, Unicode compliant Bengali Input Method.
+Exec=@PROJECT_DATADIR@/bongo-settings %f
+Icon=bongo
+Type=Application
+Categories=Utility;Application;
