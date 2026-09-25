@@ -7,7 +7,7 @@
 **Bongo** is a native Bangla keyboard for macOS and Linux. It types
 directly in your applications and keeps typing data on your device.
 
-[Website](https://mehedishakeel.github.io/Bongo/) · [Download the latest release](https://github.com/mehedishakeel/Bongo/releases)
+[Download the latest release](https://github.com/mehedishakeel/Bongo/releases)
 
 ## Install Bongo
 
