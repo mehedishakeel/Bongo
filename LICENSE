@@ -1,0 +1,7 @@
+Bongo is an Apple Silicon native keyboard application for macOS.
+
+New Bongo orchestration scripts, application code, and documentation: MPL-2.0 (licenses/MPL-2.0.txt).
+macOS: Lekho-derived input method implementation remains MPL-2.0; the embedded riti phonetic engine is MPL-2.0.
+
+This notice does not relicense upstream files. Original copyright notices and
+licenses are retained in the source tree. See THIRD_PARTY_NOTICES.md.

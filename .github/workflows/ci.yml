@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate repository
+        run: |
+          python3 -m unittest discover -s tests -v
+          bash -n platforms/macos/scripts/create-dmg.sh
+
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Select Apple Silicon Rust target
+        run: rustup target add aarch64-apple-darwin
+      - name: Run native Apple Silicon integration tests
+        run: |
+          (cd platforms/macos/engine && cargo build --locked --release --target aarch64-apple-darwin)
+          mkdir -p platforms/macos/build/test
+          swiftc -O -module-name BongoTest \
+            platforms/macos/Bongo/Sources/InputController.swift \
+            platforms/macos/Bongo/Sources/Engine.swift \
+            platforms/macos/Bongo/Sources/CandidatePanel.swift \
+            platforms/macos/Bongo/Sources/WelcomeWindow.swift \
+            platforms/macos/tests/integration/main.swift \
+            -import-objc-header platforms/macos/Bongo/Sources/BridgeHeader.h \
+            -I platforms/macos/engine/include \
+            -L platforms/macos/engine/target/aarch64-apple-darwin/release \
+            -lavrobangla_engine -framework Cocoa -framework InputMethodKit -framework WebKit \
+            -target arm64-apple-macos13.0 \
+            -o platforms/macos/build/test/bongo_test
+          test_user_dir="$(mktemp -d "${TMPDIR:-/tmp}/bongo-test.XXXXXX")"
+          trap 'rm -rf "$test_user_dir"' EXIT
+          BONGO_USER_DIR="$test_user_dir" platforms/macos/build/test/bongo_test

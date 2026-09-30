@@ -1,0 +1,8 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.cache/
+platforms/*/build/
+platforms/**/target/
+platforms/*/release/*
+!platforms/*/release/.gitkeep
