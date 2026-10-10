@@ -1,0 +1,4 @@
+[submodule "gemoji"]
+	path = gemoji
+	url = https://github.com/github/gemoji.git
+	branch = master

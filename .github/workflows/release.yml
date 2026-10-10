@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      draft:
+        description: 'Create draft release'
+        type: boolean
+        default: false
+      prerelease:
+        description: 'Create pre-release'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-dmg:
+    name: Build macOS DMG & Release
+    runs-on: macos-15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Apple Silicon Rust target
+        run: rustup target add aarch64-apple-darwin
+
+      - name: Build macOS DMG
+        run: |
+          ./platforms/macos/scripts/create-dmg.sh
+
+      - name: Generate Checksums
+        run: |
+          cd platforms/macos/release
+          for dmg in *.dmg; do
+            if [ -f "$dmg" ]; then
+              shasum -a 256 "$dmg" > "${dmg}.sha256"
+              echo "Generated checksum for $dmg:"
+              cat "${dmg}.sha256"
+            fi
+          done
+
+      - name: Upload DMG Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bongo-macos-arm64-dmg
+          path: |
+            platforms/macos/release/*.dmg
+            platforms/macos/release/*.sha256
+
+      - name: Publish to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            platforms/macos/release/*.dmg
+            platforms/macos/release/*.sha256
+          generate_release_notes: true
+          draft: ${{ github.event.inputs.draft == 'true' }}
+          prerelease: ${{ github.event.inputs.prerelease == 'true' }}
