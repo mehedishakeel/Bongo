@@ -4,43 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bongo · বঙ্গ: Native Bangla Keyboard for Mac Apple Silicon</title>
-    <meta name="description" content="Bongo (বঙ্গ) is a free, open-source native Bengali phonetic keyboard built exclusively for Apple Silicon macOS (M1/M2/M3/M4+). Fast, lightweight, zero-telemetry private on-device typing.">
-    <meta name="keywords" content="Bongo, getbongo, getbongo.app, bangla keyboard mac, avro keyboard mac, avro for mac alternative, apple silicon bangla, bengali keyboard macos, bangla typing macbook, arm64 bangla ime, probhat mac, unijoy mac, bijoy bangla mac, mehedi shakeel">
+    <meta name="description" content="Bongo (বঙ্গ) is a modern, clean native Bengali phonetic keyboard built exclusively for Apple Silicon macOS (M1/M2/M3/M4+). Fast, lightweight, zero-telemetry private on-device typing.">
+    <meta name="keywords" content="Bongo, getbongo, getbongo.app, bangla keyboard mac, avro keyboard mac, apple silicon bangla, bengali keyboard macos, arm64 bangla ime, mehedi shakeel">
     <meta name="author" content="Mehedi Shakeel">
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-    <meta name="theme-color" content="#0b0f17">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#f5f5f7">
     <link rel="canonical" href="https://getbongo.app/">
     
-    <!-- Multi-Language Hreflang Tags -->
     <link rel="alternate" hreflang="en" href="https://getbongo.app/">
     <link rel="alternate" hreflang="bn" href="https://getbongo.app/">
     <link rel="alternate" hreflang="x-default" href="https://getbongo.app/">
 
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Bongo (বঙ্গ)">
     <meta property="og:url" content="https://getbongo.app/">
     <meta property="og:title" content="Bongo · বঙ্গ: Native Bangla Keyboard for Mac Apple Silicon">
-    <meta property="og:description" content="Native Apple Silicon Bengali input method. Fast, lightweight, on-device privacy, zero telemetry, modern macOS HUD. Free & open source.">
+    <meta property="og:description" content="Native Apple Silicon Bengali input method. Fast, lightweight, on-device privacy, zero telemetry, modern macOS HUD. Free and open source.">
     <meta property="og:image" content="https://getbongo.app/assets/og-image.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Bongo: Native Bengali Keyboard for macOS Apple Silicon">
     <meta property="og:locale" content="en_US">
     <meta property="og:locale:alternate" content="bn_BD">
 
-    <!-- Twitter Card -->
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Bongo · বঙ্গ: Native Bangla Keyboard for Mac Apple Silicon">
-    <meta name="twitter:description" content="Native Apple Silicon Bengali input method. Fast, lightweight, on-device privacy, zero telemetry, modern macOS HUD. Free & open source.">
+    <meta name="twitter:description" content="Native Apple Silicon Bengali input method. Fast, lightweight, on-device privacy, modern macOS HUD.">
     <meta name="twitter:image" content="https://getbongo.app/assets/og-image.png">
-    <meta name="twitter:image:alt" content="Bongo: Native Bengali Keyboard for macOS Apple Silicon">
 
-    <!-- Favicon & Icons -->
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/bongo-logo.png">
     <link rel="apple-touch-icon" href="assets/bongo-logo.png">
 
-    <!-- Structured Data (JSON-LD) for Rich Results -->
+    <!-- Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -53,7 +48,7 @@
           "applicationCategory": "UtilitiesApplication",
           "operatingSystem": "macOS 13.0 or later (Apple Silicon M1, M2, M3, M4+)",
           "softwareVersion": "1.0",
-          "description": "Bongo is a free, native, lightweight, and zero-telemetry Bengali phonetic keyboard input method editor (IME) built specifically for Apple Silicon macOS.",
+          "description": "Bongo is a free, native, lightweight Bengali phonetic keyboard input method editor built specifically for Apple Silicon macOS.",
           "url": "https://getbongo.app/",
           "downloadUrl": "https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0-macos-arm64.dmg",
           "image": "https://getbongo.app/assets/og-image.png",
@@ -68,19 +63,6 @@
             "name": "Mehedi Shakeel",
             "url": "https://github.com/mehedishakeel"
           }
-        },
-        {
-          "@type": "WebSite",
-          "@id": "https://getbongo.app/#website",
-          "url": "https://getbongo.app/",
-          "name": "Bongo: Native Bangla Keyboard for macOS",
-          "description": "Download Bongo: Native, private, and ultra-fast Bengali keyboard for Apple Silicon Macs.",
-          "inLanguage": ["en", "bn"],
-          "publisher": {
-            "@type": "Person",
-            "name": "Mehedi Shakeel",
-            "url": "https://github.com/mehedishakeel"
-          }
         }
       ]
     }
@@ -88,62 +70,45 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=3.0">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=3.2">
 </head>
 <body>
-    <a href="#playground" class="skip-link">Skip to interactive playground</a>
+    <a href="#playground" class="skip-link">Skip to playground</a>
 
-    <!-- Navigation Bar -->
+    <!-- Minimal Translucent macOS Navbar -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <a href="#" class="nav-brand">
+            <a href="#" class="nav-brand" aria-label="Bongo Home">
                 <img src="assets/bongo-logo.png" alt="Bongo Logo" class="brand-icon" width="28" height="28">
                 <span class="brand-name">Bongo <span class="brand-bn">বঙ্গ</span></span>
             </a>
+
             <div class="nav-links" id="navLinks">
                 <a href="#playground" data-i18n="nav.playground">Try Live</a>
-                <a href="#screenshots" data-i18n="nav.screenshots">App Preview</a>
-                <a href="#features" data-i18n="nav.features">Architecture</a>
+                <a href="#features" data-i18n="nav.features">Features</a>
+                <a href="#screenshots" data-i18n="nav.screenshots">Interface</a>
                 <a href="#install" data-i18n="nav.install">Install</a>
                 <a href="#cheatsheet" data-i18n="nav.cheatsheet">Cheatsheet</a>
                 <a href="#faq" data-i18n="nav.faq">FAQ</a>
+
                 <div class="nav-mobile-actions">
                     <button class="btn-lang-mobile" id="mobileLangToggle" aria-label="বাংলা সংস্করণে পরিবর্তন করুন">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="2" y1="12" x2="22" y2="12"></line>
-                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
-                        </svg>
                         <span id="mobileLangText">বাংলা সংস্করণ (Bangla)</span>
                     </button>
-                    <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0-macos-arm64.dmg" class="btn-primary mobile-menu-cta direct-download-cta">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        <span data-i18n="nav.download_mobile">Download for macOS (arm64)</span>
-                    </a>
-                    <a href="https://github.com/mehedishakeel/Bongo" target="_blank" rel="noopener noreferrer" class="btn-github mobile-menu-github" title="View Source on GitHub">
-                        <svg height="18" viewBox="0 0 16 16" width="18" fill="currentColor">
-                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
-                        </svg>
-                        <span data-i18n="nav.github_view">View on GitHub</span>
+                    <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0-macos-arm64.dmg" class="btn-apple-pill mobile-menu-cta direct-download-cta">
+                        <span data-i18n="nav.download_mobile">Download DMG (arm64)</span>
                     </a>
                 </div>
             </div>
+
             <div class="nav-actions">
                 <button class="lang-toggle" id="langToggle" aria-label="বাংলা সংস্করণে পরিবর্তন করুন" title="বাংলা সংস্করণে পড়ুন">
-                    <svg class="lang-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
-                    </svg>
                     <span class="lang-text" id="langText">বাংলা</span>
                 </button>
-                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-                    <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
+                    <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="5"></circle>
                         <line x1="12" y1="1" x2="12" y2="3"></line>
                         <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -154,288 +119,202 @@
                         <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                     </svg>
-                    <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                     </svg>
                 </button>
-                <a href="https://github.com/mehedishakeel/Bongo" target="_blank" rel="noopener noreferrer" class="btn-github" title="View Source on GitHub" aria-label="View Source on GitHub">
+
+                <a href="https://github.com/mehedishakeel/Bongo" target="_blank" rel="noopener noreferrer" class="btn-subtle-icon" title="View Source on GitHub" aria-label="View Source on GitHub">
                     <svg height="17" viewBox="0 0 16 16" width="17" fill="currentColor">
                         <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
                     </svg>
-                    <span class="btn-github-text" data-i18n="nav.github">GitHub</span>
                 </a>
-                <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0-macos-arm64.dmg" class="btn-primary nav-cta direct-download-cta">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    <span class="nav-cta-text-full" data-i18n="nav.download_dmg">Download DMG</span>
-                    <span class="nav-cta-text-short" data-i18n="nav.download_short">Download</span>
+
+                <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0-macos-arm64.dmg" class="btn-apple-pill nav-download-btn direct-download-cta">
+                    <span data-i18n="nav.download_short">Download</span>
                 </a>
+
                 <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation menu" aria-expanded="false">
                     <span class="bar bar-1"></span>
                     <span class="bar bar-2"></span>
-                    <span class="bar bar-3"></span>
                 </button>
             </div>
         </div>
     </nav>
 
     <main id="mainContent">
-        <!-- Hero Section -->
+        <!-- Modern Clean Apple Hero Section -->
         <header class="hero">
             <div class="hero-container">
-                <div class="hero-content">
-                    <div class="hero-brand-badge">
-                        <span class="dot-arm64"></span>
+                <div class="hero-header-block">
+                    <div class="app-icon-squircle">
+                        <img src="assets/bongo-logo.png" alt="Bongo Application Icon" width="68" height="68">
+                    </div>
+                    <div class="hero-chip">
+                        <span class="chip-status-dot"></span>
                         <span data-i18n="hero.tag_desktop">Apple Silicon Native (M1, M2, M3, M4+)</span>
                     </div>
-                    <h1 class="hero-title" data-i18n="hero.title">
-                        Native Bangla Typing for Mac.<br>
-                        <span class="hero-accent-text">Fast, Fluid & Private.</span>
+                    <h1 class="hero-headline" data-i18n="hero.title">
+                        Native Bangla typing.<br>
+                        <span>Built for Apple Silicon.</span>
                     </h1>
-                    <p class="hero-subtitle" data-i18n="hero.subtitle">
-                        Type naturally in Bengali across Safari, Notes, Word, Slack, and Terminal using familiar phonetic rules. Zero lag, zero telemetry, and built purely for modern Apple Silicon Macs.
+                    <p class="hero-subline" data-i18n="hero.subtitle">
+                        Fast, lightweight, and private. Type naturally in Bengali across Safari, Notes, Word, Slack, and Terminal on macOS.
                     </p>
-                    <div class="hero-actions">
-                        <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0-macos-arm64.dmg" class="btn-hero-primary direct-download-cta">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <div class="hero-cta-group">
+                        <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0-macos-arm64.dmg" class="btn-apple-primary direct-download-cta">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                 <polyline points="7 10 12 15 17 10"></polyline>
                                 <line x1="12" y1="15" x2="12" y2="3"></line>
                             </svg>
-                            <span data-i18n="hero.cta_main">Download for macOS</span>
-                            <span class="btn-subtext" data-i18n="hero.cta_sub">Free · arm64 DMG · macOS 13+</span>
+                            <span data-i18n="hero.cta_main">Download Bongo 1.0</span>
+                            <span class="cta-meta">arm64 DMG · macOS 13+</span>
                         </a>
-                        <a href="#install" class="btn-hero-secondary">
+                        <a href="#install" class="btn-apple-secondary">
                             <span data-i18n="hero.cta_secondary">Installation Guide</span>
                         </a>
                     </div>
                 </div>
 
-                <!-- Verified Technical Specifications Row -->
-                <div class="specs-bar">
-                    <div class="spec-cell">
-                        <span class="spec-label">Architecture</span>
-                        <span class="spec-value">arm64 Native</span>
-                    </div>
-                    <div class="spec-divider"></div>
-                    <div class="spec-cell">
-                        <span class="spec-label">macOS Support</span>
-                        <span class="spec-value">13+ (Ventura, Sonoma, Sequoia)</span>
-                    </div>
-                    <div class="spec-divider"></div>
-                    <div class="spec-cell">
-                        <span class="spec-label">Security & Privacy</span>
-                        <span class="spec-value">100% On-Device (0 Network Entitlements)</span>
-                    </div>
-                    <div class="spec-divider"></div>
-                    <div class="spec-cell">
-                        <span class="spec-label">Phonetic Scheme</span>
-                        <span class="spec-value">Avro Standard (150K+ Lexicon)</span>
+                <!-- macOS Interactive Window Playground -->
+                <div class="mac-window-wrapper" id="playground">
+                    <div class="mac-window">
+                        <!-- Window Titlebar -->
+                        <div class="mac-titlebar">
+                            <div class="mac-traffic-lights">
+                                <span class="light red" title="Close"></span>
+                                <span class="light yellow" title="Minimize"></span>
+                                <span class="light green" title="Zoom"></span>
+                            </div>
+                            <div class="mac-window-label" data-i18n="playground.window_title">Notes: Bengali Document</div>
+                            <div class="mac-input-source-pill">
+                                <span class="pill-dot"></span>
+                                <span data-i18n="playground.mode">Bongo · Phonetic</span>
+                            </div>
+                        </div>
+
+                        <!-- Window Content -->
+                        <div class="mac-window-body">
+                            <div class="sample-chips-row">
+                                <span class="sample-chips-label" data-i18n="playground.try_label">Quick tests:</span>
+                                <button class="sample-pill" data-text="ami">ami (আমি)</button>
+                                <button class="sample-pill" data-text="bangla">bangla (বাংলা)</button>
+                                <button class="sample-pill" data-text="dhonnobad">dhonnobad (ধন্যবাদ)</button>
+                                <button class="sample-pill" data-text="kemon achen">kemon achen (কেমন আছেন)</button>
+                                <button class="sample-pill" data-text="shonar bangla">shonar bangla (সোনার বাংলা)</button>
+                            </div>
+
+                            <div class="typing-canvas">
+                                <div class="input-line-wrapper">
+                                    <label for="demoInput" class="visually-hidden">Type phonetic Bengali</label>
+                                    <input type="text" id="demoInput" class="mac-text-input" data-i18n-placeholder="playground.input_placeholder" placeholder="Type here in English (e.g. ami banglay gan gai)..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                                    <button type="button" class="btn-clear" id="clearInputBtn" title="Clear text" aria-label="Clear input">✕</button>
+                                </div>
+
+                                <!-- Authentic macOS Translucent Candidate HUD -->
+                                <div class="mac-candidate-hud" id="hudSimulator">
+                                    <div class="hud-header">
+                                        <span class="hud-query-text" id="hudQuery">ami</span>
+                                        <span class="hud-script-label">বাংলা</span>
+                                    </div>
+                                    <div class="hud-list" id="hudCandidates">
+                                        <div class="hud-candidate-item selected">
+                                            <span class="hud-num">1</span>
+                                            <span class="hud-word">আমি</span>
+                                        </div>
+                                        <div class="hud-candidate-item">
+                                            <span class="hud-num">2</span>
+                                            <span class="hud-word">আম</span>
+                                        </div>
+                                        <div class="hud-candidate-item">
+                                            <span class="hud-num">3</span>
+                                            <span class="hud-word">আমায়</span>
+                                        </div>
+                                        <div class="hud-candidate-item">
+                                            <span class="hud-num">4</span>
+                                            <span class="hud-word">আমেরিকায়</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Output Preview Bar -->
+                                <div class="mac-output-bar">
+                                    <div class="output-text-area">
+                                        <span class="output-tag" data-i18n="playground.output_label">Output:</span>
+                                        <span class="output-content" id="demoOutput">আমি</span>
+                                    </div>
+                                    <button type="button" class="btn-mac-copy" id="copyOutputBtn" title="Copy Bengali text" data-i18n-title="playground.copy_btn" aria-label="Copy Output">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                        <span class="copy-btn-text" data-i18n="playground.copy_text">Copy</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </header>
 
-        <!-- Interactive Playground Section -->
-        <section class="playground-section" id="playground">
+        <!-- 3 Core Pillars (Clean Apple Grid) -->
+        <section class="section" id="features">
             <div class="section-container">
-                <div class="section-header">
-                    <h2 class="section-title" data-i18n="playground.title">Experience Bongo Phonetic in Your Browser</h2>
-                    <p class="section-desc" data-i18n="playground.desc">Type phonetic English below and see how Bongo translates your words in real time with an authentic macOS HUD simulation.</p>
+                <div class="section-lead">
+                    <span class="section-eyebrow">Engineered for Mac</span>
+                    <h2 class="section-headline">Simple. Native. Uncompromised.</h2>
+                    <p class="section-subtext">Designed specifically for the Apple Silicon era, replacing legacy Intel tools with pure macOS performance.</p>
                 </div>
 
-                <div class="demo-window">
-                    <div class="window-header">
-                        <div class="window-buttons">
-                            <span class="btn-circle red" title="Close"></span>
-                            <span class="btn-circle yellow" title="Minimize"></span>
-                            <span class="btn-circle green" title="Zoom"></span>
-                        </div>
-                        <span class="window-title" data-i18n="playground.window_title">TextEdit: Untitled Document</span>
-                        <div class="window-mode-indicator">
-                            <span class="indicator-icon">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
-                                </svg>
-                            </span>
-                            <span class="indicator-text" data-i18n="playground.mode">Bongo · Phonetic</span>
-                        </div>
+                <div class="three-pillars-grid">
+                    <div class="pillar-card">
+                        <div class="pillar-badge">Performance</div>
+                        <h3 class="pillar-title">Apple Silicon Native</h3>
+                        <p class="pillar-desc">Compiled strictly for <code>arm64</code>. Zero Intel baggage, zero Rosetta translation, and under 15 MB of resident memory with instant wake.</p>
+                        <ul class="pillar-specs">
+                            <li><span>Target:</span> M1, M2, M3, M4+</li>
+                            <li><span>Core:</span> Static Rust engine (riti)</li>
+                            <li><span>UI:</span> Pure Swift & Cocoa</li>
+                        </ul>
                     </div>
 
-                    <div class="demo-body">
-                        <div class="quick-pills">
-                            <span class="pill-label" data-i18n="playground.try_label">Try typing:</span>
-                            <button class="sample-pill" data-text="ami">ami (আমি)</button>
-                            <button class="sample-pill" data-text="bangla">bangla (বাংলা)</button>
-                            <button class="sample-pill" data-text="dhonnobad">dhonnobad (ধন্যবাদ)</button>
-                            <button class="sample-pill" data-text="kemon achen">kemon achen (কেমন আছেন)</button>
-                            <button class="sample-pill" data-text="shonar bangla">shonar bangla (সোনার বাংলা)</button>
-                            <button class="sample-pill" data-text="bhalo">bhalo (ভালো)</button>
-                        </div>
+                    <div class="pillar-card highlight">
+                        <div class="pillar-badge">Security</div>
+                        <h3 class="pillar-title">100% On-Device Privacy</h3>
+                        <p class="pillar-desc">Runs entirely within macOS InputMethodKit sandbox. Your typing and dictionary stay strictly local on your Mac with zero network access.</p>
+                        <ul class="pillar-specs">
+                            <li><span>Telemetry:</span> 0 KB transmitted</li>
+                            <li><span>Network:</span> 0 entitlements requested</li>
+                            <li><span>Permissions:</span> No keylogging access</li>
+                        </ul>
+                    </div>
 
-                        <div class="editor-area">
-                            <div class="input-wrapper">
-                                <label for="demoInput" class="visually-hidden">Type phonetic Bengali</label>
-                                <input type="text" id="demoInput" class="demo-input" data-i18n-placeholder="playground.input_placeholder" placeholder="Type here in English (e.g. ami banglay gan gai)..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-                                <button type="button" class="btn-clear-input" id="clearInputBtn" title="Clear text" aria-label="Clear input">✕</button>
-                            </div>
-
-                            <!-- Simulated macOS HUD Candidate Panel -->
-                            <div class="hud-simulator" id="hudSimulator">
-                                <div class="hud-top">
-                                    <span class="hud-query" id="hudQuery">ami</span>
-                                    <span class="hud-lang">বাংলা</span>
-                                </div>
-                                <div class="hud-candidates" id="hudCandidates">
-                                    <div class="hud-row selected">
-                                        <span class="hud-badge">1</span>
-                                        <span class="hud-text">আমি</span>
-                                    </div>
-                                    <div class="hud-row">
-                                        <span class="hud-badge">2</span>
-                                        <span class="hud-text">আম</span>
-                                    </div>
-                                    <div class="hud-row">
-                                        <span class="hud-badge">3</span>
-                                        <span class="hud-text">আমায়</span>
-                                    </div>
-                                    <div class="hud-row">
-                                        <span class="hud-badge">4</span>
-                                        <span class="hud-text">আমেরিকায়</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="output-preview">
-                                <div class="preview-content">
-                                    <span class="preview-label" data-i18n="playground.output_label">Live Bangla Output:</span>
-                                    <span class="preview-text" id="demoOutput">আমি</span>
-                                </div>
-                                <button type="button" class="btn-copy-output" id="copyOutputBtn" title="Copy Bangla text" data-i18n-title="playground.copy_btn" aria-label="Copy Bengali Output">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                    <span class="copy-btn-text" data-i18n="playground.copy_text">Copy</span>
-                                </button>
-                            </div>
-                        </div>
+                    <div class="pillar-card">
+                        <div class="pillar-badge">Typing</div>
+                        <h3 class="pillar-title">Avro Phonetic Standard</h3>
+                        <p class="pillar-desc">Type naturally according to English sounds (<code>ami</code> → <code>আমি</code>). Supported by an offline 150,000+ word lexicon with real-time suggestions.</p>
+                        <ul class="pillar-specs">
+                            <li><span>Dictionary:</span> 150K+ verified words</li>
+                            <li><span>Modes:</span> Phonetic, Smart, Direct</li>
+                            <li><span>Fonts:</span> Custom Bengali typeface</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Technical Architecture (Why Native Matters) -->
-        <section class="features-section" id="features">
+        <!-- Visual App Tour (Clean Segmented Inspection) -->
+        <section class="section section-alt" id="screenshots">
             <div class="section-container">
-                <div class="section-header">
-                    <h2 class="section-title" data-i18n="features.title">Engineered Specifically for Apple Silicon</h2>
-                    <p class="section-desc" data-i18n="features.desc">Unlike legacy Intel keyboards running through emulation, Bongo was crafted from the ground up for modern macOS.</p>
+                <div class="section-lead">
+                    <span class="section-eyebrow">macOS Interface</span>
+                    <h2 class="section-headline">Familiar Apple Design Language</h2>
+                    <p class="section-subtext">Settings and candidate controls designed to match macOS Sequoia, Sonoma, and Ventura.</p>
                 </div>
 
-                <div class="architecture-layout">
-                    <!-- Featured Deep Dive Card -->
-                    <div class="card-featured">
-                        <div class="card-featured-header">
-                            <span class="pill-category">Core Engine Comparison</span>
-                            <h3>Pure Apple Silicon Native vs Legacy Intel Emulation</h3>
-                            <p>Most Bengali keyboards on macOS were written a decade ago for 32-bit/64-bit Intel chips, relying on Rosetta translation or background accessibility daemons. Bongo compiles straight to ARM64 assembly.</p>
-                        </div>
-                        <div class="comparison-table-wrapper">
-                            <table class="tech-comparison-table">
-                                <thead>
-                                    <tr>
-                                        <th>Attribute</th>
-                                        <th>Legacy Emulated Tools</th>
-                                        <th class="col-highlight">Bongo on Apple Silicon</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Architecture</td>
-                                        <td>x86_64 translated via Rosetta 2</td>
-                                        <td class="col-highlight">Native arm64 (M1–M4+)</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Integration Layer</td>
-                                        <td>Accessibility API / Keylogging daemon</td>
-                                        <td class="col-highlight">Official macOS InputMethodKit</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Network Entitlements</td>
-                                        <td>Often requires background internet access</td>
-                                        <td class="col-highlight">Zero network permissions requested</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Memory Footprint</td>
-                                        <td>80 MB – 200 MB background daemon</td>
-                                        <td class="col-highlight">~15 MB native resident memory</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Phonetic Engine</td>
-                                        <td>Unmaintained legacy binary</td>
-                                        <td class="col-highlight">Static Rust core (riti) + Swift frontend</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Supporting Detail Cards (Distinct Roles) -->
-                    <div class="cards-subgrid">
-                        <div class="arch-card">
-                            <div class="arch-card-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                </svg>
-                            </div>
-                            <h4>100% On-Device Privacy</h4>
-                            <p>Keystrokes and personal dictionary entries never leave your Mac. No analytics, no telemetry endpoints, and no server connections.</p>
-                        </div>
-
-                        <div class="arch-card">
-                            <div class="arch-card-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                                </svg>
-                            </div>
-                            <h4>3 Tailored Typing Modes</h4>
-                            <p>Choose between <strong>Phonetic first</strong> (strict transliteration), <strong>Smart suggestions</strong> (lexicon auto-select), or <strong>Phonetic only</strong> for instant inline output.</p>
-                        </div>
-
-                        <div class="arch-card">
-                            <div class="arch-card-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="4 7 4 4 20 4 20 7"></polyline>
-                                    <line x1="9" y1="20" x2="15" y2="20"></line>
-                                    <line x1="12" y1="4" x2="12" y2="20"></line>
-                                </svg>
-                            </div>
-                            <h4>Native Font Rendering</h4>
-                            <p>Select any Bengali font installed in macOS (Kohinoor Bangla, Noto Sans, Ekush, Tiro Bangla) with real-time candidate HUD font scaling.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- App Screenshots & UI Showcase -->
-        <section class="screenshots-section" id="screenshots">
-            <div class="section-container">
-                <div class="section-header">
-                    <h2 class="section-title" data-i18n="screenshots.title">Clean, Modern Apple-Standard Interface</h2>
-                    <p class="section-desc" data-i18n="screenshots.desc">Designed to look and feel right at home on macOS Sequoia, Sonoma, and Ventura.</p>
-                </div>
-
-                <!-- Tab Switcher -->
-                <div class="gallery-tabs" role="tablist">
+                <div class="segmented-control-tabs" role="tablist">
                     <button class="gallery-tab-btn active" data-target="tab-welcome" role="tab" aria-selected="true">
                         <span data-i18n="tab.welcome">Getting Started</span>
                     </button>
@@ -450,65 +329,60 @@
                     </button>
                 </div>
 
-                <!-- Showcase Display -->
-                <div class="gallery-display">
-                    <!-- Getting Started Item -->
+                <div class="tab-showcase-panel">
                     <div class="gallery-item active" id="tab-welcome" role="tabpanel">
-                        <div class="mac-window-frame">
-                            <div class="window-decorations">
-                                <span class="dot red"></span>
-                                <span class="dot yellow"></span>
-                                <span class="dot green"></span>
-                                <span class="title">Bongo: Getting Started</span>
+                        <div class="mac-preview-frame">
+                            <div class="preview-titlebar">
+                                <span class="light red"></span>
+                                <span class="light yellow"></span>
+                                <span class="light green"></span>
+                                <span class="frame-label">Bongo: Getting Started</span>
                             </div>
-                            <img src="assets/bongo-getting-started.png" alt="Bongo Getting Started Window" class="showcase-img" loading="lazy">
+                            <img src="assets/bongo-getting-started.png" alt="Bongo Getting Started Window" class="preview-img" loading="lazy">
                         </div>
-                        <div class="gallery-caption">
+                        <div class="preview-caption">
                             <h3 data-i18n="caption.welcome_title">Frictionless Onboarding</h3>
                             <p data-i18n="caption.welcome_desc">Direct link to macOS Keyboard settings, quick shortcut cheat sheet, and a built-in playground to verify your typing setup instantly.</p>
                         </div>
                     </div>
 
-                    <!-- Settings Item -->
                     <div class="gallery-item" id="tab-settings" role="tabpanel">
-                        <div class="mac-window-frame">
-                            <div class="window-decorations">
-                                <span class="dot red"></span>
-                                <span class="dot yellow"></span>
-                                <span class="dot green"></span>
-                                <span class="title">Bongo: Settings</span>
+                        <div class="mac-preview-frame">
+                            <div class="preview-titlebar">
+                                <span class="light red"></span>
+                                <span class="light yellow"></span>
+                                <span class="light green"></span>
+                                <span class="frame-label">Bongo: Settings</span>
                             </div>
-                            <img src="assets/bongo-settings.png" alt="Bongo Settings Window" class="showcase-img" loading="lazy">
+                            <img src="assets/bongo-settings.png" alt="Bongo Settings Window" class="preview-img" loading="lazy">
                         </div>
-                        <div class="gallery-caption">
+                        <div class="preview-caption">
                             <h3 data-i18n="caption.settings_title">3 Flexible Typing Modes</h3>
                             <p data-i18n="caption.settings_desc">Choose between <strong>Phonetic first</strong> (recommended), <strong>Smart suggestions</strong>, or <strong>Phonetic only</strong>. Toggle emoji suggestions and check for updates effortlessly.</p>
                         </div>
                     </div>
 
-                    <!-- Fonts Item -->
                     <div class="gallery-item" id="tab-fonts" role="tabpanel">
-                        <div class="mac-window-frame">
-                            <div class="window-decorations">
-                                <span class="dot red"></span>
-                                <span class="dot yellow"></span>
-                                <span class="dot green"></span>
-                                <span class="title">Bongo: Fonts & Typography</span>
+                        <div class="mac-preview-frame">
+                            <div class="preview-titlebar">
+                                <span class="light red"></span>
+                                <span class="light yellow"></span>
+                                <span class="light green"></span>
+                                <span class="frame-label">Bongo: Fonts & Typography</span>
                             </div>
-                            <img src="assets/bongo-fonts.png" alt="Bongo Font Customization and Live Preview" class="showcase-img" loading="lazy">
+                            <img src="assets/bongo-fonts.png" alt="Bongo Font Customization and Live Preview" class="preview-img" loading="lazy">
                         </div>
-                        <div class="gallery-caption">
+                        <div class="preview-caption">
                             <h3 data-i18n="caption.fonts_title">Customizable Bengali Typography</h3>
                             <p data-i18n="caption.fonts_desc">Select any Bengali font installed on your Mac (Kohinoor Bangla, Noto Sans Bengali, Ekush, July, etc.) with real-time candidate size adjustment.</p>
                         </div>
                     </div>
 
-                    <!-- HUD Item -->
                     <div class="gallery-item" id="tab-hud" role="tabpanel">
-                        <div class="mac-window-frame hud-frame">
-                            <img src="assets/bongo-hud-candidate.png" alt="Bongo HUD Candidate Bar on macOS" class="showcase-img hud-img" loading="lazy">
+                        <div class="mac-preview-frame hud-box">
+                            <img src="assets/bongo-hud-candidate.png" alt="Bongo HUD Candidate Bar on macOS" class="preview-hud-img" loading="lazy">
                         </div>
-                        <div class="gallery-caption">
+                        <div class="preview-caption">
                             <h3 data-i18n="caption.hud_title">Tactile macOS Candidate HUD</h3>
                             <p data-i18n="caption.hud_desc">Floating translucent candidate window with fast numbered shortcuts [1], [2], [3], smooth arrow navigation, and high-contrast pill selection.</p>
                         </div>
@@ -517,151 +391,149 @@
             </div>
         </section>
 
-        <!-- Installation Walkthrough -->
-        <section class="install-section" id="install">
+        <!-- 3-Step Setup Guide -->
+        <section class="section" id="install">
             <div class="section-container">
-                <div class="section-header">
-                    <h2 class="section-title" data-i18n="install.title">Install in 3 Simple Steps</h2>
-                    <p class="section-desc" data-i18n="install.desc">No complicated terminal commands or root passwords needed.</p>
+                <div class="section-lead">
+                    <span class="section-eyebrow">Setup</span>
+                    <h2 class="section-headline">Up and running in seconds.</h2>
+                    <p class="section-subtext">No command line, no root passwords, no complicated config files.</p>
                 </div>
 
-                <div class="steps-grid">
-                    <div class="step-card">
-                        <div class="step-number">1</div>
-                        <h3 class="step-title" data-i18n="step.1_title">Download & Drag</h3>
-                        <p class="step-desc" data-i18n="step.1_desc">Download <strong>Bongo-1.0-macos-arm64.dmg</strong>, open it, and drag <code>Bongo.app</code> into your <strong>Applications</strong> folder.</p>
+                <div class="steps-row">
+                    <div class="step-item">
+                        <span class="step-num">1</span>
+                        <h3 class="step-heading" data-i18n="step.1_title">Download & Drag</h3>
+                        <p class="step-text" data-i18n="step.1_desc">Open <strong>Bongo-1.0-macos-arm64.dmg</strong> and drag <code>Bongo.app</code> into your <strong>Applications</strong> folder.</p>
                     </div>
 
-                    <div class="step-card">
-                        <div class="step-number">2</div>
-                        <h3 class="step-title" data-i18n="step.2_title">Open Bongo</h3>
-                        <p class="step-desc" data-i18n="step.2_desc">Launch <strong>Bongo</strong> from Applications. It will register the keyboard service with macOS automatically without requiring administrator rights.</p>
+                    <div class="step-item">
+                        <span class="step-num">2</span>
+                        <h3 class="step-heading" data-i18n="step.2_title">Launch Once</h3>
+                        <p class="step-text" data-i18n="step.2_desc">Open <strong>Bongo</strong> from Applications. It registers the input method service with macOS automatically.</p>
                     </div>
 
-                    <div class="step-card">
-                        <div class="step-number">3</div>
-                        <h3 class="step-title" data-i18n="step.3_title">Enable & Switch</h3>
-                        <p class="step-desc" data-i18n="step.3_desc">In <strong>System Settings → Keyboard → Input Sources</strong>, click <strong>+</strong> and add <strong>Bongo</strong> (under Bengali). Switch anytime with <kbd>Globe / fn</kbd> or <kbd>Ctrl + Space</kbd>!</p>
+                    <div class="step-item">
+                        <span class="step-num">3</span>
+                        <h3 class="step-heading" data-i18n="step.3_title">Enable & Type</h3>
+                        <p class="step-text" data-i18n="step.3_desc">In <strong>System Settings → Keyboard → Input Sources</strong>, click <strong>+</strong> and add <strong>Bongo</strong>. Switch anytime with <kbd>Globe / fn</kbd> or <kbd>Ctrl + Space</kbd>.</p>
                     </div>
                 </div>
 
-                <div class="download-banner">
-                    <div class="banner-content">
-                        <h3 data-i18n="banner.title">Ready to write in Bangla on your Mac?</h3>
-                        <p data-i18n="banner.desc">Download the latest Apple Silicon DMG today. Free, open source, and lightweight.</p>
+                <div class="cta-banner">
+                    <div class="cta-banner-text">
+                        <h3>Ready to type in Bengali on your Mac?</h3>
+                        <p>Free, open source, and built specifically for Apple Silicon.</p>
                     </div>
-                    <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0-macos-arm64.dmg" class="btn-primary banner-cta direct-download-cta">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0-macos-arm64.dmg" class="btn-apple-primary direct-download-cta">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="7 10 12 15 17 10"></polyline>
                             <line x1="12" y1="15" x2="12" y2="3"></line>
                         </svg>
-                        <span class="banner-cta-full" data-i18n="banner.cta_full">Download Bongo for macOS</span>
-                        <span class="banner-cta-short" data-i18n="banner.cta_short">Download Bongo</span>
+                        <span>Download Bongo 1.0</span>
                     </a>
                 </div>
             </div>
         </section>
 
-        <!-- Interactive Cheatsheet Section -->
-        <section class="cheatsheet-section" id="cheatsheet">
+        <!-- Phonetic Reference Cheatsheet -->
+        <section class="section section-alt" id="cheatsheet">
             <div class="section-container">
-                <div class="section-header">
-                    <h2 class="section-title" data-i18n="cheatsheet.title">Phonetic Key Map & Cheatsheet</h2>
-                    <p class="section-desc" data-i18n="cheatsheet.desc">Search any letter, conjunct, or vowel sound to find its exact phonetic keystroke.</p>
+                <div class="section-lead">
+                    <span class="section-eyebrow">Reference</span>
+                    <h2 class="section-headline">Phonetic Key Map</h2>
+                    <p class="section-subtext">Search any Bengali sound or character to look up its phonetic keystroke.</p>
                 </div>
 
-                <div class="cheatsheet-box">
-                    <div class="search-bar-wrapper">
-                        <label for="cheatsheetSearch" class="visually-hidden">Search phonetic cheatsheet</label>
-                        <input type="text" id="cheatsheetSearch" class="cheatsheet-search" placeholder="Filter by English or Bengali letter (e.g. kkh, sh, ক্ষ, ঋ)..." data-i18n-placeholder="cheatsheet.search_placeholder">
+                <div class="cheatsheet-card">
+                    <div class="filter-controls">
+                        <div class="search-input-box">
+                            <label for="cheatsheetSearch" class="visually-hidden">Filter characters</label>
+                            <input type="text" id="cheatsheetSearch" class="search-field" placeholder="Search letter or keystroke (e.g. kkh, sh, ক্ষ, ঋ)..." data-i18n-placeholder="cheatsheet.search_placeholder">
+                        </div>
+
+                        <div class="category-pill-group">
+                            <button class="cat-btn active" data-category="all" data-i18n="cat.all">All Characters</button>
+                            <button class="cat-btn" data-category="vowels" data-i18n="cat.vowels">Vowels (স্বরবর্ণ)</button>
+                            <button class="cat-btn" data-category="consonants" data-i18n="cat.consonants">Consonants (ব্যঞ্জনবর্ণ)</button>
+                            <button class="cat-btn" data-category="conjuncts" data-i18n="cat.conjuncts">Conjuncts (যুক্তবর্ণ)</button>
+                            <button class="cat-btn" data-category="numbers" data-i18n="cat.numbers">Numbers (সংখ্যা)</button>
+                        </div>
                     </div>
 
-                    <!-- Category Filters -->
-                    <div class="category-filters">
-                        <button class="cat-btn active" data-category="all" data-i18n="cat.all">All Characters</button>
-                        <button class="cat-btn" data-category="vowels" data-i18n="cat.vowels">Vowels (স্বরবর্ণ)</button>
-                        <button class="cat-btn" data-category="consonants" data-i18n="cat.consonants">Consonants (ব্যঞ্জনবর্ণ)</button>
-                        <button class="cat-btn" data-category="conjuncts" data-i18n="cat.conjuncts">Conjuncts (যুক্তবর্ণ)</button>
-                        <button class="cat-btn" data-category="numbers" data-i18n="cat.numbers">Numbers (সংখ্যা)</button>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="cheatsheet-table" id="cheatsheetTable">
+                    <div class="table-scroll-container">
+                        <table class="mac-table" id="cheatsheetTable">
                             <thead>
                                 <tr>
-                                    <th data-i18n="th.category">Category</th>
-                                    <th data-i18n="th.bangla">Bangla Letter</th>
+                                    <th data-i18n="th.category">Type</th>
+                                    <th data-i18n="th.bangla">Bangla Glyph</th>
                                     <th data-i18n="th.keystroke">Keystroke</th>
                                     <th data-i18n="th.example">Example Word</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Vowels -->
-                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-cell">অ</td><td class="key-cell"><kbd>o</kbd></td><td>oneck (অনেক)</td></tr>
-                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-cell">আ</td><td class="key-cell"><kbd>a</kbd></td><td>ami (আমি)</td></tr>
-                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-cell">ই</td><td class="key-cell"><kbd>i</kbd></td><td>iti (ইতি)</td></tr>
-                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-cell">ঈ</td><td class="key-cell"><kbd>I</kbd></td><td>Ishor (ঈশ্বর)</td></tr>
-                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-cell">উ</td><td class="key-cell"><kbd>u</kbd></td><td>uth (উঠ)</td></tr>
-                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-cell">ঊ</td><td class="key-cell"><kbd>U</kbd></td><td>Ushor (ঊষর)</td></tr>
-                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-cell">ঋ</td><td class="key-cell"><kbd>rri</kbd></td><td>rrishi (ঋষি)</td></tr>
-                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-cell">এ</td><td class="key-cell"><kbd>e</kbd></td><td>ektara (একতারা)</td></tr>
-                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-cell">ঐ</td><td class="key-cell"><kbd>OI</kbd></td><td>OIkyoboddho (ঐক্যবদ্ধ)</td></tr>
-                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-cell">ও</td><td class="key-cell"><kbd>O</kbd></td><td>Ol (ওল)</td></tr>
-                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-cell">ঔ</td><td class="key-cell"><kbd>OU</kbd></td><td>OUshodh (ঔষধ)</td></tr>
+                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-glyph">অ</td><td class="key-glyph"><kbd>o</kbd></td><td>oneck (অনেক)</td></tr>
+                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-glyph">আ</td><td class="key-glyph"><kbd>a</kbd></td><td>ami (আমি)</td></tr>
+                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-glyph">ই</td><td class="key-glyph"><kbd>i</kbd></td><td>iti (ইতি)</td></tr>
+                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-glyph">ঈ</td><td class="key-glyph"><kbd>I</kbd></td><td>Ishor (ঈশ্বর)</td></tr>
+                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-glyph">উ</td><td class="key-glyph"><kbd>u</kbd></td><td>uth (উঠ)</td></tr>
+                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-glyph">ঊ</td><td class="key-glyph"><kbd>U</kbd></td><td>Ushor (ঊষর)</td></tr>
+                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-glyph">ঋ</td><td class="key-glyph"><kbd>rri</kbd></td><td>rrishi (ঋষি)</td></tr>
+                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-glyph">এ</td><td class="key-glyph"><kbd>e</kbd></td><td>ektara (একতারা)</td></tr>
+                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-glyph">ঐ</td><td class="key-glyph"><kbd>OI</kbd></td><td>OIkyoboddho (ঐক্যবদ্ধ)</td></tr>
+                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-glyph">ও</td><td class="key-glyph"><kbd>O</kbd></td><td>Ol (ওল)</td></tr>
+                                <tr data-cat="vowels"><td>Vowel</td><td class="bn-glyph">ঔ</td><td class="key-glyph"><kbd>OU</kbd></td><td>OUshodh (ঔষধ)</td></tr>
 
-                                <!-- Consonants -->
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ক</td><td class="key-cell"><kbd>k</kbd></td><td>kothay (কোথায়)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">খ</td><td class="key-cell"><kbd>kh</kbd></td><td>khobor (খবর)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">গ</td><td class="key-cell"><kbd>g</kbd></td><td>gan (গান)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ঘ</td><td class="key-cell"><kbd>gh</kbd></td><td>ghor (ঘর)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ঙ</td><td class="key-cell"><kbd>Ng</kbd></td><td>roNg (রং)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">চ</td><td class="key-cell"><kbd>c</kbd> / <kbd>ch</kbd></td><td>chad (চাঁদ)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ছ</td><td class="key-cell"><kbd>Ch</kbd></td><td>Chobi (ছবি)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">জ</td><td class="key-cell"><kbd>j</kbd></td><td>jol (জল)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ঝ</td><td class="key-cell"><kbd>jh</kbd></td><td>jhor (ঝড়)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ঞ</td><td class="key-cell"><kbd>NG</kbd></td><td>miya (মিঞা)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ট</td><td class="key-cell"><kbd>T</kbd></td><td>Taka (টাকা)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ঠ</td><td class="key-cell"><kbd>Th</kbd></td><td>Thik (ঠিক)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ড</td><td class="key-cell"><kbd>D</kbd></td><td>Daak (ডাক)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ঢ</td><td class="key-cell"><kbd>Dh</kbd></td><td>Dhak (ঢাক)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ণ</td><td class="key-cell"><kbd>N</kbd></td><td>gun (গুণ)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ত</td><td class="key-cell"><kbd>t</kbd></td><td>tumi (তুমি)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">থ</td><td class="key-cell"><kbd>th</kbd></td><td>thako (থাকো)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">দ</td><td class="key-cell"><kbd>d</kbd></td><td>din (দিন)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ধ</td><td class="key-cell"><kbd>dh</kbd></td><td>dhon (ধন)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ন</td><td class="key-cell"><kbd>n</kbd></td><td>naam (নাম)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">প</td><td class="key-cell"><kbd>p</kbd></td><td>pani (পানি)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ফ</td><td class="key-cell"><kbd>f</kbd> / <kbd>ph</kbd></td><td>ful (ফুল)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ব</td><td class="key-cell"><kbd>b</kbd></td><td>boi (বই)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ভ</td><td class="key-cell"><kbd>bh</kbd> / <kbd>v</kbd></td><td>bhalo (ভালো)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ম</td><td class="key-cell"><kbd>m</kbd></td><td>maa (মা)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">য</td><td class="key-cell"><kbd>z</kbd></td><td>zodi (যদি)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">র</td><td class="key-cell"><kbd>r</kbd></td><td>raat (রাত)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ল</td><td class="key-cell"><kbd>l</kbd></td><td>laal (লাল)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">শ</td><td class="key-cell"><kbd>S</kbd> / <kbd>sh</kbd></td><td>shanti (শান্তি)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ষ</td><td class="key-cell"><kbd>Sh</kbd></td><td>kaShTo (কষ্ট)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">স</td><td class="key-cell"><kbd>s</kbd></td><td>shob (সব)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">হ</td><td class="key-cell"><kbd>h</kbd></td><td>haat (হাত)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ড়</td><td class="key-cell"><kbd>R</kbd></td><td>boRo (বড়)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ঢ়</td><td class="key-cell"><kbd>Rh</kbd></td><td>aaRha (আষাঢ়)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">য়</td><td class="key-cell"><kbd>y</kbd></td><td>bhay (ভয়)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ৎ</td><td class="key-cell"><kbd>`t</kbd></td><td>utshob (উৎসব)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ং</td><td class="key-cell"><kbd>ng</kbd></td><td>shonglap (সংলাপ)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ঃ</td><td class="key-cell"><kbd>:</kbd></td><td>du:kho (দুঃখ)</td></tr>
-                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-cell">ঁ</td><td class="key-cell"><kbd>^</kbd></td><td>cha^d (চাঁদ)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ক</td><td class="key-glyph"><kbd>k</kbd></td><td>kothay (কোথায়)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">খ</td><td class="key-glyph"><kbd>kh</kbd></td><td>khobor (খবর)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">গ</td><td class="key-glyph"><kbd>g</kbd></td><td>gan (গান)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ঘ</td><td class="key-glyph"><kbd>gh</kbd></td><td>ghor (ঘর)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ঙ</td><td class="key-glyph"><kbd>Ng</kbd></td><td>roNg (রং)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">চ</td><td class="key-glyph"><kbd>c</kbd> / <kbd>ch</kbd></td><td>chad (চাঁদ)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ছ</td><td class="key-glyph"><kbd>Ch</kbd></td><td>Chobi (ছবি)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">জ</td><td class="key-glyph"><kbd>j</kbd></td><td>jol (জল)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ঝ</td><td class="key-glyph"><kbd>jh</kbd></td><td>jhor (ঝড়)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ঞ</td><td class="key-glyph"><kbd>NG</kbd></td><td>miya (মিঞা)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ট</td><td class="key-glyph"><kbd>T</kbd></td><td>Taka (টাকা)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ঠ</td><td class="key-glyph"><kbd>Th</kbd></td><td>Thik (ঠিক)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ড</td><td class="key-glyph"><kbd>D</kbd></td><td>Daak (ডাক)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ঢ</td><td class="key-glyph"><kbd>Dh</kbd></td><td>Dhak (ঢাক)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ণ</td><td class="key-glyph"><kbd>N</kbd></td><td>gun (গুণ)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ত</td><td class="key-glyph"><kbd>t</kbd></td><td>tumi (তুমি)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">থ</td><td class="key-glyph"><kbd>th</kbd></td><td>thako (থাকো)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">দ</td><td class="key-glyph"><kbd>d</kbd></td><td>din (দিন)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ধ</td><td class="key-glyph"><kbd>dh</kbd></td><td>dhon (ধন)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ন</td><td class="key-glyph"><kbd>n</kbd></td><td>naam (নাম)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">প</td><td class="key-glyph"><kbd>p</kbd></td><td>pani (পানি)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ফ</td><td class="key-glyph"><kbd>f</kbd> / <kbd>ph</kbd></td><td>ful (ফুল)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ব</td><td class="key-glyph"><kbd>b</kbd></td><td>boi (বই)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ভ</td><td class="key-glyph"><kbd>bh</kbd> / <kbd>v</kbd></td><td>bhalo (ভালো)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ম</td><td class="key-glyph"><kbd>m</kbd></td><td>maa (মা)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">য</td><td class="key-glyph"><kbd>z</kbd></td><td>zodi (যদি)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">র</td><td class="key-glyph"><kbd>r</kbd></td><td>raat (রাত)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ল</td><td class="key-glyph"><kbd>l</kbd></td><td>laal (লাল)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">শ</td><td class="key-glyph"><kbd>S</kbd> / <kbd>sh</kbd></td><td>shanti (শান্তি)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ষ</td><td class="key-glyph"><kbd>Sh</kbd></td><td>kaShTo (কষ্ট)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">স</td><td class="key-glyph"><kbd>s</kbd></td><td>shob (সব)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">হ</td><td class="key-glyph"><kbd>h</kbd></td><td>haat (হাত)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ড়</td><td class="key-glyph"><kbd>R</kbd></td><td>boRo (বড়)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ঢ়</td><td class="key-glyph"><kbd>Rh</kbd></td><td>aaRha (আষাঢ়)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">য়</td><td class="key-glyph"><kbd>y</kbd></td><td>bhay (ভয়)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ৎ</td><td class="key-glyph"><kbd>`t</kbd></td><td>utshob (উৎসব)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ং</td><td class="key-glyph"><kbd>ng</kbd></td><td>shonglap (সংলাপ)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ঃ</td><td class="key-glyph"><kbd>:</kbd></td><td>du:kho (দুঃখ)</td></tr>
+                                <tr data-cat="consonants"><td>Consonant</td><td class="bn-glyph">ঁ</td><td class="key-glyph"><kbd>^</kbd></td><td>cha^d (চাঁদ)</td></tr>
 
-                                <!-- Conjuncts -->
-                                <tr data-cat="conjuncts"><td>Conjunct</td><td class="bn-cell">ক্ষ</td><td class="key-cell"><kbd>kkh</kbd></td><td>kkhoma (ক্ষমা)</td></tr>
-                                <tr data-cat="conjuncts"><td>Conjunct</td><td class="bn-cell">জ্ঞ</td><td class="key-cell"><kbd>jnj</kbd> / <kbd>gy</kbd></td><td>gyan (জ্ঞান)</td></tr>
-                                <tr data-cat="conjuncts"><td>Conjunct</td><td class="bn-cell">ক্ত</td><td class="key-cell"><kbd>kt</kbd></td><td>rokto (রক্ত)</td></tr>
-                                <tr data-cat="conjuncts"><td>Conjunct</td><td class="bn-cell">ন্দ</td><td class="key-cell"><kbd>nd</kbd></td><td>anondo (আনন্দ)</td></tr>
-                                <tr data-cat="conjuncts"><td>Conjunct</td><td class="bn-cell">ঙ্গ</td><td class="key-cell"><kbd>ngg</kbd></td><td>bongo (বঙ্গ)</td></tr>
-                                <tr data-cat="conjuncts"><td>Conjunct</td><td class="bn-cell">ষ্ণ</td><td class="key-cell"><kbd>ShN</kbd></td><td>krishno (কৃষ্ণ)</td></tr>
+                                <tr data-cat="conjuncts"><td>Conjunct</td><td class="bn-glyph">ক্ষ</td><td class="key-glyph"><kbd>kkh</kbd></td><td>kkhoma (ক্ষমা)</td></tr>
+                                <tr data-cat="conjuncts"><td>Conjunct</td><td class="bn-glyph">জ্ঞ</td><td class="key-glyph"><kbd>jnj</kbd> / <kbd>gy</kbd></td><td>gyan (জ্ঞান)</td></tr>
+                                <tr data-cat="conjuncts"><td>Conjunct</td><td class="bn-glyph">ক্ত</td><td class="key-glyph"><kbd>kt</kbd></td><td>rokto (রক্ত)</td></tr>
+                                <tr data-cat="conjuncts"><td>Conjunct</td><td class="bn-glyph">ন্দ</td><td class="key-glyph"><kbd>nd</kbd></td><td>anondo (আনন্দ)</td></tr>
+                                <tr data-cat="conjuncts"><td>Conjunct</td><td class="bn-glyph">ঙ্গ</td><td class="key-glyph"><kbd>ngg</kbd></td><td>bongo (বঙ্গ)</td></tr>
+                                <tr data-cat="conjuncts"><td>Conjunct</td><td class="bn-glyph">ষ্ণ</td><td class="key-glyph"><kbd>ShN</kbd></td><td>krishno (কৃষ্ণ)</td></tr>
 
-                                <!-- Numbers -->
-                                <tr data-cat="numbers"><td>Number</td><td class="bn-cell">১ ২ ৩ ৪ ৫</td><td class="key-cell"><kbd>1 2 3 4 5</kbd></td><td>Bengali Numerals</td></tr>
-                                <tr data-cat="numbers"><td>Number</td><td class="bn-cell">৬ ৭ ৮ ৯ ০</td><td class="key-cell"><kbd>6 7 8 9 0</kbd></td><td>Bengali Numerals</td></tr>
+                                <tr data-cat="numbers"><td>Number</td><td class="bn-glyph">১ ২ ৩ ৪ ৫</td><td class="key-glyph"><kbd>1 2 3 4 5</kbd></td><td>Bengali Numerals</td></tr>
+                                <tr data-cat="numbers"><td>Number</td><td class="bn-glyph">৬ ৭ ৮ ৯ ০</td><td class="key-glyph"><kbd>6 7 8 9 0</kbd></td><td>Bengali Numerals</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -669,95 +541,96 @@
             </div>
         </section>
 
-        <!-- FAQ Section -->
-        <section class="faq-section" id="faq">
+        <!-- macOS Settings-Style FAQ -->
+        <section class="section" id="faq">
             <div class="section-container">
-                <div class="section-header">
-                    <h2 class="section-title" data-i18n="faq.title">Frequently Asked Questions</h2>
-                    <p class="section-desc" data-i18n="faq.desc">Got questions about compatibility, permissions, or shortcuts? We have answers.</p>
+                <div class="section-lead">
+                    <span class="section-eyebrow">Answers</span>
+                    <h2 class="section-headline">Frequently Asked Questions</h2>
+                    <p class="section-subtext">Clear information regarding security, compatibility, and day-to-day use.</p>
                 </div>
 
-                <div class="faq-list">
-                    <details class="faq-item" open>
-                        <summary class="faq-question">
+                <div class="faq-group">
+                    <details class="faq-row" open>
+                        <summary class="faq-summary">
                             <span data-i18n="faq.q1">Is Bongo compatible with all Apple Silicon Macs (M1 through M4+)?</span>
-                            <span class="faq-arrow" aria-hidden="true">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <span class="summary-caret" aria-hidden="true">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="6 9 12 15 18 9"></polyline>
                                 </svg>
                             </span>
                         </summary>
-                        <div class="faq-answer">
+                        <div class="faq-body">
                             <p data-i18n="faq.a1">Yes, 100%. Bongo is compiled natively for Apple Silicon (<code>arm64</code>). It runs directly on every MacBook Air, MacBook Pro, Mac mini, iMac, Mac Studio, and Mac Pro powered by M1, M2, M3, M4, or future M-series processors running macOS 13 (Ventura), macOS 14 (Sonoma), or macOS 15 (Sequoia).</p>
                         </div>
                     </details>
 
-                    <details class="faq-item">
-                        <summary class="faq-question">
+                    <details class="faq-row">
+                        <summary class="faq-summary">
                             <span data-i18n="faq.q2">How is Bongo different from Apple's built-in Bengali keyboard?</span>
-                            <span class="faq-arrow" aria-hidden="true">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <span class="summary-caret" aria-hidden="true">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="6 9 12 15 18 9"></polyline>
                                 </svg>
                             </span>
                         </summary>
-                        <div class="faq-answer">
+                        <div class="faq-body">
                             <p data-i18n="faq.a2">Apple's built-in keyboard uses traditional Bengali layout mapping which requires memorizing special character positions. Bongo provides intuitive <strong>Avro Phonetic typing</strong>: write Bengali sounds phonetically using standard English letters (e.g. typing <code>ami</code> produces <code>আমি</code>, <code>dhonnobad</code> produces <code>ধন্যবাদ</code>), with a 150,000+ word dictionary and instant autocorrect.</p>
                         </div>
                     </details>
 
-                    <details class="faq-item">
-                        <summary class="faq-question">
+                    <details class="faq-row">
+                        <summary class="faq-summary">
                             <span data-i18n="faq.q3">Does Bongo track what I type or require accessibility permissions?</span>
-                            <span class="faq-arrow" aria-hidden="true">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <span class="summary-caret" aria-hidden="true">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="6 9 12 15 18 9"></polyline>
                                 </svg>
                             </span>
                         </summary>
-                        <div class="faq-answer">
+                        <div class="faq-body">
                             <p data-i18n="faq.a3"><strong>Absolutely not.</strong> Bongo is built on Apple's official native <code>InputMethodKit</code> framework. Unlike unofficial keyboard tools, Bongo does <strong>not</strong> require Accessibility permissions, does <strong>not</strong> log keystrokes, and has <strong>zero network telemetry</strong>. Your typing and personalized word selections remain strictly on your local device.</p>
                         </div>
                     </details>
 
-                    <details class="faq-item">
-                        <summary class="faq-question">
+                    <details class="faq-row">
+                        <summary class="faq-summary">
                             <span data-i18n="faq.q4">How do I switch quickly between English and Bongo?</span>
-                            <span class="faq-arrow" aria-hidden="true">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <span class="summary-caret" aria-hidden="true">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="6 9 12 15 18 9"></polyline>
                                 </svg>
                             </span>
                         </summary>
-                        <div class="faq-answer">
+                        <div class="faq-body">
                             <p data-i18n="faq.a4">Simply tap the <strong>Globe key (<kbd>fn</kbd> / Globe)</strong> on your modern Mac keyboard, or press <kbd>Control + Space</kbd>. You can also click the input switcher icon in the top macOS menu bar anytime.</p>
                         </div>
                     </details>
 
-                    <details class="faq-item">
-                        <summary class="faq-question">
+                    <details class="faq-row">
+                        <summary class="faq-summary">
                             <span data-i18n="faq.q5">Can I change the font style or size of candidate suggestions?</span>
-                            <span class="faq-arrow" aria-hidden="true">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <span class="summary-caret" aria-hidden="true">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="6 9 12 15 18 9"></polyline>
                                 </svg>
                             </span>
                         </summary>
-                        <div class="faq-answer">
+                        <div class="faq-body">
                             <p data-i18n="faq.a5">Yes! Open <strong>Bongo</strong> from your Applications folder (or choose "Settings..." from the Bongo menu bar item), navigate to the <strong>Fonts</strong> tab, and pick any installed Bengali font on your Mac (such as Kohinoor Bangla, Noto Sans Bengali, Ekush, etc.) with custom sizing and real-time live preview.</p>
                         </div>
                     </details>
 
-                    <details class="faq-item">
-                        <summary class="faq-question">
+                    <details class="faq-row">
+                        <summary class="faq-summary">
                             <span data-i18n="faq.q6">Is Bongo completely free and open source?</span>
-                            <span class="faq-arrow" aria-hidden="true">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <span class="summary-caret" aria-hidden="true">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="6 9 12 15 18 9"></polyline>
                                 </svg>
                             </span>
                         </summary>
-                        <div class="faq-answer">
+                        <div class="faq-body">
                             <p data-i18n="faq.a6">Yes. Bongo is 100% free with no subscriptions, in-app purchases, or ads. The entire codebase is open source under the MPL-2.0 license and available on <a href="https://github.com/mehedishakeel/Bongo" target="_blank" rel="noopener">GitHub</a>.</p>
                         </div>
                     </details>
@@ -766,59 +639,53 @@
         </section>
     </main>
 
-    <!-- Footer -->
+    <!-- Apple-Style Minimal Footer -->
     <footer class="footer">
         <div class="footer-container">
-            <div class="footer-top">
-                <div class="footer-brand">
-                    <a href="#" class="footer-logo">
-                        <img src="assets/bongo-logo.png" alt="Bongo Logo" class="brand-icon" width="24" height="24">
-                        <span class="brand-name">Bongo · বঙ্গ</span>
-                    </a>
-                    <p class="footer-tagline" data-i18n="footer.desc">Native Apple Silicon Bengali Keyboard for macOS.<br>Fast, private, and beautifully integrated.</p>
-                    <p class="footer-author" data-i18n="footer.author">Developed & maintained by <a href="https://mehedishakeel.com" target="_blank" rel="noopener"><strong>Mehedi Shakeel</strong></a>.</p>
+            <div class="footer-meta-row">
+                <div class="footer-brand-side">
+                    <div class="footer-logo">
+                        <img src="assets/bongo-logo.png" alt="Bongo Logo" width="22" height="22">
+                        <span>Bongo · বঙ্গ</span>
+                    </div>
+                    <p class="footer-desc-line" data-i18n="footer.desc">Native Apple Silicon Bengali Keyboard for macOS.<br>Fast, private, and beautifully integrated.</p>
+                    <p class="footer-author-line" data-i18n="footer.author">Crafted & maintained by <a href="https://mehedishakeel.com" target="_blank" rel="noopener"><strong>Mehedi Shakeel</strong></a>.</p>
                 </div>
 
-                <div class="footer-col">
-                    <h4 data-i18n="footer.col_product">Product</h4>
-                    <ul>
-                        <li><a href="#playground" data-i18n="footer.interactive_demo">Interactive Demo</a></li>
-                        <li><a href="#features" data-i18n="nav.features">Architecture</a></li>
-                        <li><a href="#cheatsheet" data-i18n="footer.phonetic_map">Phonetic Cheatsheet</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-col">
-                    <h4 data-i18n="footer.col_support">Support</h4>
-                    <ul>
-                        <li><a href="#install" data-i18n="footer.install_guide">How to Install</a></li>
-                        <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
-                        <li><a href="https://github.com/mehedishakeel/Bongo/issues" target="_blank" rel="noopener noreferrer" data-i18n="footer.issues">Report an Issue</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-col">
-                    <h4 data-i18n="footer.col_project">Project</h4>
-                    <ul>
-                        <li><a href="https://github.com/mehedishakeel/Bongo" target="_blank" rel="noopener noreferrer" data-i18n="footer.github">GitHub Repository</a></li>
-                        <li><a href="https://github.com/mehedishakeel/Bongo/releases" target="_blank" rel="noopener noreferrer" data-i18n="footer.releases">Release Notes</a></li>
-                        <li><a href="https://github.com/mehedishakeel/Bongo/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" data-i18n="footer.license">MPL-2.0 License</a></li>
-                    </ul>
+                <div class="footer-links-grid">
+                    <div class="footer-link-col">
+                        <span class="link-col-title" data-i18n="footer.col_product">Product</span>
+                        <a href="#playground" data-i18n="footer.interactive_demo">Interactive Demo</a>
+                        <a href="#features" data-i18n="nav.features">Features</a>
+                        <a href="#cheatsheet" data-i18n="footer.phonetic_map">Cheatsheet</a>
+                    </div>
+                    <div class="footer-link-col">
+                        <span class="link-col-title" data-i18n="footer.col_support">Support</span>
+                        <a href="#install" data-i18n="footer.install_guide">How to Install</a>
+                        <a href="#faq" data-i18n="nav.faq">FAQ</a>
+                        <a href="https://github.com/mehedishakeel/Bongo/issues" target="_blank" rel="noopener noreferrer" data-i18n="footer.issues">Report Issue</a>
+                    </div>
+                    <div class="footer-link-col">
+                        <span class="link-col-title" data-i18n="footer.col_project">Project</span>
+                        <a href="https://github.com/mehedishakeel/Bongo" target="_blank" rel="noopener noreferrer" data-i18n="footer.github">GitHub Source</a>
+                        <a href="https://github.com/mehedishakeel/Bongo/releases" target="_blank" rel="noopener noreferrer" data-i18n="footer.releases">Releases</a>
+                        <a href="https://github.com/mehedishakeel/Bongo/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" data-i18n="footer.license">MPL-2.0 License</a>
+                    </div>
                 </div>
             </div>
 
-            <div class="footer-bottom">
-                <p data-i18n="footer.copyright">© 2026 Mehedi Shakeel. All rights reserved.</p>
-                <div class="footer-badges">
-                    <span class="badge-pill">Apple Silicon Native (arm64)</span>
-                    <span class="badge-pill">100% Offline & Private</span>
+            <div class="footer-bottom-row">
+                <span data-i18n="footer.copyright">© 2026 Mehedi Shakeel. All rights reserved.</span>
+                <div class="footer-system-badges">
+                    <span class="sys-badge">Apple Silicon (arm64)</span>
+                    <span class="sys-badge">100% Offline</span>
                 </div>
             </div>
         </div>
     </footer>
 
-    <script src="translations.js?v=3.0"></script>
-    <script src="avro.js?v=3.0"></script>
-    <script src="app.js?v=3.0"></script>
+    <script src="translations.js?v=3.2"></script>
+    <script src="avro.js?v=3.2"></script>
+    <script src="app.js?v=3.2"></script>
 </body>
 </html>

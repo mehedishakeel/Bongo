@@ -2,39 +2,42 @@
 
 **Product Kind**: Native macOS software utility landing page and documentation.
 **Target Audience**: Bengali-speaking Mac users (writers, students, software engineers, designers) running Apple Silicon (M1/M2/M3/M4+).
-**Visual Language**: macOS Native Precision with Bengali Typographic Heritage. Clean hairline borders, authentic Apple-grade translucent surfaces, high contrast, tactile keyboard controls, and warm crimson-vermilion accents (`#c2410c` / `#e11d48`) honoring traditional Bengali print.
+**Visual Language**: Pure Apple macOS Native Aesthetic (Sequoia / Sonoma). Crisp SF Pro typography, authentic window chrome, frosted acrylic materials, minimal clutter, tactile keyboard keys, and disciplined Apple system accents.
 
 ## Dials (Mandatory)
-- **ENERGY**: 2 (Balanced. Professional Mac utility, clear focal points, confident hierarchy)
-- **RHYTHM**: 2 (Consistent structure with purposeful compositional shifts between interactive simulator, preview panes, and reference tables)
-- **MOTION**: 1 (Calm. Hover states, active keyboard state indicators, zero looping animations or floating decorative orbs)
+- **ENERGY**: 2 (Balanced: Pure Apple product utility, calm confident presence)
+- **RHYTHM**: 2 (Structured Apple product page flow: hero statement, hardware interactive demo, 3 key pillars, visual app inspection, 3-step setup, reference, FAQ)
+- **MOTION**: 1 (Calm: native macOS-like tactile feedback, hover states, zero distracting loops)
 
-## Palette
+## Palette (Apple Native)
 - **Light Theme**:
-  - Background Canvas: `#f8fafc` (Slate 50)
-  - Surface Card: `#ffffff`
-  - Subtle Surface: `#f1f5f9` (Slate 100)
-  - Border Hairline: `rgba(15, 23, 42, 0.08)`
-  - Text Primary: `#0f172a` (Slate 900)
-  - Text Secondary: `#475569` (Slate 600)
-  - Accent Primary: `#c2410c` (Terracotta 700)
-  - Accent Muted: `rgba(194, 65, 12, 0.08)`
+  - Background Canvas: `#f5f5f7` (Apple Signature Light Gray)
+  - Surface Cards & Windows: `#ffffff`
+  - Subtle Surface: `#ebebf0`
+  - Hairline Borders: `rgba(0, 0, 0, 0.08)`
+  - Text Primary: `#1d1d1f`
+  - Text Secondary: `#515154`
+  - Text Tertiary: `#86868b`
+  - Accent Primary: `#0071e3` (Apple System Blue)
+  - Accent Hover: `#0077ed`
+  - Accent Soft: `rgba(0, 113, 227, 0.08)`
 - **Dark Theme**:
-  - Background Canvas: `#0b0f17` (Deep Obsidian Slate)
-  - Surface Card: `#131b26` (Slate 900)
-  - Subtle Surface: `#1a2433` (Slate 800)
-  - Border Hairline: `rgba(255, 255, 255, 0.08)`
-  - Text Primary: `#f8fafc` (Slate 50)
-  - Text Secondary: `#94a3b8` (Slate 400)
-  - Accent Primary: `#fb923c` (Warm Amber-Orange 400)
-  - Accent Muted: `rgba(251, 146, 60, 0.12)`
+  - Background Canvas: `#000000` (Apple Pure Black)
+  - Surface Cards & Windows: `#161617` (Apple Dark Slate)
+  - Subtle Surface: `#212124`
+  - Hairline Borders: `rgba(255, 255, 255, 0.12)`
+  - Text Primary: `#f5f5f7`
+  - Text Secondary: `#a1a1a6`
+  - Text Tertiary: `#86868b`
+  - Accent Primary: `#2997ff` (Apple Dark Mode Blue)
+  - Accent Hover: `#0077ed`
+  - Accent Soft: `rgba(41, 151, 255, 0.12)`
 
 ## Typography
-- Latin: `-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif`
-- Bengali: `"Kohinoor Bangla", "Bangla Sangam MN", "Noto Sans Bengali", "Kalpurush", sans-serif`
-- Code / Keystrokes: `ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`
+- Latin: `-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif`
+- Bengali: `"Kohinoor Bangla", "Bangla Sangam MN", "Noto Sans Bengali", sans-serif`
+- Keystrokes & Code: `ui-monospace, SFMono-Regular, Menlo, monospace`
 
 ## Copywriting Constraints (R-02)
-- Zero em dashes (`—`) in any user-facing text. Use commas, colons, periods, or parentheses.
-- Concrete, verifiable facts only (M1-M4 Apple Silicon, macOS 13 Ventura through macOS 15 Sequoia, on-device `InputMethodKit`, 150,000+ dictionary entries).
-- Zero AI marketing buzzwords (no "revolutionary", "seamless", "transformative").
+- Zero em dashes (`—`) in any user-facing text.
+- Simple, clear, human Apple-style copy.
