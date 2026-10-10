@@ -27,6 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 7. Auto-resolve latest direct DMG download link from GitHub Releases
     initDirectDownload();
+
+    // 8. Copyable Homebrew command boxes
+    initBrewCopy();
 });
 
 /* ========================================================
@@ -436,34 +439,40 @@ function initMobileNav() {
     const navLinks = document.getElementById('navLinks');
     if (!navbar || !toggleBtn || !navLinks) return;
 
-    toggleBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
+    function closeMenu() {
+        navbar.classList.remove('nav-open');
+        navLinks.classList.remove('mobile-open');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleMenu(e) {
+        if (e) e.stopPropagation();
         const isOpen = navbar.classList.toggle('nav-open');
+        navLinks.classList.toggle('mobile-open', isOpen);
         toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-    });
+    }
+
+    toggleBtn.addEventListener('click', toggleMenu);
 
     // Close on any link click
-    const links = navLinks.querySelectorAll('a');
+    const links = navLinks.querySelectorAll('a, button');
     links.forEach(link => {
         link.addEventListener('click', () => {
-            navbar.classList.remove('nav-open');
-            toggleBtn.setAttribute('aria-expanded', 'false');
+            closeMenu();
         });
     });
 
     // Close when clicking outside
     document.addEventListener('click', (e) => {
-        if (!navbar.contains(e.target) && navbar.classList.contains('nav-open')) {
-            navbar.classList.remove('nav-open');
-            toggleBtn.setAttribute('aria-expanded', 'false');
+        if (!navbar.contains(e.target) && (navbar.classList.contains('nav-open') || navLinks.classList.contains('mobile-open'))) {
+            closeMenu();
         }
     });
 
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && navbar.classList.contains('nav-open')) {
-            navbar.classList.remove('nav-open');
-            toggleBtn.setAttribute('aria-expanded', 'false');
+        if (e.key === 'Escape' && (navbar.classList.contains('nav-open') || navLinks.classList.contains('mobile-open'))) {
+            closeMenu();
         }
     });
 }
@@ -644,3 +653,45 @@ function initI18n() {
     setLanguage(currentLang);
 }
 
+/* ========================================================
+   9. Homebrew Command Copy Interaction
+   ======================================================== */
+function initBrewCopy() {
+    const brewBoxes = [
+        { box: document.getElementById('heroBrewBox'), btn: document.getElementById('heroBrewCopyBtn') },
+        { box: document.getElementById('setupBrewBox'), btn: document.getElementById('setupBrewCopyBtn') }
+    ];
+
+    const COMMAND = 'brew install --cask mehedishakeel/bongo/bongo';
+
+    brewBoxes.forEach(({ box, btn }) => {
+        if (!box) return;
+
+        function doCopy(e) {
+            if (e) e.stopPropagation();
+            navigator.clipboard.writeText(COMMAND).then(() => {
+                const label = box.querySelector('.brew-copy-label');
+                if (label) label.textContent = 'Copied!';
+                box.classList.add('copied');
+                setTimeout(() => {
+                    if (label) label.textContent = 'Copy';
+                    box.classList.remove('copied');
+                }, 2200);
+            }).catch(() => {});
+        }
+
+        box.addEventListener('click', doCopy);
+        box.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                doCopy();
+            }
+        });
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                doCopy();
+            });
+        }
+    });
+}

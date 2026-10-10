@@ -5,106 +5,107 @@
    ======================================================== */
 
 :root {
-    /* Apple Light Palette */
-    --canvas: #f5f5f7;
-    --canvas-elevated: #ffffff;
+    /* Lekho-Inspired Warm Editorial Canvas */
+    --canvas: #fdfaf5;
+    --canvas-elevated: #f8f2e8;
     --card: #ffffff;
-    --card-subtle: #ebebf0;
-    --border-hairline: rgba(0, 0, 0, 0.08);
-    --border-strong: rgba(0, 0, 0, 0.16);
+    --card-subtle: #f5efe5;
+    --border-hairline: #e8dfd0;
+    --border-strong: #d8cdbc;
 
-    --text-primary: #1d1d1f;
-    --text-secondary: #515154;
-    --text-tertiary: #86868b;
+    --text-primary: #2c1810;
+    --text-secondary: #5c4939;
+    --text-tertiary: #7a6b5d;
 
-    /* Apple System Blue Accent */
-    --accent: #0071e3;
-    --accent-hover: #0077ed;
-    --accent-soft: rgba(0, 113, 227, 0.08);
+    /* Vermilion Red Accent */
+    --accent: #c0392b;
+    --accent-hover: #922b21;
+    --accent-soft: rgba(192, 57, 43, 0.08);
     --accent-contrast: #ffffff;
 
     /* macOS Window & Candidate HUD */
     --window-bg: #ffffff;
-    --window-border: rgba(0, 0, 0, 0.1);
-    --hud-bg: rgba(255, 255, 255, 0.88);
-    --hud-text: #1d1d1f;
-    --hud-border: rgba(0, 0, 0, 0.12);
-    --hud-selected-bg: #0071e3;
+    --window-border: #e8dfd0;
+    --hud-bg: rgba(253, 250, 245, 0.95);
+    --hud-text: #2c1810;
+    --hud-border: #e8dfd0;
+    --hud-selected-bg: #c0392b;
     --hud-selected-text: #ffffff;
-    --hud-num-bg: rgba(0, 0, 0, 0.06);
+    --hud-num-bg: rgba(44, 24, 16, 0.08);
 
     /* Elevations */
-    --shadow-window: 0 24px 64px -12px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.05);
-    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.04);
-    --shadow-hud: 0 12px 32px rgba(0, 0, 0, 0.14);
+    --shadow-window: 0 20px 50px -10px rgba(44, 24, 16, 0.12), 0 0 0 1px rgba(44, 24, 16, 0.05);
+    --shadow-card: 0 4px 16px rgba(44, 24, 16, 0.04);
+    --shadow-hud: 0 12px 32px rgba(44, 24, 16, 0.14);
 
-    /* Fonts */
-    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
-    --font-bn: "Kohinoor Bangla", "Bangla Sangam MN", "Noto Sans Bengali", sans-serif;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    /* Fonts: Editorial Serif + Clean Modern Sans */
+    --font-serif: "Playfair Display", Georgia, serif;
+    --font-sans: "Source Sans 3", -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    --font-bn: "Noto Serif Bengali", "Noto Sans Bengali", "Kohinoor Bangla", serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
     --max-w: 1040px;
 }
 
 [data-theme="dark"] {
-    --canvas: #000000;
-    --canvas-elevated: #161617;
-    --card: #161617;
-    --card-subtle: #212124;
+    --canvas: #121110;
+    --canvas-elevated: #1a1816;
+    --card: #1f1c19;
+    --card-subtle: #292521;
     --border-hairline: rgba(255, 255, 255, 0.1);
-    --border-strong: rgba(255, 255, 255, 0.22);
+    --border-strong: rgba(255, 255, 255, 0.2);
 
-    --text-primary: #f5f5f7;
-    --text-secondary: #a1a1a6;
-    --text-tertiary: #86868b;
+    --text-primary: #f8f4ec;
+    --text-secondary: #c4b8aa;
+    --text-tertiary: #968a7c;
 
-    --accent: #2997ff;
-    --accent-hover: #0077ed;
-    --accent-soft: rgba(41, 151, 255, 0.14);
-    --accent-contrast: #000000;
+    --accent: #e05344;
+    --accent-hover: #ff6859;
+    --accent-soft: rgba(224, 83, 68, 0.15);
+    --accent-contrast: #121110;
 
-    --window-bg: #161617;
-    --window-border: rgba(255, 255, 255, 0.14);
-    --hud-bg: rgba(30, 30, 32, 0.92);
-    --hud-text: #f5f5f7;
-    --hud-border: rgba(255, 255, 255, 0.16);
-    --hud-selected-bg: #2997ff;
-    --hud-selected-text: #000000;
-    --hud-num-bg: rgba(255, 255, 255, 0.14);
+    --window-bg: #1a1816;
+    --window-border: rgba(255, 255, 255, 0.12);
+    --hud-bg: rgba(26, 24, 22, 0.94);
+    --hud-text: #f8f4ec;
+    --hud-border: rgba(255, 255, 255, 0.14);
+    --hud-selected-bg: #e05344;
+    --hud-selected-text: #121110;
+    --hud-num-bg: rgba(255, 255, 255, 0.12);
 
-    --shadow-window: 0 28px 72px -16px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    --shadow-window: 0 28px 72px -16px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.1);
     --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.4);
     --shadow-hud: 0 16px 40px rgba(0, 0, 0, 0.6);
 }
 
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-        --canvas: #000000;
-        --canvas-elevated: #161617;
-        --card: #161617;
-        --card-subtle: #212124;
+        --canvas: #121110;
+        --canvas-elevated: #1a1816;
+        --card: #1f1c19;
+        --card-subtle: #292521;
         --border-hairline: rgba(255, 255, 255, 0.1);
-        --border-strong: rgba(255, 255, 255, 0.22);
+        --border-strong: rgba(255, 255, 255, 0.2);
 
-        --text-primary: #f5f5f7;
-        --text-secondary: #a1a1a6;
-        --text-tertiary: #86868b;
+        --text-primary: #f8f4ec;
+        --text-secondary: #c4b8aa;
+        --text-tertiary: #968a7c;
 
-        --accent: #2997ff;
-        --accent-hover: #0077ed;
-        --accent-soft: rgba(41, 151, 255, 0.14);
-        --accent-contrast: #000000;
+        --accent: #e05344;
+        --accent-hover: #ff6859;
+        --accent-soft: rgba(224, 83, 68, 0.15);
+        --accent-contrast: #121110;
 
-        --window-bg: #161617;
-        --window-border: rgba(255, 255, 255, 0.14);
-        --hud-bg: rgba(30, 30, 32, 0.92);
-        --hud-text: #f5f5f7;
-        --hud-border: rgba(255, 255, 255, 0.16);
-        --hud-selected-bg: #2997ff;
-        --hud-selected-text: #000000;
-        --hud-num-bg: rgba(255, 255, 255, 0.14);
+        --window-bg: #1a1816;
+        --window-border: rgba(255, 255, 255, 0.12);
+        --hud-bg: rgba(26, 24, 22, 0.94);
+        --hud-text: #f8f4ec;
+        --hud-border: rgba(255, 255, 255, 0.14);
+        --hud-selected-bg: #e05344;
+        --hud-selected-text: #121110;
+        --hud-num-bg: rgba(255, 255, 255, 0.12);
 
-        --shadow-window: 0 28px 72px -16px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        --shadow-window: 0 28px 72px -16px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.1);
         --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.4);
         --shadow-hud: 0 16px 40px rgba(0, 0, 0, 0.6);
     }
@@ -337,22 +338,40 @@ kbd {
     display: none;
     flex-direction: column;
     justify-content: center;
-    gap: 4px;
-    width: 30px;
-    height: 30px;
+    align-items: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    min-width: 44px;
+    min-height: 44px;
     background: transparent;
     border: 1px solid var(--border-hairline);
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    padding: 0 6px;
+    padding: 0 8px;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.mobile-menu-toggle:hover {
+    background: var(--card-subtle);
+    border-color: var(--border-strong);
 }
 
 .mobile-menu-toggle .bar {
     display: block;
-    width: 100%;
+    width: 18px;
     height: 2px;
-    background: var(--text-secondary);
-    border-radius: 1px;
+    background: var(--text-primary);
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.nav-open .mobile-menu-toggle .bar-1 {
+    transform: translateY(3.5px) rotate(45deg);
+}
+
+.nav-open .mobile-menu-toggle .bar-2 {
+    transform: translateY(-3.5px) rotate(-45deg);
 }
 
 .nav-mobile-actions {
@@ -421,21 +440,23 @@ kbd {
 }
 
 .hero-headline {
-    font-size: 3.4rem;
-    line-height: 1.08;
-    font-weight: 700;
-    letter-spacing: -0.035em;
+    font-family: var(--font-serif);
+    font-size: clamp(2.6rem, 5.2vw, 3.8rem);
+    line-height: 1.14;
+    font-weight: 600;
+    letter-spacing: -0.025em;
     color: var(--text-primary);
     margin-bottom: 1rem;
 }
 
 .hero-headline span {
-    color: var(--text-secondary);
+    color: var(--accent);
+    font-style: italic;
 }
 
 .hero-subline {
     font-size: 1.15rem;
-    line-height: 1.55;
+    line-height: 1.65;
     color: var(--text-secondary);
     max-width: 580px;
     margin-bottom: 2rem;
@@ -447,23 +468,27 @@ kbd {
     justify-content: center;
     gap: 0.85rem;
     flex-wrap: wrap;
+    margin-bottom: 1.5rem;
 }
 
 .btn-apple-primary {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    padding: 0.75rem 1.45rem;
+    padding: 0.8rem 1.65rem;
     background: var(--accent);
     color: #ffffff;
     border-radius: 980px;
     font-size: 0.95rem;
     font-weight: 500;
-    transition: background-color 0.15s ease, transform 0.08s ease;
+    box-shadow: 0 4px 16px rgba(192, 57, 43, 0.25);
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
 }
 
 .btn-apple-primary:hover {
     background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(192, 57, 43, 0.35);
 }
 
 .btn-apple-primary:active {
@@ -472,26 +497,124 @@ kbd {
 
 .cta-meta {
     font-size: 0.76rem;
-    opacity: 0.8;
+    opacity: 0.85;
     padding-left: 0.5rem;
-    border-left: 1px solid rgba(255, 255, 255, 0.3);
+    border-left: 1px solid rgba(255, 255, 255, 0.35);
 }
 
 .btn-apple-secondary {
     display: inline-flex;
     align-items: center;
-    padding: 0.75rem 1.35rem;
-    background: transparent;
+    padding: 0.8rem 1.45rem;
+    background: var(--card);
     color: var(--text-primary);
     border: 1px solid var(--border-strong);
     border-radius: 980px;
     font-size: 0.95rem;
     font-weight: 500;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
 
 .btn-apple-secondary:hover {
     background: var(--card-subtle);
+    border-color: var(--text-tertiary);
+    transform: translateY(-1px);
+}
+
+/* Homebrew Install Pill & Box */
+.hero-brew-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.25rem;
+}
+
+.brew-label {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+}
+
+.brew-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    background: var(--card-subtle);
+    border: 1px solid var(--border-hairline);
+    border-radius: 8px;
+    padding: 0.45rem 0.85rem;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    user-select: all;
+}
+
+.brew-box:hover {
+    border-color: var(--accent);
+    background: var(--card);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.brew-box.copied {
+    border-color: #28c840;
+    background: rgba(40, 200, 64, 0.08);
+}
+
+.brew-prompt {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.brew-cmd {
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--text-primary);
+}
+
+.btn-brew-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: var(--card);
+    border: 1px solid var(--border-hairline);
+    border-radius: 5px;
+    padding: 0.2rem 0.45rem;
+    font-size: 0.72rem;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.brew-box:hover .btn-brew-copy {
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+}
+
+.install-homebrew-box {
+    margin-top: 2rem;
+    padding: 1.25rem 1.65rem;
+    background: var(--card-subtle);
+    border: 1px solid var(--border-hairline);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 14px 14px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.install-hb-content {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+}
+
+.install-hb-content strong {
+    color: var(--text-primary);
 }
 
 /* ========================================================
@@ -830,11 +953,12 @@ kbd {
 }
 
 .section-headline {
-    font-size: 2.35rem;
-    font-weight: 700;
-    letter-spacing: -0.025em;
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 3.8vw, 2.6rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
     color: var(--text-primary);
-    line-height: 1.16;
+    line-height: 1.2;
     margin-bottom: 0.65rem;
 }
 
@@ -1385,7 +1509,7 @@ kbd {
     .nav-links {
         display: none;
         position: fixed;
-        top: 50px;
+        top: 52px;
         left: 0;
         right: 0;
         background: var(--canvas);
@@ -1393,12 +1517,29 @@ kbd {
         padding: 1.25rem 1.5rem;
         flex-direction: column;
         align-items: stretch;
-        gap: 0.85rem;
-        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+        gap: 0.25rem;
+        box-shadow: 0 16px 36px rgba(44, 24, 16, 0.12);
+        z-index: 1000;
     }
 
-    .nav-links.mobile-open {
+    .nav-links.mobile-open,
+    .nav-open .nav-links {
         display: flex;
+    }
+
+    .nav-links a:not(.btn-apple-pill) {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+        font-size: 1rem;
+        color: var(--text-primary);
+        border-radius: 8px;
+        transition: background-color 0.15s ease;
+    }
+
+    .nav-links a:not(.btn-apple-pill):hover {
+        background: var(--card-subtle);
     }
 
     .nav-mobile-actions {
@@ -1406,6 +1547,7 @@ kbd {
         flex-direction: column;
         gap: 0.65rem;
         padding-top: 0.85rem;
+        margin-top: 0.5rem;
         border-top: 1px solid var(--border-hairline);
     }
 

@@ -2,42 +2,46 @@
 
 **Product Kind**: Native macOS software utility landing page and documentation.
 **Target Audience**: Bengali-speaking Mac users (writers, students, software engineers, designers) running Apple Silicon (M1/M2/M3/M4+).
-**Visual Language**: Pure Apple macOS Native Aesthetic (Sequoia / Sonoma). Crisp SF Pro typography, authentic window chrome, frosted acrylic materials, minimal clutter, tactile keyboard keys, and disciplined Apple system accents.
+**Visual Language**: Warm Editorial & Apple macOS Native Aesthetic (inspired by Lekho `arahim.dev/Lekho` and Sequoia / Sonoma). Warm paper canvas, vermilion crimson accents (`#c0392b`), Playfair Display editorial serif titles, crisp Source Sans 3 body, JetBrains Mono code, authentic candidate window HUD, and copyable Homebrew commands.
 
 ## Dials (Mandatory)
-- **ENERGY**: 2 (Balanced: Pure Apple product utility, calm confident presence)
-- **RHYTHM**: 2 (Structured Apple product page flow: hero statement, hardware interactive demo, 3 key pillars, visual app inspection, 3-step setup, reference, FAQ)
+- **ENERGY**: 2 (Balanced: Pure utility with warm editorial dignity and authentic Bengali typography)
+- **RHYTHM**: 2 (Structured page flow: hero statement, hardware interactive demo, 3 key pillars, visual app inspection, 3-step setup with brew command, phonetic reference, FAQ)
 - **MOTION**: 1 (Calm: native macOS-like tactile feedback, hover states, zero distracting loops)
 
-## Palette (Apple Native)
+## Palette (Warm Paper & Vermilion Red)
 - **Light Theme**:
-  - Background Canvas: `#f5f5f7` (Apple Signature Light Gray)
+  - Background Canvas: `#fdfaf5` (Warm Editorial Paper)
+  - Surface Elevated: `#f8f2e8`
   - Surface Cards & Windows: `#ffffff`
-  - Subtle Surface: `#ebebf0`
-  - Hairline Borders: `rgba(0, 0, 0, 0.08)`
-  - Text Primary: `#1d1d1f`
-  - Text Secondary: `#515154`
-  - Text Tertiary: `#86868b`
-  - Accent Primary: `#0071e3` (Apple System Blue)
-  - Accent Hover: `#0077ed`
-  - Accent Soft: `rgba(0, 113, 227, 0.08)`
+  - Subtle Surface: `#f5efe5`
+  - Hairline Borders: `#e8dfd0`
+  - Text Primary: `#2c1810` (Espresso)
+  - Text Secondary: `#5c4939`
+  - Text Tertiary: `#7a6b5d`
+  - Accent Primary: `#c0392b` (Lekho Vermilion Red)
+  - Accent Hover: `#922b21`
+  - Accent Soft: `rgba(192, 57, 43, 0.08)`
 - **Dark Theme**:
-  - Background Canvas: `#000000` (Apple Pure Black)
-  - Surface Cards & Windows: `#161617` (Apple Dark Slate)
-  - Subtle Surface: `#212124`
-  - Hairline Borders: `rgba(255, 255, 255, 0.12)`
-  - Text Primary: `#f5f5f7`
-  - Text Secondary: `#a1a1a6`
-  - Text Tertiary: `#86868b`
-  - Accent Primary: `#2997ff` (Apple Dark Mode Blue)
-  - Accent Hover: `#0077ed`
-  - Accent Soft: `rgba(41, 151, 255, 0.12)`
+  - Background Canvas: `#121110` (Warm Dark Charcoal)
+  - Surface Elevated: `#1a1816`
+  - Surface Cards & Windows: `#1f1c19`
+  - Subtle Surface: `#292521`
+  - Hairline Borders: `rgba(255, 255, 255, 0.1)`
+  - Text Primary: `#f8f4ec`
+  - Text Secondary: `#c4b8aa`
+  - Text Tertiary: `#968a7c`
+  - Accent Primary: `#e05344` (Vibrant Vermilion Coral)
+  - Accent Hover: `#ff6859`
+  - Accent Soft: `rgba(224, 83, 68, 0.15)`
 
 ## Typography
-- Latin: `-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif`
-- Bengali: `"Kohinoor Bangla", "Bangla Sangam MN", "Noto Sans Bengali", sans-serif`
-- Keystrokes & Code: `ui-monospace, SFMono-Regular, Menlo, monospace`
+- Display / Headings: `"Playfair Display", Georgia, serif`
+- Latin Body: `"Source Sans 3", -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif`
+- Bengali: `"Noto Serif Bengali", "Noto Sans Bengali", "Kohinoor Bangla", serif`
+- Keystrokes & Code: `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace`
 
-## Copywriting Constraints (R-02)
+## Copywriting Constraints (Anti-Slop R-02)
 - Zero em dashes (`—`) in any user-facing text.
 - Simple, clear, human Apple-style copy.
+
