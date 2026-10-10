@@ -29,7 +29,17 @@
 
 ---
 
-## Quick Installation (3 Steps)
+## Quick Installation
+
+### Option A: Homebrew (Recommended)
+
+Install Bongo in a single command via Homebrew:
+
+```bash
+brew install --cask mehedishakeel/bongo/bongo
+```
+
+### Option B: Direct DMG Download
 
 1. **Download**: Get the latest `Bongo-1.0-macos-arm64.dmg` from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
 2. **Install**: Open the DMG and drag **Bongo.app** into your **Applications** folder.
