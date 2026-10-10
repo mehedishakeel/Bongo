@@ -71,7 +71,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=3.3">
+    <link rel="stylesheet" href="styles.css?v=4.0">
 </head>
 <body>
     <a href="#playground" class="skip-link">Skip to playground</a>
@@ -174,19 +174,40 @@
                         <a href="#install" class="btn-apple-secondary">
                             <span data-i18n="hero.cta_secondary">Installation Guide</span>
                         </a>
-                    </div>
-                    <div class="hero-brew-row">
-                        <span class="brew-label">or install via Homebrew:</span>
-                        <div class="brew-box" id="heroBrewBox" role="button" tabindex="0" title="Click to copy command" aria-label="Copy brew install command">
-                            <span class="brew-prompt">$</span>
-                            <code class="brew-cmd">brew install --cask mehedishakeel/bongo/bongo</code>
-                            <button type="button" class="btn-brew-copy" id="heroBrewCopyBtn" aria-label="Copy brew command">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                                <span class="brew-copy-label">Copy</span>
-                            </button>
+                    <div class="hero-specs-row">
+                        <div class="hero-spec-chip">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                                <rect x="9" y="9" width="6" height="6"></rect>
+                                <line x1="9" y1="1" x2="9" y2="4"></line>
+                                <line x1="15" y1="1" x2="15" y2="4"></line>
+                                <line x1="9" y1="20" x2="9" y2="23"></line>
+                                <line x1="15" y1="20" x2="15" y2="23"></line>
+                                <line x1="20" y1="9" x2="23" y2="9"></line>
+                                <line x1="20" y1="14" x2="23" y2="14"></line>
+                                <line x1="1" y1="9" x2="4" y2="9"></line>
+                                <line x1="1" y1="14" x2="4" y2="14"></line>
+                            </svg>
+                            <span>M1 / M2 / M3 / M4+</span>
+                        </div>
+                        <div class="hero-spec-chip">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                            <span>100% On-Device Privacy</span>
+                        </div>
+                        <div class="hero-spec-chip">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>&lt; 15 MB RAM</span>
+                        </div>
+                        <div class="hero-spec-chip">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <span>Open Source (MPL-2.0)</span>
                         </div>
                     </div>
                 </div>
@@ -434,20 +455,17 @@
                     </div>
                 </div>
 
-                <div class="install-homebrew-box">
-                    <div class="install-hb-content">
-                        <strong>Prefer the terminal?</strong> Install in a single command using Homebrew:
+                <div class="install-shortcut-card">
+                    <div class="shortcut-icon-box">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
                     </div>
-                    <div class="brew-box" id="setupBrewBox" role="button" tabindex="0" title="Click to copy command" aria-label="Copy brew install command">
-                        <span class="brew-prompt">$</span>
-                        <code class="brew-cmd">brew install --cask mehedishakeel/bongo/bongo</code>
-                        <button type="button" class="btn-brew-copy" id="setupBrewCopyBtn" aria-label="Copy brew command">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                            <span class="brew-copy-label">Copy</span>
-                        </button>
+                    <div class="shortcut-text">
+                        <h4 data-i18n="install.shortcut_title">Pro tip: Quick keyboard switching</h4>
+                        <p data-i18n="install.shortcut_desc">Tap the <strong>Globe</strong> (<kbd>fn</kbd>) key on your Mac keyboard or press <kbd>Control + Space</kbd> to seamlessly toggle between English and Bongo without lifting your fingers from the keyboard.</p>
                     </div>
                 </div>
 
@@ -715,8 +733,8 @@
         </div>
     </footer>
 
-    <script src="translations.js?v=3.2"></script>
-    <script src="avro.js?v=3.2"></script>
-    <script src="app.js?v=3.2"></script>
+    <script src="translations.js?v=4.0"></script>
+    <script src="avro.js?v=4.0"></script>
+    <script src="app.js?v=4.0"></script>
 </body>
 </html>

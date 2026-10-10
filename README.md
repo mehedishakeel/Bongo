@@ -29,22 +29,12 @@
 
 ---
 
-## Quick Installation
+## Quick Installation (3 Steps)
 
-### Option A: Homebrew (Recommended)
-
-Install Bongo in a single command via Homebrew:
-
-```bash
-brew install --cask mehedishakeel/bongo/bongo
-```
-
-### Option B: Direct DMG Download
-
-1. **Download**: Get the latest `Bongo-1.0-macos-arm64.dmg` from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
+1. **Download**: Get `Bongo-1.0-macos-arm64.dmg` from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
 2. **Install**: Open the DMG and drag **Bongo.app** into your **Applications** folder.
 3. **Activate**:
-   - Open **Bongo** from Applications once (it registers the keyboard with macOS).
+   - Open **Bongo** from Applications once (it registers the keyboard service with macOS).
    - Go to **System Settings → Keyboard → Input Sources → Edit → +**, and select **Bongo** (under Bengali).
    - Switch keyboards anytime with the **Globe (<kbd>fn</kbd> / Globe)** key or <kbd>Control + Space</kbd>!
 
@@ -64,7 +54,7 @@ Bongo uses the standard, intuitive **Avro Phonetic** rules you already know. Typ
 | `kkhoma` | **ক্ষমা** | Forgive |
 | `gyan` / `jnj` | **জ্ঞান** | Knowledge |
 
-Press <kbd>Space</kbd> to commit the highlighted word, or press number keys <kbd>1</kbd>–<kbd>5</kbd> to pick from the candidate list immediately.
+Press <kbd>Space</kbd> to commit the highlighted word, or press number keys <kbd>1</kbd> to <kbd>5</kbd> to pick from the candidate list immediately.
 
 ---
 

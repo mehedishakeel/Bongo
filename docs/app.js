@@ -27,9 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 7. Auto-resolve latest direct DMG download link from GitHub Releases
     initDirectDownload();
-
-    // 8. Copyable Homebrew command boxes
-    initBrewCopy();
 });
 
 /* ========================================================
@@ -651,47 +648,4 @@ function initI18n() {
 
     // Apply language on load
     setLanguage(currentLang);
-}
-
-/* ========================================================
-   9. Homebrew Command Copy Interaction
-   ======================================================== */
-function initBrewCopy() {
-    const brewBoxes = [
-        { box: document.getElementById('heroBrewBox'), btn: document.getElementById('heroBrewCopyBtn') },
-        { box: document.getElementById('setupBrewBox'), btn: document.getElementById('setupBrewCopyBtn') }
-    ];
-
-    const COMMAND = 'brew install --cask mehedishakeel/bongo/bongo';
-
-    brewBoxes.forEach(({ box, btn }) => {
-        if (!box) return;
-
-        function doCopy(e) {
-            if (e) e.stopPropagation();
-            navigator.clipboard.writeText(COMMAND).then(() => {
-                const label = box.querySelector('.brew-copy-label');
-                if (label) label.textContent = 'Copied!';
-                box.classList.add('copied');
-                setTimeout(() => {
-                    if (label) label.textContent = 'Copy';
-                    box.classList.remove('copied');
-                }, 2200);
-            }).catch(() => {});
-        }
-
-        box.addEventListener('click', doCopy);
-        box.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                doCopy();
-            }
-        });
-        if (btn) {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                doCopy();
-            });
-        }
-    });
 }

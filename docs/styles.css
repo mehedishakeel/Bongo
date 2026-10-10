@@ -521,100 +521,96 @@ kbd {
     transform: translateY(-1px);
 }
 
-/* Homebrew Install Pill & Box */
-.hero-brew-row {
+/* Hero Specifications Row */
+.hero-specs-row {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+}
+
+.hero-spec-chip {
+    display: inline-flex;
     align-items: center;
     gap: 0.45rem;
-    margin-top: 0.25rem;
-}
-
-.brew-label {
-    font-size: 0.8rem;
-    color: var(--text-tertiary);
-}
-
-.brew-box {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    background: var(--card-subtle);
-    border: 1px solid var(--border-hairline);
-    border-radius: 8px;
-    padding: 0.45rem 0.85rem;
-    cursor: pointer;
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--text-primary);
-    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-    user-select: all;
-}
-
-.brew-box:hover {
-    border-color: var(--accent);
-    background: var(--card);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.brew-box.copied {
-    border-color: #28c840;
-    background: rgba(40, 200, 64, 0.08);
-}
-
-.brew-prompt {
-    color: var(--accent);
-    font-weight: 600;
-}
-
-.brew-cmd {
-    font-family: inherit;
-    font-size: inherit;
-    color: var(--text-primary);
-}
-
-.btn-brew-copy {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
     background: var(--card);
     border: 1px solid var(--border-hairline);
-    border-radius: 5px;
-    padding: 0.2rem 0.45rem;
-    font-size: 0.72rem;
-    font-family: var(--font-sans);
+    border-radius: 980px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
     font-weight: 500;
     color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
-.brew-box:hover .btn-brew-copy {
+.hero-spec-chip:hover {
+    border-color: var(--accent);
     color: var(--text-primary);
-    border-color: var(--border-strong);
+    transform: translateY(-1px);
 }
 
-.install-homebrew-box {
+.hero-spec-chip svg {
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+/* Install Pro-Tip Shortcut Card */
+.install-shortcut-card {
     margin-top: 2rem;
-    padding: 1.25rem 1.65rem;
-    background: var(--card-subtle);
+    padding: 1.25rem 1.75rem;
+    background: var(--card);
     border: 1px solid var(--border-hairline);
-    border-left: 3px solid var(--accent);
+    border-left: 4px solid var(--accent);
     border-radius: 0 14px 14px 0;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.25rem;
-    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1.15rem;
+    box-shadow: var(--shadow-card);
 }
 
-.install-hb-content {
+.shortcut-icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.shortcut-text {
+    flex: 1;
+}
+
+.shortcut-text h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+}
+
+.shortcut-text p {
     font-size: 0.92rem;
     color: var(--text-secondary);
+    line-height: 1.55;
 }
 
-.install-hb-content strong {
+.shortcut-text kbd {
+    background: var(--card-subtle);
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    padding: 0.15rem 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
     color: var(--text-primary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 /* ========================================================
@@ -1589,5 +1585,59 @@ kbd {
     .segmented-control-tabs {
         border-radius: 14px;
         flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-headline {
+        font-size: 1.85rem;
+        line-height: 1.25;
+    }
+
+    .hero-subline {
+        font-size: 0.98rem;
+    }
+
+    .hero-cta-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-apple-primary, .btn-apple-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .hero-specs-row {
+        gap: 0.5rem;
+    }
+
+    .hero-spec-chip {
+        font-size: 0.76rem;
+        padding: 0.35rem 0.65rem;
+    }
+
+    .sample-chips-row {
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+
+    .sample-pill {
+        font-size: 0.78rem;
+        padding: 0.3rem 0.65rem;
+    }
+
+    .hud-list {
+        flex-wrap: wrap;
+    }
+
+    .install-shortcut-card {
+        padding: 1rem 1.15rem;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .section-headline {
+        font-size: 1.65rem;
     }
 }
