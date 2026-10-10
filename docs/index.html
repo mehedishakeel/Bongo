@@ -71,7 +71,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=4.0">
+    <link rel="stylesheet" href="styles.css?v=4.1">
 </head>
 <body>
     <a href="#playground" class="skip-link">Skip to playground</a>
@@ -147,13 +147,6 @@
         <header class="hero">
             <div class="hero-container">
                 <div class="hero-header-block">
-                    <div class="app-icon-squircle">
-                        <img src="assets/bongo-logo.png" alt="Bongo Application Icon" width="68" height="68">
-                    </div>
-                    <div class="hero-chip">
-                        <span class="chip-status-dot"></span>
-                        <span data-i18n="hero.tag_desktop">Apple Silicon Native (M1, M2, M3, M4+)</span>
-                    </div>
                     <h1 class="hero-headline" data-i18n="hero.title">
                         Native Bangla typing.<br>
                         <span>Built for Apple Silicon.</span>
@@ -174,6 +167,7 @@
                         <a href="#install" class="btn-apple-secondary">
                             <span data-i18n="hero.cta_secondary">Installation Guide</span>
                         </a>
+                    </div>
                     <div class="hero-specs-row">
                         <div class="hero-spec-chip">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -455,17 +449,17 @@
                     </div>
                 </div>
 
-                <div class="install-shortcut-card">
-                    <div class="shortcut-icon-box">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="shortcut-tip-banner">
+                    <div class="shortcut-tip-icon-box">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="2" y1="12" x2="22" y2="12"></line>
                             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                         </svg>
                     </div>
-                    <div class="shortcut-text">
-                        <h4 data-i18n="install.shortcut_title">Pro tip: Quick keyboard switching</h4>
-                        <p data-i18n="install.shortcut_desc">Tap the <strong>Globe</strong> (<kbd>fn</kbd>) key on your Mac keyboard or press <kbd>Control + Space</kbd> to seamlessly toggle between English and Bongo without lifting your fingers from the keyboard.</p>
+                    <div class="shortcut-tip-content">
+                        <div class="shortcut-tip-title" data-i18n="install.shortcut_title">Quick Switch Shortcut</div>
+                        <p class="shortcut-tip-text" data-i18n="install.shortcut_desc">Tap the <strong>Globe</strong> (<kbd class="mac-kbd">fn</kbd>) key or press <kbd class="mac-kbd">Control + Space</kbd> to seamlessly switch between English and Bongo without lifting your hands.</p>
                     </div>
                 </div>
 
@@ -733,8 +727,8 @@
         </div>
     </footer>
 
-    <script src="translations.js?v=4.0"></script>
-    <script src="avro.js?v=4.0"></script>
-    <script src="app.js?v=4.0"></script>
+    <script src="translations.js?v=4.1"></script>
+    <script src="avro.js?v=4.1"></script>
+    <script src="app.js?v=4.1"></script>
 </body>
 </html>

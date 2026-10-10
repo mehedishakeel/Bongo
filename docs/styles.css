@@ -557,60 +557,67 @@ kbd {
     flex-shrink: 0;
 }
 
-/* Install Pro-Tip Shortcut Card */
-.install-shortcut-card {
-    margin-top: 2rem;
-    padding: 1.25rem 1.75rem;
+/* Install Shortcut Banner - macOS Settings Style */
+.shortcut-tip-banner {
+    margin: 2.5rem auto 0;
+    max-width: 680px;
     background: var(--card);
     border: 1px solid var(--border-hairline);
-    border-left: 4px solid var(--accent);
-    border-radius: 0 14px 14px 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 1.15rem;
-    box-shadow: var(--shadow-card);
-}
-
-.shortcut-icon-box {
+    border-radius: 14px;
+    padding: 1.15rem 1.5rem;
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
+    gap: 1.15rem;
+    box-shadow: 0 2px 10px rgba(44, 24, 16, 0.04);
+}
+
+.shortcut-tip-icon-box {
+    width: 38px;
+    height: 38px;
     border-radius: 10px;
     background: var(--accent-soft);
     color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
-    margin-top: 0.1rem;
 }
 
-.shortcut-text {
+.shortcut-tip-content {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: left;
 }
 
-.shortcut-text h4 {
-    font-size: 1rem;
+.shortcut-tip-title {
+    font-size: 0.88rem;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 0.35rem;
+    letter-spacing: -0.01em;
 }
 
-.shortcut-text p {
-    font-size: 0.92rem;
+.shortcut-tip-text {
+    font-size: 0.88rem;
     color: var(--text-secondary);
     line-height: 1.55;
+    margin: 0;
 }
 
-.shortcut-text kbd {
+.mac-kbd {
+    display: inline-block;
+    padding: 0.15rem 0.45rem;
     background: var(--card-subtle);
     border: 1px solid var(--border-strong);
-    border-radius: 4px;
-    padding: 0.15rem 0.45rem;
+    border-radius: 5px;
     font-family: var(--font-mono);
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-primary);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+    vertical-align: baseline;
+    margin: 0 0.15rem;
 }
 
 /* ========================================================
@@ -1631,9 +1638,10 @@ kbd {
         flex-wrap: wrap;
     }
 
-    .install-shortcut-card {
+    .shortcut-tip-banner {
         padding: 1rem 1.15rem;
         flex-direction: column;
+        align-items: flex-start;
         gap: 0.75rem;
     }
 
