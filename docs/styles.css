@@ -559,7 +559,7 @@ kbd {
 
 /* Install Shortcut Banner - macOS Settings Style */
 .shortcut-tip-banner {
-    margin: 2.5rem auto 0;
+    margin: 0 auto 3rem;
     max-width: 680px;
     background: var(--card);
     border: 1px solid var(--border-hairline);
@@ -1200,6 +1200,7 @@ kbd {
 }
 
 .cta-banner {
+    margin-top: 3.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
