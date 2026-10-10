@@ -5,7 +5,7 @@
 window.BONGO_TRANSLATIONS = {
     en: {
         // Meta
-        "page.title": "Bongo · বঙ্গ — Native Bangla Keyboard for macOS Apple Silicon",
+        "page.title": "Bongo · বঙ্গ: Native Bangla Keyboard for macOS Apple Silicon",
 
         // Nav
         "nav.features": "Features",
@@ -40,7 +40,7 @@ window.BONGO_TRANSLATIONS = {
         "playground.eyebrow": "Try It Right Now",
         "playground.title": "Experience Bongo Phonetic in Your Browser",
         "playground.desc": "Type phonetic English below and see how Bongo translates your words in real time with an authentic macOS HUD simulation.",
-        "playground.window_title": "TextEdit — Untitled Document",
+        "playground.window_title": "TextEdit: Untitled Document",
         "playground.mode": "Bongo · Phonetic",
         "playground.try_label": "Try typing:",
         "playground.input_placeholder": "Type here in English (e.g. ami banglay gan gai)...",
@@ -152,7 +152,7 @@ window.BONGO_TRANSLATIONS = {
 
     bn: {
         // Meta
-        "page.title": "বঙ্গ · Bongo — ম্যাক অ্যাপল সিলিকনের জন্য নেটিভ বাংলা কিবোর্ড",
+        "page.title": "বঙ্গ · Bongo: ম্যাক অ্যাপল সিলিকনের জন্য নেটিভ বাংলা কিবোর্ড",
 
         // Nav
         "nav.features": "বৈশিষ্ট্যসমূহ",
@@ -174,7 +174,7 @@ window.BONGO_TRANSLATIONS = {
         "hero.tag_desktop": "সম্পূর্ণভাবে অ্যাপল সিলিকনের জন্য নির্মিত (M1, M2, M3, M4+)",
         "hero.tag_mobile": "অ্যাপল সিলিকন নেটিভ (M1–M4+)",
         "hero.title": "ম্যাকের জন্য নেটিভ বাংলা কিবোর্ড।<br><span class=\"gradient-text\">দ্রুত, সাবলীল ও সম্পূর্ণ নিরাপদ।</span>",
-        "hero.subtitle": "সাফারি, নোটস, ওয়ার্ড, স্ল্যাক বা টার্মিনালে পরিচিত ফোনেটিক নিয়মে স্বাচ্ছন্দ্যে বাংলা লিখুন। কোনো ল্যাগ নেই, ট্র্যাকিং নেই—আধুনিক অ্যাপল সিলিকন ম্যাকের জন্যই বিশেষভাবে তৈরি।",
+        "hero.subtitle": "সাফারি, নোটস, ওয়ার্ড, স্ল্যাক বা টার্মিনালে পরিচিত ফোনেটিক নিয়মে স্বাচ্ছন্দ্যে বাংলা লিখুন। কোনো ল্যাগ নেই, ট্র্যাকিং নেই, আধুনিক অ্যাপল সিলিকন ম্যাকের জন্যই বিশেষভাবে তৈরি।",
         "hero.cta_main": "ম্যাকের জন্য ডাউনলোড করুন",
         "hero.cta_sub": "সম্পূর্ণ ফ্রি · arm64 DMG · macOS 13+",
         "hero.cta_secondary": "ইনস্টল করার নিয়ম",
@@ -187,7 +187,7 @@ window.BONGO_TRANSLATIONS = {
         "playground.eyebrow": "এখনই ট্রাই করুন",
         "playground.title": "ব্রাউজারেই উপভোগ করুন বঙ্গ ফোনেটিক",
         "playground.desc": "নিচে ফোনেটিক ইংরেজিতে টাইপ করুন এবং দেখুন কীভাবে ম্যাকের আসল ক্যান্ডিডেট বারের মতো রিয়েল-টাইমে বাংলায় রূপান্তর হয়।",
-        "playground.window_title": "TextEdit — নামহীন ডকুমেন্ট",
+        "playground.window_title": "TextEdit: নামহীন ডকুমেন্ট",
         "playground.mode": "বঙ্গ · ফোনেটিক",
         "playground.try_label": "টাইপ করে দেখুন:",
         "playground.input_placeholder": "এখানে ইংরেজিতে লিখুন (যেমন: ami banglay gan gai)...",
@@ -228,7 +228,7 @@ window.BONGO_TRANSLATIONS = {
         "feature.4_title": "১,৫০,০০০+ শব্দের বিশাল অভিধান",
         "feature.4_desc": "শক্তিশালী <code>riti</code> ইঞ্জিনের সাহায্যে নির্ভুল বানান, প্রত্যয় সমন্বয়, অটো-কারেক্ট এবং বুদ্ধিমান সাজেশন সুবিধা।",
         "feature.5_title": "সিস্টেমজুড়ে সাবলীল ব্যবহার",
-        "feature.5_desc": "অ্যাপলের নিজস্ব InputMethodKit আর্কিটেকচার—Safari, Chrome, Xcode, Mail, Pages, Slack এমনকি Terminal-এও সাবলীলভাবে কাজ করে।",
+        "feature.5_desc": "অ্যাপলের নিজস্ব InputMethodKit আর্কিটেকচার: Safari, Chrome, Xcode, Mail, Pages, Slack এমনকি Terminal-এও সাবলীলভাবে কাজ করে।",
         "feature.6_title": "পছন্দমতো ফন্ট ও ইন্টারফেস",
         "feature.6_desc": "ক্যান্ডিডেট বারের ফন্ট ও আকার পরিবর্তন করুন, তিনটি টাইপিং মোড থেকে বেছে নিন এবং সরাসরি ম্যাক মেনু বার থেকেই সব নিয়ন্ত্রণ করুন।",
 
@@ -271,7 +271,7 @@ window.BONGO_TRANSLATIONS = {
         "faq.q1": "বঙ্গ কি সব অ্যাপল সিলিকন ম্যাকের (M1 থেকে M4+) সাথে কাজ করবে?",
         "faq.a1": "হ্যাঁ, শতভাগ। বঙ্গ সম্পূর্ণভাবে অ্যাপল সিলিকনের (<code>arm64</code>) জন্য কম্পাইল করা। M1, M2, M3, M4 প্রসেসর চালিত যেকোনো MacBook Air, MacBook Pro, Mac mini, iMac, Mac Studio ও Mac Pro-তে (macOS 13 Ventura, macOS 14 Sonoma, macOS 15 Sequoia) এটি চমৎকারভাবে কাজ করবে।",
         "faq.q2": "ম্যাকের সাধারণ বাংলা কিবোর্ডের সাথে বঙ্গের পার্থক্য কী?",
-        "faq.a2": "ম্যাকের বিল্ট-ইন বাংলা কিবোর্ডে প্রতিটি অক্ষরের নির্দিষ্ট স্থান মুখস্থ করতে হয়। আর বঙ্গে রয়েছে <strong>অভ্র ফোনেটিক টাইপিং</strong>—ইংরেজি বর্ণ দিয়ে উচ্চারণ অনুযায়ী লিখলেই তা খাঁটি বাংলায় রূপান্তরিত হয় (যেমন: <code>ami</code> → <code>আমি</code>, <code>dhonnobad</code> → <code>ধন্যবাদ</code>), সাথে দেড় লাখ শব্দের ডিকশনারি ও অটো-কারেক্ট সুবিধা।",
+        "faq.a2": "ম্যাকের বিল্ট-ইন বাংলা কিবোর্ডে প্রতিটি অক্ষরের নির্দিষ্ট স্থান মুখস্থ করতে হয়। আর বঙ্গে রয়েছে <strong>অভ্র ফোনেটিক টাইপিং</strong>: ইংরেজি বর্ণ দিয়ে উচ্চারণ অনুযায়ী লিখলেই তা খাঁটি বাংলায় রূপান্তরিত হয় (যেমন: <code>ami</code> → <code>আমি</code>, <code>dhonnobad</code> → <code>ধন্যবাদ</code>), সাথে দেড় লাখ শব্দের ডিকশনারি ও অটো-কারেক্ট সুবিধা।",
         "faq.q3": "বঙ্গ কি আমার লেখার তথ্য সংগ্রহ করে বা কোনো পারমিশন চায়?",
         "faq.a3": "<strong>একদমই না।</strong> বঙ্গ তৈরি করা হয়েছে অ্যাপলের অফিসিয়াল <code>InputMethodKit</code> ফ্রেমওয়ার্ক ব্যবহার করে। এটি কোনো কি-স্ট্রোক রেকর্ড করে না, কোনো ইন্টারনেট সংযোগ ব্যবহার করে না এবং এর জন্য কোনো অ্যাক্সেসিবিলিটি পারমিশনের দরকার হয় না। আপনার সমস্ত লেখা সম্পূর্ণ আপনার ডিভাইসেই সীমাবদ্ধ থাকে।",
         "faq.q4": "ইংরেজি এবং বাংলার মধ্যে কীভাবে দ্রুত পরিবর্তন করব?",
@@ -279,7 +279,7 @@ window.BONGO_TRANSLATIONS = {
         "faq.q5": "আমি কি সাজেশনের ফন্ট বা আকার পরিবর্তন করতে পারব?",
         "faq.a5": "হ্যাঁ! Applications থেকে <strong>Bongo</strong> ওপেন করুন (অথবা মেনু বার থেকে Settings...), তারপর <strong>Fonts</strong> ট্যাবে গিয়ে আপনার ম্যাকে থাকা যেকোনো বাংলা ফন্ট ও পছন্দের সাইজ নির্বাচন করুন।",
         "faq.q6": "বঙ্গ কি সম্পূর্ণ ফ্রি এবং ওপেন সোর্স?",
-        "faq.a6": "হ্যাঁ। বঙ্গ সম্পূর্ণ বিনামূল্যে ব্যবহার করা যায়—কোনো সাবস্ক্রিপশন, বিজ্ঞাপন বা হিডেন চার্জ নেই। পুরো সোর্স কোড MPL-2.0 লাইসেন্সের আওতায় <a href=\"https://github.com/mehedishakeel/Bongo\" target=\"_blank\" rel=\"noopener\">GitHub</a>-এ উন্মুক্ত।",
+        "faq.a6": "হ্যাঁ। বঙ্গ সম্পূর্ণ বিনামূল্যে ব্যবহার করা যায়: কোনো সাবস্ক্রিপশন, বিজ্ঞাপন বা হিডেন চার্জ নেই। পুরো সোর্স কোড MPL-2.0 লাইসেন্সের আওতায় <a href=\"https://github.com/mehedishakeel/Bongo\" target=\"_blank\" rel=\"noopener\">GitHub</a>-এ উন্মুক্ত।",
 
         // Footer
         "footer.desc": "অ্যাপল সিলিকন ম্যাকের জন্য দ্রুত, সাবলীল ও শতভাগ নিরাপদ নেটিভ বাংলা কিবোর্ড। আধুনিক ম্যাকওএস-এর জন্য বিশেষভাবে তৈরি।",
