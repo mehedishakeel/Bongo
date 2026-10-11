@@ -26,7 +26,7 @@ window.BONGO_TRANSLATIONS = {
         // Hero
         "hero.tag_desktop": "Built Exclusively for Apple Silicon (M1, M2, M3, M4+)",
         "hero.tag_mobile": "Apple Silicon Native (M1, M2, M3, M4+)",
-        "hero.title": "Native Bangla Typing for Mac.<br><span class=\"gradient-text\">Fast, Fluid & Private.</span>",
+        "hero.title": "Native Bangla Typing for Mac.",
         "hero.subtitle": "Type naturally in Bengali across Safari, Notes, Word, Slack, and Terminal using familiar phonetic rules. Zero lag, zero telemetry, and built purely for modern Apple Silicon Macs.",
         "hero.cta_main": "Download for macOS",
         "hero.cta_sub": "Free · arm64 DMG · macOS 13+",
@@ -175,7 +175,7 @@ window.BONGO_TRANSLATIONS = {
         // Hero
         "hero.tag_desktop": "সম্পূর্ণভাবে অ্যাপল সিলিকনের জন্য নির্মিত (M1, M2, M3, M4+)",
         "hero.tag_mobile": "অ্যাপল সিলিকন নেটিভ (M1, M2, M3, M4+)",
-        "hero.title": "ম্যাকের জন্য নেটিভ বাংলা কিবোর্ড।<br><span class=\"gradient-text\">দ্রুত, সাবলীল ও সম্পূর্ণ নিরাপদ।</span>",
+        "hero.title": "ম্যাকের জন্য নেটিভ বাংলা কিবোর্ড।",
         "hero.subtitle": "সাফারি, নোটস, ওয়ার্ড, স্ল্যাক বা টার্মিনালে পরিচিত ফোনেটিক নিয়মে স্বাচ্ছন্দ্যে বাংলা লিখুন। কোনো ল্যাগ নেই, ট্র্যাকিং নেই, আধুনিক অ্যাপল সিলিকন ম্যাকের জন্যই বিশেষভাবে তৈরি।",
         "hero.cta_main": "ম্যাকের জন্য ডাউনলোড করুন",
         "hero.cta_sub": "সম্পূর্ণ ফ্রি · arm64 DMG · macOS 13+",
