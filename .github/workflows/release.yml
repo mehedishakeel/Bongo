@@ -47,7 +47,7 @@ jobs:
           done
 
       - name: Upload DMG Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bongo-macos-arm64-dmg
           path: |
@@ -85,7 +85,7 @@ jobs:
           done
 
       - name: Upload DEB Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bongo-linux-amd64-deb
           path: |
