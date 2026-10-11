@@ -17,7 +17,7 @@ jobs:
   repository:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate repository
         run: |
           python3 -m unittest discover -s tests -v
@@ -30,7 +30,7 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install Rust toolchain
         run: rustup default stable
       - name: Build Linux Engine
@@ -43,7 +43,7 @@ jobs:
   macos:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Select Apple Silicon Rust target
         run: rustup target add aarch64-apple-darwin
       - name: Run native Apple Silicon integration tests
