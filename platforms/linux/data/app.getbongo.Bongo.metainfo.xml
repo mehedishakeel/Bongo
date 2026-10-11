@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>app.getbongo.Bongo</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MPL-2.0</project_license>
+  <name>Bongo</name>
+  <summary>Native Avro phonetic Bengali typing for modern Linux desktops</summary>
+  <description>
+    <p>
+      Bongo brings fast, natural Avro phonetic Bengali typing to modern Linux desktops (GNOME, KDE Plasma, XFCE).
+      Powered by the pure-Rust offline transliteration engine with full dictionary suggestions and IBus integration.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Complete Avro phonetic keymap transliteration (e.g. ami to আমি).</li>
+      <li>Floating candidate HUD with keyboard number shortcuts (1-9) and arrow navigation.</li>
+      <li>Configurable typing modes: Phonetic First, Smart suggestions, and Phonetic only.</li>
+      <li>Emoji completion toggle and Bengali typography customization.</li>
+      <li>Comprehensive phonetic cheatsheet with instant search.</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">app.getbongo.Bongo.desktop</launchable>
+  <url type="homepage">https://getbongo.app</url>
+  <url type="bugtracker">https://github.com/mehedishakeel/bongo/issues</url>
+  <developer_name>Mehedi Shakeel</developer_name>
+  <provides>
+    <binary>bongo-settings</binary>
+    <binary>bongo-ibus-engine</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.0.0" date="2026-10-10">
+      <description>
+        <p>Initial release of Bongo for Linux with IBus input method and GTK4 settings.</p>
+      </description>
+    </release>
+  </releases>
+</component>

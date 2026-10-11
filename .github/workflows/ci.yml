@@ -22,6 +22,23 @@ jobs:
         run: |
           python3 -m unittest discover -s tests -v
           bash -n platforms/macos/scripts/create-dmg.sh
+          bash -n platforms/linux/scripts/install.sh
+          bash -n platforms/linux/scripts/build-deb.sh
+          bash -n platforms/linux/scripts/build-rpm.sh
+          python3 -m py_compile platforms/linux/ui/bongo_settings.py platforms/linux/ibus/bongo_ibus_engine.py
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        run: rustup default stable
+      - name: Build Linux Engine
+        run: |
+          (cd platforms/linux/engine && cargo build --release)
+      - name: Test Linux Packaging
+        run: |
+          bash platforms/linux/scripts/build-deb.sh
 
   macos:
     runs-on: macos-15

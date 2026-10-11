@@ -1,4 +1,4 @@
-"""Validate Apple Silicon native identity isolation and resource integrity without activating an IME."""
+"""Validate platform identity isolation and resource integrity across macOS and Linux without activating an IME."""
 import plistlib
 from pathlib import Path
 import unittest
@@ -43,13 +43,44 @@ class DistributionTests(unittest.TestCase):
         self.assertIn('configuration.arguments = ["--show-settings"]', launcher)
         self.assertIn('CommandLine.arguments.contains("--show-settings")', (ROOT / 'platforms/macos/Bongo/Sources/AppDelegate.swift').read_text())
 
-    def test_apple_silicon_only_architecture(self):
+    def test_linux_registration(self):
+        # IBus component XML verification
+        ibus_xml = (ROOT / 'platforms/linux/ibus/bongo.xml').read_text()
+        self.assertIn('<name>org.freedesktop.IBus.Bongo</name>', ibus_xml)
+        self.assertIn('<name>bongo</name>', ibus_xml)
+        self.assertIn('<language>bn</language>', ibus_xml)
+        self.assertIn('<exec>/usr/libexec/bongo-ibus-engine --ibus</exec>', ibus_xml)
+
+        # Desktop entry & AppStream
+        desktop_entry = (ROOT / 'platforms/linux/data/app.getbongo.Bongo.desktop').read_text()
+        self.assertIn('Exec=bongo-settings', desktop_entry)
+        self.assertIn('Icon=bongo', desktop_entry)
+        self.assertIn('StartupWMClass=app.getbongo.Bongo', desktop_entry)
+
+        metainfo = (ROOT / 'platforms/linux/data/app.getbongo.Bongo.metainfo.xml').read_text()
+        self.assertIn('<id>app.getbongo.Bongo</id>', metainfo)
+        self.assertIn('<name>Bongo</name>', metainfo)
+
+        # Linux UI parity checks (exact same 4 tabs)
+        ui_script = (ROOT / 'platforms/linux/ui/bongo_settings.py').read_text()
+        for title in ['Getting Started', 'Bongo Layout', 'Settings', 'Fonts']:
+            self.assertIn(title, ui_script)
+        self.assertIn('Phonetic first', ui_script)
+        self.assertIn('Smart suggestions', ui_script)
+        self.assertIn('Phonetic only', ui_script)
+        self.assertIn('Show emoji in suggestions', ui_script)
+
+        # Linux Engine & scripts
+        self.assertTrue((ROOT / 'platforms/linux/engine/Cargo.toml').is_file())
+        self.assertTrue((ROOT / 'platforms/linux/scripts/install.sh').is_file())
+        self.assertTrue((ROOT / 'platforms/linux/scripts/build-deb.sh').is_file())
+        self.assertTrue((ROOT / 'platforms/linux/scripts/build-rpm.sh').is_file())
+
+    def test_platform_architecture_integrity(self):
         # Ensure no legacy platforms remain
-        self.assertFalse((ROOT / 'platforms/linux').exists(), 'Linux platform directory should not exist')
         self.assertFalse((ROOT / 'platforms/windows').exists(), 'Windows platform directory should not exist')
         self.assertFalse((ROOT / 'licenses/GPL-3.0.txt').exists(), 'Linux GPL license should not exist')
         self.assertFalse((ROOT / 'licenses/MPL-1.1.txt').exists(), 'Windows MPL-1.1 license should not exist')
-        self.assertFalse((ROOT / 'docs/LINUX-INSTALL.md').exists(), 'Linux install doc should not exist')
 
         # Check create-dmg.sh restricts to Apple Silicon
         script = (ROOT / 'platforms/macos/scripts/create-dmg.sh').read_text()
@@ -59,12 +90,12 @@ class DistributionTests(unittest.TestCase):
         self.assertNotIn('BUILD_UNIVERSAL', script)
         self.assertNotIn('x86_64-apple-darwin', script)
 
-        # Ensure upstream.lock.json only has macOS Apple Silicon components
+        # Ensure upstream.lock.json only has macOS and Linux components
         upstream = json.loads((ROOT / 'upstream.lock.json').read_text())
         self.assertIn('Lekho', upstream)
         self.assertIn('riti-macos', upstream)
+        self.assertIn('riti-linux', upstream)
         self.assertNotIn('OpenBangla-Keyboard', upstream)
-        self.assertNotIn('riti-linux', upstream)
         self.assertNotIn('Avro-Keyboard', upstream)
 
     def test_release_artifact_layout(self):
@@ -83,12 +114,12 @@ class DistributionTests(unittest.TestCase):
         self.assertNotIn('dist/', release)
 
         self.assertTrue((ROOT / 'platforms/macos/release/.gitkeep').is_file())
-        scripts = {
+        mac_scripts = {
             path.relative_to(ROOT).as_posix()
-            for path in (ROOT / 'platforms').glob('*/scripts/*')
+            for path in (ROOT / 'platforms/macos/scripts').glob('*')
             if path.is_file()
         }
-        self.assertEqual(scripts, {
+        self.assertEqual(mac_scripts, {
             'platforms/macos/scripts/create-dmg.sh',
         })
         self.assertFalse((ROOT / 'scripts').exists())

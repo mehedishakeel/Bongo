@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bongo IBus Component Descriptor -->
+<component>
+    <name>org.freedesktop.IBus.Bongo</name>
+    <description>Bongo Native Bengali Input Method for Linux</description>
+    <version>1.0.0</version>
+    <license>MPL-2.0</license>
+    <author>Mehedi Shakeel &lt;mehedi@mehedishakeel.com&gt;</author>
+    <homepage>https://getbongo.app</homepage>
+    <exec>/usr/libexec/bongo-ibus-engine --ibus</exec>
+    <textdomain>bongo</textdomain>
+    <engines>
+        <engine>
+            <name>bongo</name>
+            <language>bn</language>
+            <license>MPL-2.0</license>
+            <author>Mehedi Shakeel</author>
+            <icon>/usr/share/icons/hicolor/scalable/apps/bongo.svg</icon>
+            <layout>default</layout>
+            <longname>Bengali (Bongo)</longname>
+            <description>Native Bengali Phonetic Keyboard Input Method</description>
+            <rank>99</rank>
+            <symbol>ব</symbol>
+            <setup>/usr/bin/bongo-settings</setup>
+        </engine>
+    </engines>
+</component>

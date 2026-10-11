@@ -5,31 +5,36 @@
 <h1 align="center">Bongo · বঙ্গ</h1>
 
 <p align="center">
-  <strong>Native Bangla Phonetic Keyboard for macOS Apple Silicon</strong>
+  <strong>Native Bangla Phonetic Keyboard for macOS & Linux</strong>
 </p>
 
 <p align="center">
-  <a href="https://github.com/mehedishakeel/Bongo/releases/latest"><img src="https://img.shields.io/badge/Platform-Apple%20Silicon%20(arm64)-4f46e5?style=flat-square&logo=apple" alt="Apple Silicon"></a>
-  <a href="https://github.com/mehedishakeel/Bongo/releases/latest"><img src="https://img.shields.io/badge/macOS-13%2B%20(Ventura%20|%20Sonoma%20|%20Sequoia)-black?style=flat-square&logo=apple" alt="macOS 13+"></a>
+  <a href="https://github.com/mehedishakeel/Bongo/releases/latest"><img src="https://img.shields.io/badge/Platforms-macOS%20(Apple%20Silicon)%20|%20Linux%20(IBus)-4f46e5?style=flat-square" alt="Platforms"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MPL--2.0-indigo?style=flat-square" alt="License"></a>
   <a href="https://getbongo.app"><img src="https://img.shields.io/badge/Website-getbongo.app-6366f1?style=flat-square" alt="Website"></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0-macos-arm64.dmg">
-    <img src="https://img.shields.io/badge/Download-Bongo_1.0_(Apple_Silicon_DMG)-4f46e5?style=for-the-badge&logo=apple&logoColor=white" alt="Download DMG">
+    <img src="https://img.shields.io/badge/macOS-Download_DMG-4f46e5?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS DMG">
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/bongo_1.0.0_amd64.deb">
+    <img src="https://img.shields.io/badge/Linux-Download_DEB-e11d48?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux DEB">
   </a>
 </p>
 
 ---
 
-**Bongo** is a fast, lightweight, and modern Bengali input method built exclusively for Apple Silicon Macs (M1/M2/M3/M4+). It brings familiar phonetic typing directly into all your macOS apps with instant suggestions, a sleek HUD candidate bar, and complete on-device privacy.
+**Bongo** is a fast, lightweight, and modern Bengali input method built for macOS Apple Silicon and modern Linux desktop environments (GNOME, KDE Plasma, XFCE). It brings familiar phonetic typing directly into all your applications with instant suggestions, a sleek HUD candidate bar, and complete on-device privacy.
 
 **Visit the official website & interactive demo**: [https://getbongo.app](https://getbongo.app)
 
 ---
 
-## Quick Installation (3 Steps)
+## Quick Installation
+
+### macOS (Apple Silicon)
 
 1. **Download**: Get `Bongo-1.0-macos-arm64.dmg` from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
 2. **Install**: Open the DMG and drag **Bongo.app** into your **Applications** folder.
@@ -37,6 +42,16 @@
    - Open **Bongo** from Applications once (it registers the keyboard service with macOS).
    - Go to **System Settings → Keyboard → Input Sources → Edit → +**, and select **Bongo** (under Bengali).
    - Switch keyboards anytime with the **Globe (<kbd>fn</kbd> / Globe)** key or <kbd>Control + Space</kbd>!
+
+### Linux (Ubuntu, Debian, Fedora, Arch)
+
+1. **Download**: Get `bongo_1.0.0_amd64.deb` (or build from source with `./platforms/linux/scripts/install.sh`).
+2. **Install**: `sudo apt install ./bongo_1.0.0_amd64.deb`
+3. **Activate**: Go to **Settings → Keyboard → Input Sources → Add**, and add **Bengali (Bongo)**.
+   - Switch keyboards with <kbd>Super + Space</kbd> or <kbd>Control + Space</kbd>.
+   - Open **Bongo Settings** (`bongo-settings`) from the app launcher anytime.
+
+See [docs/LINUX-INSTALL.md](docs/LINUX-INSTALL.md) for full Linux instructions.
 
 ---
 
@@ -54,18 +69,18 @@ Bongo uses the standard, intuitive **Avro Phonetic** rules you already know. Typ
 | `kkhoma` | **ক্ষমা** | Forgive |
 | `gyan` / `jnj` | **জ্ঞান** | Knowledge |
 
-Press <kbd>Space</kbd> to commit the highlighted word, or press number keys <kbd>1</kbd> to <kbd>5</kbd> to pick from the candidate list immediately.
+Press <kbd>Space</kbd> to commit the highlighted word, or press number keys <kbd>1</kbd> to <kbd>9</kbd> to pick from the candidate list immediately.
 
 ---
 
 ## Key Features
 
-- **100% Apple Silicon Native**: Built strictly for `arm64` architecture. No Intel emulation, zero Rosetta lag, negligible memory usage, and near-zero latency.
-- **Privacy-First (On-Device)**: Your typing, vocabulary, and preferences never leave your Mac. No network calls, no analytics, and no accessibility keylogging permissions needed.
-- **Modern macOS HUD**: Beautiful floating suggestion bar with tactile shortcut keys (`[1]`, `[2]`), arrow navigation, and high-contrast pill styling.
+- **Pure Rust Engine**: High-performance, zero-latency phonetic transliteration powered by offline dictionary Trie structures.
+- **Privacy-First (On-Device)**: Your typing, vocabulary, and preferences never leave your device. No network calls, no analytics, and no telemetry.
+- **Modern Candidate HUD**: Floating suggestion bar with tactile shortcut keys (`[1]`, `[2]`), arrow navigation, and high-contrast pill styling.
 - **3 Typing Modes**: Choose between *Phonetic first* (exact phonetic spelling by default), *Smart suggestions* (dictionary auto-selection), or *Phonetic only* (direct inline output).
-- **Custom Fonts**: Choose any Bengali font installed on your Mac (Kohinoor Bangla, Noto Sans Bengali, Ekush, etc.) with real-time size adjustments.
-- **Menu Bar Integration**: Switch modes and access layout guides straight from the macOS input menu bar icon.
+- **Custom Fonts**: Choose any Bengali font installed on your system (Noto Sans Bengali, Kalpurush, Kohinoor Bangla, SolaimanLipi, etc.) with real-time size adjustments.
+- **Desktop Settings & Cheatsheet**: Native welcome and settings application on both macOS and Linux with searchable layout guide and interactive typing playground.
 
 ---
 
@@ -87,17 +102,21 @@ Press <kbd>Space</kbd> to commit the highlighted word, or press number keys <kbd
 
 ## For Developers
 
-To build Bongo from source on an Apple Silicon Mac:
-
+### Build on macOS:
 ```sh
-# 1. Clone repository
-git clone https://github.com/mehedishakeel/Bongo.git
-cd Bongo
-
-# 2. Build Apple Silicon DMG
 ./platforms/macos/scripts/create-dmg.sh
+```
 
-# 3. Run validation tests
+### Build on Linux:
+```sh
+./platforms/linux/scripts/install.sh
+# Or create DEB / RPM packages:
+./platforms/linux/scripts/build-deb.sh
+./platforms/linux/scripts/build-rpm.sh
+```
+
+### Run Tests:
+```sh
 python3 -m unittest discover -s tests -v
 ```
 

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Bongo
+GenericName=Bengali Input Method Settings
+Comment=Phonetic Bengali typing settings, cheatsheet, and layout guide
+Exec=bongo-settings
+Icon=bongo
+Terminal=false
+Categories=Settings;Utility;DesktopSettings;
+Keywords=bengali;bangla;avro;typing;ime;keyboard;phonetic;
+StartupNotify=true
+StartupWMClass=app.getbongo.Bongo

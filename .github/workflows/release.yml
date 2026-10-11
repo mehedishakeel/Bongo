@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   build-dmg:
-    name: Build macOS DMG & Release
+    name: Build macOS DMG
     runs-on: macos-15
     steps:
       - name: Checkout repository
@@ -54,13 +54,66 @@ jobs:
             platforms/macos/release/*.dmg
             platforms/macos/release/*.sha256
 
+  build-linux:
+    name: Build Linux DEB
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: rustup default stable
+
+      - name: Install IBus & Packaging Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev libibus-1.0-dev
+
+      - name: Build Debian Package
+        run: |
+          bash platforms/linux/scripts/build-deb.sh
+
+      - name: Generate Checksums
+        run: |
+          cd platforms/linux/release
+          for deb in *.deb; do
+            if [ -f "$deb" ]; then
+              shasum -a 256 "$deb" > "${deb}.sha256"
+              echo "Generated checksum for $deb:"
+              cat "${deb}.sha256"
+            fi
+          done
+
+      - name: Upload DEB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bongo-linux-amd64-deb
+          path: |
+            platforms/linux/release/*.deb
+            platforms/linux/release/*.sha256
+
+  publish:
+    name: Publish Release
+    needs: [build-dmg, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+          merge-multiple: true
+
       - name: Publish to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            platforms/macos/release/*.dmg
-            platforms/macos/release/*.sha256
+            release-artifacts/*.dmg
+            release-artifacts/*.deb
+            release-artifacts/*.sha256
           generate_release_notes: true
           draft: ${{ github.event.inputs.draft == 'true' }}
           prerelease: ${{ github.event.inputs.prerelease == 'true' }}
