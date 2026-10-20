@@ -7,6 +7,7 @@
 #include <fcitx-utils/log.h>
 
 #include "bongo_api.h"
+#include "bongo_settings.h"
 
 namespace bongo {
 
@@ -43,6 +44,34 @@ void Bongo::reset(const fcitx::InputMethodEntry &,
                   fcitx::InputContextEvent &event) {
     state(event.inputContext())->reset();
 }
+
+void Bongo::loadConfigFromSettings() const {
+    const auto settings = loadSettings(settingsPath());
+    config_.typingMode.setValue(
+        static_cast<BongoTypingMode>(settings.typingMode));
+    config_.suggestEmoji.setValue(settings.suggestEmoji);
+}
+
+const fcitx::Configuration *Bongo::getConfig() const {
+    loadConfigFromSettings();
+    return &config_;
+}
+
+void Bongo::setConfig(const fcitx::RawConfig &config) {
+    config_.load(config, true);
+    // settings.json is the single source of truth shared with
+    // bongo-settings (and the other platforms); fcitx5's own conf file is
+    // only a transitive view provided through DBus.
+    Settings settings;
+    settings.typingMode = static_cast<int>(config_.typingMode.value());
+    settings.suggestEmoji = config_.suggestEmoji.value();
+    applySettingsOverride(settingsPath(), settings);
+}
+
+void Bongo::reloadConfig() {
+    loadConfigFromSettings();
+}
+
 
 class BongoFactory final : public fcitx::AddonFactory {
 public:

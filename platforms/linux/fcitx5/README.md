@@ -10,6 +10,11 @@ The addon is a C++20 `fcitx::InputMethodEngine` that:
 - Maps Bongo candidates to fcitx5's native preedit and candidate panel.
 - Reads Bongo's `~/.config/bongo/settings.json` for typing mode and emoji
   suggestions.
+- Exposes both options to fcitx5-configtool's native "Addons > Bongo"
+  configuration page. Changes there are written back to
+  `~/.config/bongo/settings.json` (all other keys, such as
+  `candidate_font`, are preserved), so the GUI, IBus and fcitx5 stay in
+  sync through one settings file.
 - Matches the IBus frontend's key behavior: Space/Enter commit, Escape resets,
   Backspace edits, Tab/Up/Down/PageUp/PageDown navigate, `1`-`9` select, and
   Ctrl/Alt/Super commit the composition and pass the shortcut through.

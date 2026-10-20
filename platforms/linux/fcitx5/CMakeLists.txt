@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(REQUIRED_FCITX_VERSION 5.1.0)
 
 find_package(Fcitx5Core ${REQUIRED_FCITX_VERSION} REQUIRED)
+find_package(Fcitx5Config REQUIRED)
 
 include(GNUInstallDirs)
 include(CTest)
@@ -18,7 +19,8 @@ add_fcitx5_addon(bongo
     src/bongo_keymap.cpp
 )
 target_include_directories(bongo PRIVATE src)
-target_link_libraries(bongo PRIVATE Fcitx5::Core ${CMAKE_DL_LIBS})
+target_link_libraries(bongo PRIVATE Fcitx5::Core Fcitx5::Config
+                                    ${CMAKE_DL_LIBS})
 
 install(TARGETS bongo DESTINATION "${FCITX_INSTALL_ADDONDIR}")
 

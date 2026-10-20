@@ -68,6 +68,19 @@ restart is required.
 - [x] Terminal (foot): preedit and commit work; the exact bytes of
       `ami ` + commit are `আমি `.
 
+## Native addon configuration (fcitx5-configtool)
+
+- [x] `fcitx://config/addon/bongo` GetConfig returns values and the
+      description (Enum `typing_mode` with Phonetic First/Smart/Phonetic
+      Only, Boolean `suggest_emoji`) over DBus.
+- [x] `SetConfig` from the config tool writes `~/.config/bongo/settings.json`
+      (verified: `typing_mode` 0→2, `suggest_emoji` true→false) while
+      preserving unrelated keys (`candidate_font`, `candidate_font_size`).
+- [x] The addon reloads `settings.json` changes without a restart; GetConfig
+      reflects restored values immediately.
+- [x] Typing still works after reinstalling the reconfigured addon
+      (`ami ` + Space commits `আমি ` in foot).
+
 ## Regression
 
 - [ ] GNOME/IBus still works after installation (the fcitx5 changes must not

@@ -13,7 +13,7 @@ class Fcitx5DistributionTests(unittest.TestCase):
         self.assertIn("Type=SharedLibrary", metadata)
         self.assertIn("OnDemand=True", metadata)
         self.assertIn("Category=InputMethod", metadata)
-        self.assertIn("Configurable=False", metadata)
+        self.assertIn("Configurable=True", metadata)
 
     def test_input_method_metadata(self):
         metadata = (FCITX5 / "data" / "bongo.im.conf").read_text()

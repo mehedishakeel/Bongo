@@ -15,6 +15,10 @@ struct Settings {
 Settings parseSettings(std::string_view text);
 Settings loadSettings(const std::filesystem::path &path);
 std::filesystem::path settingsPath();
+// Writes typing_mode / suggest_emoji into settings.json, preserving all
+// other keys. Used by both bongo-settings and the fcitx5 config panel.
+void applySettingsOverride(const std::filesystem::path &path,
+                           const Settings &settings);
 
 class SettingsWatcher {
 public:

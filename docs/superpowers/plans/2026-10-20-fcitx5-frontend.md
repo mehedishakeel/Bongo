@@ -734,6 +734,37 @@ gh pr create --repo mehedishakeel/Bongo --base main --head taxin-404:feat/fcitx5
 
 ---
 
+## Task 9: Native fcitx5-configtool addon configuration (post-review improvement)
+
+fcitx5 users should configure Bongo from the tools they already use. The addon
+now implements `getConfig()`/`setConfig()`/`reloadConfig()` with a native
+configuration model so the addon appears with its own page under
+fcitx5-configtool's "Addons" tab.
+
+Design (kept from the notes above): `~/.config/bongo/settings.json` remains the
+single source of truth. The native page is a view plus a writer — `setConfig()`
+merges `typing_mode` and `suggest_emoji` into settings.json and preserves every
+other key; `getConfig()` always reads settings.json. If the user later edits
+from `bongo-settings` or another platform's GUI, both stay consistent.
+
+- [x] `BongoAddonConfig` (Enum `typing_mode` + Boolean `suggest_emoji`) with
+      `Configurable=True` in `bongo-addon.conf.in`.
+- [x] `applySettingsOverride()` merge writer in `bongo_settings.cpp`
+      (same-line colon bound, no trailing-comma, preserves unknown keys) with
+      unit tests in `test_settings.cpp`.
+- [x] Distribution test asserts `Configurable=True`.
+- [x] Live: GetConfig returns values + description over DBus; SetConfig
+      (gdbus) updates settings.json in place while preserving
+      `candidate_font`; restored values read back correctly. See
+      `tests/smoke.md` ("Native addon configuration").
+- [x] Live: typing still commits (`ami ` → `আমি `) after the reconfigured
+      addon reinstall.
+- Known gap: configtool's own page render was shown once but the visual
+      walkthrough was half-done (window closed mid-test); the DBus contract
+      fcitx5-configtool uses is verified above.
+
+---
+
 ## Notes for the Implementer
 
 - The fcitx5 addon library must be system-wide. Do not try to load it from `~/.local/lib/fcitx5`; fcitx5 does not discover that path reliably.

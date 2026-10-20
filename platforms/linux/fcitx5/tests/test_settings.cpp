@@ -69,6 +69,41 @@ int main() {
     unsetenv("XDG_CONFIG_HOME");
     std::filesystem::remove_all(temp);
 
+    // fcitx5-configtool writes through applySettingsOverride; other keys
+    // from bongo-settings (e.g. candidate_font) must survive, and values
+    // must be updated in place with valid JSON.
+    std::filesystem::create_directories(temp / "bongo");
+    const auto path2 = temp / "bongo" / "settings.json";
+    {
+        std::ofstream file(path2);
+        file << R"({
+  "candidate_font": "Noto Sans Bengali",
+  "typing_mode": 1,
+  "suggest_emoji": true
+})";
+    }
+    bongo::applySettingsOverride(path2, bongo::Settings{2, false});
+    {
+        std::ifstream file(path2);
+        const std::string text((std::istreambuf_iterator<char>(file)),
+                               std::istreambuf_iterator<char>());
+        expect(text.find("\"candidate_font\": \"Noto Sans Bengali\"") !=
+                   std::string::npos,
+               "merge writer preserves unrelated keys");
+        bongo::Settings parsed = bongo::parseSettings(text);
+        expectSettings(parsed, 2, false, "merge writer updates both keys");
+    }
+    bongo::applySettingsOverride(path2, bongo::Settings{0, true});
+    expectSettings(bongo::loadSettings(path2), 0, true,
+                   "merge writer is re-appliable");
+
+    std::filesystem::remove(path2);
+    bongo::applySettingsOverride(path2, bongo::Settings{1, false});
+    expectSettings(bongo::loadSettings(path2), 1, false,
+                   "merge writer creates a file");
+
+    std::filesystem::remove_all(temp);
+
     if (failures) {
         std::cerr << failures << " failure(s)\n";
         return 1;
