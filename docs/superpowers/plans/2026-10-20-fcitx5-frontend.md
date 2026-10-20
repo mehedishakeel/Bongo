@@ -4,9 +4,9 @@
 
 **Goal:** Add a native fcitx5 frontend to Bongo on Linux, using the existing Rust phonetic engine, while keeping the IBus frontend for GNOME.
 
-**Architecture:** A C++17 `fcitx::InputMethodEngine` addon loads `libbongo_engine.so` through `dlopen`, keeps one engine per fcitx5 input context, and maps Bongo suggestions to fcitx5's native preedit and candidate panel. A small Rust engine update makes the existing typing-mode and emoji settings effective and crash-safe.
+**Architecture:** A C++20 `fcitx::InputMethodEngine` addon loads `libbongo_engine.so` through `dlopen`, keeps one engine per fcitx5 input context, and maps Bongo suggestions to fcitx5's native preedit and candidate panel. A small Rust engine update makes the existing typing-mode and emoji settings effective and crash-safe.
 
-**Tech stack:** C++17, CMake, fcitx5 5.1+, Rust 2021, Python 3 for installer/profile helper and repository tests.
+**Tech stack:** C++20, CMake, fcitx5 5.1+, Rust 2021, Python 3 for installer/profile helper and repository tests.
 
 **Design:** `docs/superpowers/specs/2026-10-20-fcitx5-frontend-design.md`
 

@@ -34,7 +34,7 @@ This design adds a first-class fcitx5 frontend for Linux. It is a thin adapter o
 
 ## Constraints
 
-- fcitx5 5.1.0 or newer; C++17; CMake.
+- fcitx5 5.1.0 or newer; C++20; CMake.
 - Bongo remains MPL-2.0. New files use MPL-2.0 SPDX headers.
 - The addon loads the engine dynamically. The engine may be installed in `lib`, `lib64`, or a multiarch directory.
 - Addon data lives under `${PREFIX}/share/fcitx5`; addon library under `${PREFIX}/lib*/fcitx5`.
