@@ -202,6 +202,18 @@ if [[ -n "${SUDO_USER:-}" ]]; then
     SUDO_HOME="$(getent passwd "${SUDO_USER}" 2>/dev/null | cut -d: -f6 || true)"
 fi
 
+# Describes the target desktop user for the fcitx5 profile configuration.
+TARGET_USER_NAME="$(id -un)"
+TARGET_USER_ID="$(id -u)"
+TARGET_HOME="${HOME}"
+if [[ $EUID -eq 0 && -n "${SUDO_USER:-}" ]]; then
+    TARGET_USER_NAME="${SUDO_USER}"
+    TARGET_USER_ID="$(id -u "${SUDO_USER}")"
+    if [[ -n "${SUDO_HOME}" ]]; then
+        TARGET_HOME="${SUDO_HOME}"
+    fi
+fi
+
 CARGO_CMD=(cargo)
 if [[ $EUID -eq 0 && -n "${SUDO_HOME}" && -x "${SUDO_HOME}/.cargo/bin/cargo" ]] && \
    command -v runuser >/dev/null 2>&1; then
@@ -418,31 +430,107 @@ if [[ -z "${DESTDIR}" ]]; then
         ibus restart || true
     fi
 
-    # Add Bongo to the invoking user's fcitx5 profile. The helper preserves
-    # the existing group order and is idempotent.
+    # Add Bongo to the invoking user's fcitx5 profile. fcitx5 rewrites this
+    # profile when it exits, so edit it while fcitx5 is stopped and put the
+    # user's input method framework back afterwards.
     if [[ "${FCITX5_SYSTEM_INSTALL}" == "true" && "${CONFIGURE_FCITX5}" == "true" && "${HAS_FCITX5_RUNTIME}" == "true" ]]; then
         FCITX5_SETUP="${PREFIX}/bin/bongo-fcitx5-setup"
         echo "--> Adding Bongo to the fcitx5 input method profile..."
         CONFIGURED=false
-        if [[ -n "${SUDO_USER:-}" ]]; then
-            if command -v runuser >/dev/null 2>&1; then
-                if runuser -u "${SUDO_USER}" -- env \
-                    "HOME=${SUDO_HOME:-/home/${SUDO_USER}}" \
-                    python3 "${FCITX5_SETUP}"; then
+        FCITX5_STOPPED=false
+        FCITX5_RESTARTED=false
+        FCITX5_SETUP_SKIPPED=false
+        FCITX5_PID="$(pgrep -u "${TARGET_USER_ID}" -x fcitx5 | head -1 || true)"
+        FCITX5_ENV=()
+
+        if [[ -n "${FCITX5_PID}" && -r "/proc/${FCITX5_PID}/environ" ]]; then
+            mapfile -t FCITX5_ENV < <(
+                tr '\0' '\n' < "/proc/${FCITX5_PID}/environ" |
+                    grep -E '^(WAYLAND_DISPLAY|DISPLAY|XDG_RUNTIME_DIR|DBUS_SESSION_BUS_ADDRESS|XDG_SESSION_TYPE|XDG_CURRENT_DESKTOP|HYPRLAND_INSTANCE_SIGNATURE)=' \
+                    || true
+            )
+        fi
+        if [[ ! " ${FCITX5_ENV[*]} " == *"XDG_RUNTIME_DIR="* ]]; then
+            FCITX5_ENV+=("XDG_RUNTIME_DIR=/run/user/${TARGET_USER_ID}")
+        fi
+        if [[ ! " ${FCITX5_ENV[*]} " == *"DBUS_SESSION_BUS_ADDRESS="* ]]; then
+            FCITX5_ENV+=("DBUS_SESSION_BUS_ADDRESS=/run/user/${TARGET_USER_ID}/bus")
+        fi
+
+        FCITX5_RUNNER=()
+        if [[ $EUID -eq 0 && -n "${SUDO_USER:-}" ]] && command -v runuser >/dev/null 2>&1; then
+            FCITX5_RUNNER=(
+                runuser -u "${SUDO_USER}" -- env
+                "HOME=${TARGET_HOME}"
+                "${FCITX5_ENV[@]}"
+            )
+        fi
+
+        if [[ -n "${FCITX5_PID}" ]]; then
+            echo "--> Stopping the running fcitx5 session so the profile is not overwritten..."
+            if command -v fcitx5-remote >/dev/null 2>&1; then
+                (
+                    cd /
+                    "${FCITX5_RUNNER[@]}" fcitx5-remote -e
+                ) >/dev/null 2>&1 || true
+                for _ in $(seq 1 25); do
+                    if ! pgrep -u "${TARGET_USER_ID}" -x fcitx5 >/dev/null 2>&1; then
+                        FCITX5_STOPPED=true
+                        break
+                    fi
+                    sleep 0.2
+                done
+            fi
+            if [[ "${FCITX5_STOPPED}" != "true" ]]; then
+                echo "Warning: could not stop fcitx5 automatically." >&2
+                echo "Stop fcitx5, run ${FCITX5_SETUP}, then start it again to" >&2
+                echo "avoid the live instance overwriting the profile." >&2
+                FCITX5_SETUP_SKIPPED=true
+            fi
+        else
+            FCITX5_STOPPED=true
+        fi
+
+        if [[ "${FCITX5_SETUP_SKIPPED}" != "true" ]]; then
+            if [[ -n "${SUDO_USER:-}" ]]; then
+                if command -v runuser >/dev/null 2>&1; then
+                    if runuser -u "${SUDO_USER}" -- env \
+                        "HOME=${TARGET_HOME}" \
+                        python3 "${FCITX5_SETUP}"; then
+                        CONFIGURED=true
+                    fi
+                fi
+            elif [[ $EUID -eq 0 ]]; then
+                echo "Warning: run the installer with sudo from your desktop user, or configure fcitx5 manually." >&2
+            else
+                if python3 "${FCITX5_SETUP}"; then
                     CONFIGURED=true
                 fi
             fi
-        elif [[ $EUID -eq 0 ]]; then
-            echo "Warning: run the installer with sudo from your desktop user, or configure fcitx5 manually." >&2
-        else
-            if python3 "${FCITX5_SETUP}"; then
-                CONFIGURED=true
-            fi
-        fi
 
-        if [[ "${CONFIGURED}" != "true" ]]; then
-            echo "Warning: Bongo was not added to the fcitx5 profile automatically." >&2
-            python3 "${FCITX5_SETUP}" --print-manual-steps 2>/dev/null || true
+            if [[ "${CONFIGURED}" != "true" ]]; then
+                echo "Warning: Bongo was not added to the fcitx5 profile automatically." >&2
+                python3 "${FCITX5_SETUP}" --print-manual-steps 2>/dev/null || true
+            fi
+
+            if [[ "${FCITX5_STOPPED}" == "true" && -n "${FCITX5_PID}" ]]; then
+                echo "--> Restarting fcitx5..."
+                (
+                    cd "${TARGET_HOME}" 2>/dev/null || cd /
+                    "${FCITX5_RUNNER[@]}" fcitx5 -d
+                ) >/dev/null 2>&1
+                for _ in $(seq 1 40); do
+                    if "${FCITX5_RUNNER[@]}" fcitx5-remote >/dev/null 2>&1; then
+                        FCITX5_RESTARTED=true
+                        break
+                    fi
+                    sleep 0.25
+                done
+                if [[ "${FCITX5_RESTARTED}" != "true" ]]; then
+                    echo "Warning: fcitx5 could not be restarted automatically." >&2
+                    echo "Start it with: fcitx5 -d" >&2
+                fi
+            fi
         fi
     fi
 fi
@@ -451,12 +539,25 @@ echo "=================================================="
 echo "   Bongo has been successfully installed!        "
 echo "=================================================="
 echo ""
+CONFIGURED="${CONFIGURED:-false}"
+FCITX5_RESTARTED="${FCITX5_RESTARTED:-false}"
 echo "Next Steps:"
 if [[ "${HAS_FCITX5_RUNTIME}" == "true" && "${FCITX5_SYSTEM_INSTALL}" == "true" ]]; then
-    echo "1. Run: fcitx5-configtool"
-    echo "2. Open Input Method -> add 'Bongo'."
-    echo "3. Apply and restart fcitx5, then switch with Ctrl+Space."
-    echo "4. Launch 'bongo-settings' to customize typing modes and fonts."
+    if [[ "${CONFIGURED}" == "true" ]]; then
+        echo "1. Bongo has been added to your fcitx5 input method list."
+        if [[ "${FCITX5_RESTARTED}" == "true" ]]; then
+            echo "2. fcitx5 was restarted with the new profile."
+        else
+            echo "2. Start fcitx5 with: fcitx5 -d"
+        fi
+        echo "3. Switch with Ctrl+Space, then type in any app."
+        echo "4. Launch 'bongo-settings' to customize typing modes and fonts."
+    else
+        echo "1. Run: fcitx5-configtool"
+        echo "2. Open Input Method -> add 'Bongo'."
+        echo "3. Apply and restart fcitx5, then switch with Ctrl+Space."
+        echo "4. Launch 'bongo-settings' to customize typing modes and fonts."
+    fi
 else
     echo "1. Open GNOME / IBus Settings -> Keyboard -> Input Sources."
     echo "2. Add 'Bengali (Bongo)' to your active keyboards."
