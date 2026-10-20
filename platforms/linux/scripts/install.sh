@@ -150,6 +150,38 @@ fi
 LINUX_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 REPO_ROOT="$(cd "${LINUX_ROOT}/../.." && pwd)"
 
+BONGO_FCITX5="${BONGO_FCITX5:-auto}"
+CONFIGURE_FCITX5=true
+for arg in "$@"; do
+    case "${arg}" in
+        --no-configure-fcitx5)
+            CONFIGURE_FCITX5=false
+            ;;
+        --configure-fcitx5)
+            CONFIGURE_FCITX5=true
+            ;;
+        -h|--help)
+            echo "Usage: install.sh [--no-configure-fcitx5]"
+            echo "Environment: BONGO_FCITX5=auto|1|0 PREFIX=... DESTDIR=..."
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: ${arg}" >&2
+            exit 1
+            ;;
+    esac
+done
+
+case "${BONGO_FCITX5}" in
+    1|true|yes) BONGO_FCITX5=1 ;;
+    0|false|no) BONGO_FCITX5=0 ;;
+    auto) ;;
+    *)
+        echo "Error: BONGO_FCITX5 must be auto, 1, or 0." >&2
+        exit 1
+        ;;
+esac
+
 PREFIX="${PREFIX:-/usr}"
 DESTDIR="${DESTDIR:-}"
 
@@ -178,10 +210,58 @@ if ! command -v cargo >/dev/null 2>&1; then
     exit 1
 fi
 
-if ! command -v ibus >/dev/null 2>&1; then
-    echo "Warning: IBus was not detected on this system." >&2
-    echo "Install dependencies on Ubuntu/Debian via:" >&2
-    echo "  sudo apt install -y ibus libibus-1.0-dev python3 python3-gi gir1.2-ibus-1.0 gir1.2-gtk-4.0" >&2
+HAS_IBUS=false
+if command -v ibus >/dev/null 2>&1; then
+    HAS_IBUS=true
+fi
+
+HAS_FCITX5_RUNTIME=false
+if command -v fcitx5 >/dev/null 2>&1; then
+    HAS_FCITX5_RUNTIME=true
+fi
+
+HAS_FCITX5_HEADERS=false
+if command -v pkg-config >/dev/null 2>&1 && pkg-config --exists Fcitx5Core 2>/dev/null; then
+    HAS_FCITX5_HEADERS=true
+fi
+
+if [[ "${HAS_IBUS}" != "true" && "${HAS_FCITX5_RUNTIME}" != "true" ]]; then
+    echo "Error: neither IBus nor fcitx5 was detected." >&2
+    echo "Install one of them, for example:" >&2
+    echo "  Ubuntu/Debian: sudo apt install -y ibus fcitx5 fcitx5-configtool" >&2
+    echo "  Arch:          sudo pacman -S ibus fcitx5 fcitx5-configtool" >&2
+    echo "  Fedora:        sudo dnf install -y ibus fcitx5 fcitx5-configtool" >&2
+    exit 1
+fi
+
+if [[ "${HAS_IBUS}" != "true" ]]; then
+    echo "Warning: IBus was not detected; GNOME users need IBus." >&2
+    echo "The fcitx5 frontend will still be installed when its headers are available." >&2
+fi
+
+BUILD_FCITX5=false
+case "${BONGO_FCITX5}" in
+    1)
+        if [[ "${HAS_FCITX5_HEADERS}" != "true" ]]; then
+            echo "Error: BONGO_FCITX5=1 but fcitx5 development headers were not found." >&2
+            echo "Install the fcitx5 development package (for example libfcitx5core-dev, fcitx5-devel, or fcitx5)." >&2
+            exit 1
+        fi
+        BUILD_FCITX5=true
+        ;;
+    auto)
+        if [[ "${HAS_FCITX5_HEADERS}" == "true" ]] && \
+           { [[ "${HAS_FCITX5_RUNTIME}" == "true" ]] || [[ -n "${DESTDIR}" ]]; }; then
+            BUILD_FCITX5=true
+        fi
+        ;;
+esac
+
+FCITX5_SYSTEM_INSTALL=false
+if [[ "${BUILD_FCITX5}" == "true" ]]; then
+    if [[ -n "${DESTDIR}" || ( $EUID -eq 0 && "${PREFIX}" == "/usr" ) ]]; then
+        FCITX5_SYSTEM_INSTALL=true
+    fi
 fi
 
 LIB_TARGET="${BONGO_LIB_TARGET:-${LINUX_ROOT}/engine/target/release/libbongo_engine.so}"
@@ -223,7 +303,10 @@ chmod +x "${LINUX_ROOT}/ui/bongo_settings.py"
 install -d "${DESTDIR}${PREFIX}/bin"
 install -m 755 "${LINUX_ROOT}/ui/bongo_settings.py" "${DESTDIR}${PREFIX}/bin/bongo-settings"
 
-# 5. Install Desktop entry
+# 5. Install fcitx5 profile helper
+install -m 755 "${SCRIPT_DIR}/configure-fcitx5.py" "${DESTDIR}${PREFIX}/bin/bongo-fcitx5-setup"
+
+# 6. Install Desktop entry
 install -d "${DESTDIR}${PREFIX}/share/applications"
 if [[ -z "${DESTDIR}" && "${PREFIX}" != "/usr" ]]; then
     sed "s|^Exec=bongo-settings|Exec=${PREFIX}/bin/bongo-settings|" "${LINUX_ROOT}/data/app.getbongo.Bongo.desktop" > "${DESTDIR}${PREFIX}/share/applications/app.getbongo.Bongo.desktop"
@@ -255,6 +338,41 @@ done
 install -d "${DESTDIR}${PREFIX}/share/pixmaps"
 install -m 644 "${LINUX_ROOT}/data/icons/bongo.png" "${DESTDIR}${PREFIX}/share/pixmaps/bongo.png"
 
+# 9. Build and install the fcitx5 addon.
+# fcitx5 only discovers addons from its system addon directory, so a local
+# ~/.local install is intentionally skipped and the sudo command is printed.
+if [[ "${BUILD_FCITX5}" == "true" ]]; then
+    if [[ "${FCITX5_SYSTEM_INSTALL}" == "true" ]]; then
+        if ! command -v cmake >/dev/null 2>&1; then
+            echo "Error: cmake is required to build the fcitx5 addon." >&2
+            exit 1
+        fi
+
+        echo "--> Building fcitx5 addon..."
+        FCITX5_BUILD_DIR="${LINUX_ROOT}/build/fcitx5"
+        CMAKE_ARGS=(
+            -S "${LINUX_ROOT}/fcitx5"
+            -B "${FCITX5_BUILD_DIR}"
+            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_INSTALL_PREFIX="${PREFIX}"
+            -DBUILD_TESTING=OFF
+        )
+        if command -v ninja >/dev/null 2>&1; then
+            CMAKE_ARGS+=(-G Ninja)
+        fi
+        cmake "${CMAKE_ARGS[@]}"
+        cmake --build "${FCITX5_BUILD_DIR}" --parallel
+        DESTDIR="${DESTDIR}" cmake --install "${FCITX5_BUILD_DIR}"
+    else
+        echo "--> Skipping the fcitx5 addon: it must be installed system-wide."
+        echo "    Run this command from the Bongo checkout:"
+        echo "    sudo BONGO_FCITX5=1 bash ${SCRIPT_DIR}/install.sh"
+    fi
+elif [[ "${BONGO_FCITX5}" == "1" ]]; then
+    echo "Error: fcitx5 was requested but cannot be built." >&2
+    exit 1
+fi
+
 # Update system caches if running on live system
 if [[ -z "${DESTDIR}" ]]; then
     echo "--> Updating desktop and icon caches..."
@@ -281,6 +399,32 @@ if [[ -z "${DESTDIR}" ]]; then
         ibus write-cache || true
         ibus restart || true
     fi
+
+    # Add Bongo to the invoking user's fcitx5 profile. The helper preserves
+    # the existing group order and is idempotent.
+    if [[ "${FCITX5_SYSTEM_INSTALL}" == "true" && "${CONFIGURE_FCITX5}" == "true" && "${HAS_FCITX5_RUNTIME}" == "true" ]]; then
+        FCITX5_SETUP="${PREFIX}/bin/bongo-fcitx5-setup"
+        echo "--> Adding Bongo to the fcitx5 input method profile..."
+        CONFIGURED=false
+        if [[ -n "${SUDO_USER:-}" ]]; then
+            if command -v runuser >/dev/null 2>&1; then
+                if runuser -u "${SUDO_USER}" -- python3 "${FCITX5_SETUP}"; then
+                    CONFIGURED=true
+                fi
+            fi
+        elif [[ $EUID -eq 0 ]]; then
+            echo "Warning: run the installer with sudo from your desktop user, or configure fcitx5 manually." >&2
+        else
+            if python3 "${FCITX5_SETUP}"; then
+                CONFIGURED=true
+            fi
+        fi
+
+        if [[ "${CONFIGURED}" != "true" ]]; then
+            echo "Warning: Bongo was not added to the fcitx5 profile automatically." >&2
+            python3 "${FCITX5_SETUP}" --print-manual-steps 2>/dev/null || true
+        fi
+    fi
 fi
 
 echo "=================================================="
@@ -288,8 +432,20 @@ echo "   Bongo has been successfully installed!        "
 echo "=================================================="
 echo ""
 echo "Next Steps:"
-echo "1. Open GNOME / KDE Settings -> Keyboard -> Input Sources."
-echo "2. Add 'Bengali (Bongo)' to your active keyboards."
-echo "3. Switch keyboards anytime with Super + Space or Control + Space."
-echo "4. Launch 'bongo-settings' to customize typing modes and fonts."
+if [[ "${HAS_FCITX5_RUNTIME}" == "true" && "${FCITX5_SYSTEM_INSTALL}" == "true" ]]; then
+    echo "1. Run: fcitx5-configtool"
+    echo "2. Open Input Method -> add 'Bongo'."
+    echo "3. Apply and restart fcitx5, then switch with Ctrl+Space."
+    echo "4. Launch 'bongo-settings' to customize typing modes and fonts."
+else
+    echo "1. Open GNOME / KDE Settings -> Keyboard -> Input Sources."
+    echo "2. Add 'Bengali (Bongo)' to your active keyboards."
+    echo "3. Switch keyboards anytime with Super + Space or Control + Space."
+    echo "4. Launch 'bongo-settings' to customize typing modes and fonts."
+    if [[ "${BUILD_FCITX5}" == "true" && "${FCITX5_SYSTEM_INSTALL}" != "true" ]]; then
+        echo ""
+        echo "For fcitx5, run this installer system-wide from the checkout:"
+        echo "  sudo BONGO_FCITX5=1 bash ${SCRIPT_DIR}/install.sh"
+    fi
+fi
 echo ""
