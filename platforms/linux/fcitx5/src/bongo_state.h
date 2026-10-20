@@ -17,11 +17,9 @@ class KeyEvent;
 
 namespace bongo {
 
-class Bongo;
-
 class BongoState final : public fcitx::InputContextProperty {
 public:
-    BongoState(Bongo *addon, fcitx::InputContext *ic);
+    BongoState(fcitx::InputContext *ic);
     ~BongoState() override;
 
     void keyEvent(fcitx::KeyEvent &event);
@@ -46,7 +44,6 @@ private:
     int selectedIndex() const;
     void moveCandidate(bool next);
 
-    Bongo *addon_;
     fcitx::InputContext *ic_;
     const EngineApi &api_ = EngineApi::instance();
     void *engine_ = nullptr;

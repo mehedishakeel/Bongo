@@ -33,8 +33,7 @@ private:
     int index_;
 };
 
-BongoState::BongoState(Bongo *addon, fcitx::InputContext *ic)
-    : addon_(addon), ic_(ic) {
+BongoState::BongoState(fcitx::InputContext *ic) : ic_(ic) {
     if (api_.valid()) {
         engine_ = api_.newEngine();
     }

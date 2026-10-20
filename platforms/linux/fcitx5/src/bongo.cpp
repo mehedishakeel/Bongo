@@ -13,8 +13,8 @@ namespace bongo {
 Bongo::Bongo(fcitx::Instance *instance)
     : instance_(instance),
       factory_([this](fcitx::InputContext &ic) {
-          return new BongoState(this, &ic);
-      }) {
+        return new BongoState(&ic);
+    }) {
     instance_->inputContextManager().registerProperty("bongo", &factory_);
     if (!EngineApi::instance().valid()) {
         FCITX_ERROR() << "Bongo: the native engine library is unavailable; "
