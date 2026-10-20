@@ -347,8 +347,19 @@ void BongoState::activate() {
     resetSession();
 }
 
-void BongoState::deactivate() {
-    if (hasSession() || !candidates_.empty()) {
+void BongoState::deactivate(bool focusOut) {
+    // On focus-out, fcitx5 commits the client preedit itself unless the client
+    // advertises ClientUnfocusCommit (in which case the client does it).
+    // Committing again here would duplicate the composed word in real GTK/Qt
+    // applications. For clients without a client-side preedit, fcitx5 has
+    // nothing to commit, so Bongo must commit the candidate itself.
+    const bool clientOwnsFocusOutCommit =
+        focusOut &&
+        (ic_->capabilityFlags().test(
+             fcitx::CapabilityFlag::ClientUnfocusCommit) ||
+         !ic_->inputPanel().clientPreedit().empty());
+    if (!clientOwnsFocusOutCommit &&
+        (hasSession() || !candidates_.empty())) {
         commitCurrent();
     } else {
         resetSession();

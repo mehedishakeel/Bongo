@@ -26,7 +26,7 @@ public:
 
     void keyEvent(fcitx::KeyEvent &event);
     void activate();
-    void deactivate();
+    void deactivate(bool focusOut);
     void reset();
 
 private:

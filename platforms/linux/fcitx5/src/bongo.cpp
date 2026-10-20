@@ -34,7 +34,9 @@ void Bongo::activate(const fcitx::InputMethodEntry &,
 
 void Bongo::deactivate(const fcitx::InputMethodEntry &,
                        fcitx::InputContextEvent &event) {
-    state(event.inputContext())->deactivate();
+    state(event.inputContext())
+        ->deactivate(event.type() ==
+                     fcitx::EventType::InputContextFocusOut);
 }
 
 void Bongo::reset(const fcitx::InputMethodEntry &,

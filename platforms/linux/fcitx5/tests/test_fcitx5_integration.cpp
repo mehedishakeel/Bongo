@@ -207,6 +207,20 @@ int main() {
         ic->focusOut();
         ok = expect(preedit(ic).empty(), "focus out clears preedit") && ok;
 
+        // With client preedit enabled, fcitx5 commits the preedit on focus-out
+        // itself. The engine must not commit it a second time.
+        ic->focusIn();
+        ic->setCapabilityFlags(fcitx::CapabilityFlag::Preedit);
+        key("a");
+        key("m");
+        key("i");
+        ok = expect(preedit(ic) == "আমি", "client preedit is updated") && ok;
+        frontend->call<ITestFrontend::pushCommitExpectation>("আমি");
+        ic->focusOut();
+        ok = expect(preedit(ic).empty(),
+                    "client preedit focus out commits once") &&
+             ok;
+
         instance.exit();
     });
 
