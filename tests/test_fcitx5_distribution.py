@@ -46,12 +46,27 @@ class Fcitx5DistributionTests(unittest.TestCase):
         self.assertIn("FCITX5_SYSTEM_INSTALL", install)
         self.assertIn("bongo-fcitx5-setup", install)
 
+    def test_installer_addon_dir_follows_installed_fcitx5(self):
+        """The addon must land where the installed fcitx5 actually looks.
+
+        /usr/lib/fcitx5 is the Arch layout only; Fedora uses lib64 and
+        Debian/Ubuntu use a multiarch directory. Hardcoding either
+        variant silently installs the addon where fcitx5 never loads
+        from. Verify the installer derives it from pkg-config instead.
+        """
+        install = (ROOT / "platforms" / "linux" / "scripts" / "install.sh").read_text()
+        self.assertIn("--variable=libdir Fcitx5Core", install)
+        self.assertIn("FCITX_INSTALL_USE_FCITX_SYS_PATHS=OFF", install)
+        self.assertIn("-DCMAKE_INSTALL_LIBDIR=", install)
+
     def test_packages_recommend_fcitx5(self):
         deb = (ROOT / "platforms" / "linux" / "scripts" / "build-deb.sh").read_text()
         self.assertIn("Recommends:", deb)
         self.assertIn("fcitx5", deb)
         rpm = (ROOT / "platforms" / "linux" / "scripts" / "build-rpm.sh").read_text()
         self.assertIn("Recommends:    fcitx5", rpm)
+        # %{_libdir} expands to the distribution's lib dir (lib64 on
+        # Fedora), matching the installer's pkg-config-derived addon dir.
         self.assertIn("%{_libdir}/fcitx5", rpm)
         self.assertIn("%{_datadir}/fcitx5", rpm)
 
