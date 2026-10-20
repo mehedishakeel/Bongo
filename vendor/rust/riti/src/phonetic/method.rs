@@ -29,7 +29,8 @@ impl PhoneticMethod {
         // Load candidate selections file.
         let selections = if let Ok(file) = std::fs::read(config.get_user_phonetic_selection_data())
         {
-            serde_json::from_slice(&file).unwrap()
+            serde_json::from_slice(&file)
+                .unwrap_or_else(|_| HashMap::with_hasher(RandomState::new()))
         } else {
             HashMap::with_hasher(RandomState::new())
         };
@@ -37,8 +38,12 @@ impl PhoneticMethod {
         // Load user's auto correct file.
         let (modified, autocorrect) = {
             if let Ok(mut file) = File::open(config.get_user_phonetic_autocorrect()) {
-                let modified = file.metadata().unwrap().modified().unwrap();
-                let autocorrect = serde_json::from_slice(&read(&mut file)).unwrap();
+                let modified = file
+                    .metadata()
+                    .and_then(|metadata| metadata.modified())
+                    .unwrap_or(SystemTime::UNIX_EPOCH);
+                let autocorrect = serde_json::from_slice(&read(&mut file))
+                    .unwrap_or_else(|_| HashMap::with_hasher(RandomState::new()));
                 (modified, autocorrect)
             } else {
                 (
@@ -123,11 +128,12 @@ impl Method for PhoneticMethod {
                     .to_string(),
                 suggestion,
             );
-            write(
-                config.get_user_phonetic_selection_data(),
-                serde_json::to_string(&self.selections).unwrap(),
-            )
-            .unwrap();
+            if let Some(parent) = config.get_user_phonetic_selection_data().parent() {
+                let _ = std::fs::create_dir_all(parent);
+            }
+            if let Ok(data) = serde_json::to_string(&self.selections) {
+                let _ = write(config.get_user_phonetic_selection_data(), data);
+            }
         }
 
         // Reset to defaults
@@ -136,12 +142,14 @@ impl Method for PhoneticMethod {
 
     fn update_engine(&mut self, config: &Config) {
         if let Ok(mut file) = File::open(config.get_user_phonetic_autocorrect()) {
-            let modified = file.metadata().unwrap().modified().unwrap();
-            // Update the auto correct entries if only the file was modified in the meantime.
-            if modified > self.modified {
-                self.suggestion.user_autocorrect =
-                    serde_json::from_slice(&read(&mut file)).unwrap();
-                self.modified = modified;
+            if let Ok(modified) = file.metadata().and_then(|metadata| metadata.modified()) {
+                // Update the auto correct entries if only the file was modified in the meantime.
+                if modified > self.modified {
+                    if let Ok(autocorrect) = serde_json::from_slice(&read(&mut file)) {
+                        self.suggestion.user_autocorrect = autocorrect;
+                        self.modified = modified;
+                    }
+                }
             }
         }
     }
@@ -196,7 +204,8 @@ mod tests {
     use crate::config::get_phonetic_method_defaults;
     use crate::context::Method;
     use crate::data::Data;
-    use crate::keycodes::{VC_COMMA, VC_R};
+    use crate::keycodes::{VC_A, VC_COMMA, VC_I, VC_M, VC_R};
+    use std::fs;
 
     #[test]
     fn test_backspace() {
@@ -234,5 +243,49 @@ mod tests {
 
         let suggestion = method.get_suggestion(VC_R, 0, 3, &data, &config);
         assert_eq!(suggestion.previously_selected_index(), 0);
+    }
+
+    fn test_user_dir(name: &str) -> std::path::PathBuf {
+        std::env::temp_dir().join(format!(
+            "bongo-riti-{name}-{}-{:?}",
+            std::process::id(),
+            std::thread::current().id()
+        ))
+    }
+
+    #[test]
+    fn candidate_commit_recreates_a_missing_user_dir() {
+        let dir = test_user_dir("commit");
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+
+        let mut config = get_phonetic_method_defaults();
+        assert!(config.set_user_dir(dir.to_str().unwrap()));
+        fs::remove_dir_all(&dir).unwrap();
+
+        let data = Data::new();
+        let mut method = PhoneticMethod::default();
+        method.get_suggestion(VC_A, 0, 0, &data, &config);
+        method.get_suggestion(VC_M, 0, 0, &data, &config);
+        method.get_suggestion(VC_I, 0, 0, &data, &config);
+        method.candidate_committed(1, &config);
+
+        assert!(dir.exists(), "user dir was not recreated");
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn malformed_user_files_do_not_panic() {
+        let dir = test_user_dir("malformed");
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+
+        let mut config = get_phonetic_method_defaults();
+        assert!(config.set_user_dir(dir.to_str().unwrap()));
+        fs::write(config.get_user_phonetic_selection_data(), b"{not json").unwrap();
+        fs::write(config.get_user_phonetic_autocorrect(), b"{not json").unwrap();
+
+        let _ = PhoneticMethod::new(&config);
+        let _ = fs::remove_dir_all(&dir);
     }
 }
