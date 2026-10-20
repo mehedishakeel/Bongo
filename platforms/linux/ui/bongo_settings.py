@@ -12,6 +12,7 @@ Provides 4 main sections:
 import os
 import sys
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -607,16 +608,21 @@ class BongoSettingsApp:
         # Step 1 Card: Enable in Settings
         card1 = self.make_card()
         c1_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        c1_title = Gtk.Label(label="1. Enable Bongo in Keyboard Settings")
+        c1_title = Gtk.Label(label="1. Enable Bongo in Your Input Method")
         c1_title.set_xalign(0)
-        c1_title.set_markup("<b>1. Enable Bongo in Keyboard Settings</b>")
+        c1_title.set_markup("<b>1. Enable Bongo in Your Input Method</b>")
         c1_desc = Gtk.Label(
-            label="Open Linux System Settings -> Keyboard -> Input Sources -> Add, search for 'Bengali' or 'Bongo', and select Bongo."
+            label=(
+                "GNOME / IBus: Settings -> Keyboard -> Input Sources -> Add, "
+                "then choose Bengali (Bongo).\n"
+                "KDE / Hyprland / Omarchy / fcitx5: run fcitx5-configtool and "
+                "add Bongo under Input Method."
+            )
         )
         c1_desc.set_xalign(0)
         c1_desc.set_wrap(True)
 
-        c1_btn = Gtk.Button(label="Open Keyboard Settings...")
+        c1_btn = Gtk.Button(label="Open Input Settings...")
         c1_btn.set_halign(Gtk.Align.START)
         c1_btn.connect("clicked", self.open_system_keyboard_settings)
 
@@ -691,17 +697,31 @@ class BongoSettingsApp:
         return box
 
     def open_system_keyboard_settings(self, _btn):
-        commands = [
-            ["gnome-control-center", "keyboard"],
-            ["kcmshell6", "kcm_keyboard"],
-            ["kcmshell5", "kcm_keyboard"],
-            ["ibus-setup"],
-        ]
+        desktop = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
+        gnome_like = any(
+            name in desktop for name in ("gnome", "unity", "pantheon")
+        )
+        if gnome_like:
+            commands = [
+                ["gnome-control-center", "keyboard"],
+                ["ibus-setup"],
+                ["fcitx5-configtool"],
+            ]
+        else:
+            commands = [
+                ["fcitx5-configtool"],
+                ["kcmshell6", "kcm_keyboard"],
+                ["kcmshell5", "kcm_keyboard"],
+                ["gnome-control-center", "keyboard"],
+                ["ibus-setup"],
+            ]
         for cmd in commands:
+            if not shutil.which(cmd[0]):
+                continue
             try:
                 subprocess.Popen(cmd)
                 return
-            except FileNotFoundError:
+            except OSError:
                 continue
 
     # -------------------------------------------------------------
@@ -862,7 +882,9 @@ class BongoSettingsApp:
 
         import platform
         arch = platform.machine()
-        sys_label = Gtk.Label(label=f"Linux Native · {arch} · IBus Engine")
+        sys_label = Gtk.Label(
+            label=f"Linux Native · {arch} · IBus + fcitx5"
+        )
         sys_label.set_xalign(0)
         sys_label.set_hexpand(True)
 
