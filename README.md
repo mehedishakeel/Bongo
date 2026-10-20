@@ -54,7 +54,7 @@
 
 ---
 
-**Bongo** is a fast, lightweight, and modern Bengali input method built natively for macOS (Apple Silicon M1/M2/M3/M4+ and Intel x86_64), modern Linux desktop environments (GNOME, KDE Plasma, XFCE), Windows (Windows 10 & 11), and Android smartphones & tablets. It brings familiar phonetic typing directly into all your applications with instant suggestions, a sleek candidate HUD/strip, and complete on-device privacy.
+**Bongo** is a fast, lightweight, and modern Bengali input method built natively for macOS (Apple Silicon M1/M2/M3/M4+ and Intel x86_64), modern Linux desktop environments (GNOME, KDE Plasma, XFCE, Hyprland, Omarchy), Windows (Windows 10 & 11), and Android smartphones & tablets. It brings familiar phonetic typing directly into all your applications with instant suggestions, a sleek candidate HUD/strip, and complete on-device privacy.
 
 **Visit the official website & interactive demo**: [https://getbongo.app](https://getbongo.app)
 
@@ -79,19 +79,20 @@ brew install --cask mehedishakeel/bongo/bongo
 
 See [docs/MACOS-INSTALL.md](docs/MACOS-INSTALL.md) or [platforms/macos/README.md](platforms/macos/README.md) for details.
 
-### Linux (Ubuntu, Debian, Fedora, Arch)
+### Linux (Ubuntu, Debian, Fedora, Arch, Omarchy)
 
 1. **Download**: Get `bongo_1.0.1_amd64.deb` (standard 64-bit PC) or `bongo_1.0.1_arm64.deb` (ARM64) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
 2. **Install**:
    ```bash
    sudo apt install ./bongo_1.0.1_amd64.deb
    ```
-   Or install in one command:
+   Or install from source with both frontends:
    ```bash
-   curl -sSL https://raw.githubusercontent.com/mehedishakeel/Bongo/main/platforms/linux/scripts/install.sh | bash
+   sudo BONGO_FCITX5=1 ./platforms/linux/scripts/install.sh
    ```
 3. **Activate**:
-   - Go to **Settings -> Keyboard -> Input Sources -> Add**, and add **Bengali (Bongo)**.
+   - **GNOME / IBus**: Go to **Settings -> Keyboard -> Input Sources -> Add**, and add **Bengali (Bongo)**.
+   - **KDE / Hyprland / Omarchy / fcitx5**: Run `fcitx5-configtool`, add **Bongo** under **Input Method**, and apply.
    - Switch keyboards with <kbd>Super + Space</kbd> or <kbd>Control + Space</kbd>.
    - Open **Bongo Settings** (`bongo-settings`) from the app launcher anytime.
 
@@ -144,7 +145,8 @@ Press <kbd>Space</kbd> to commit the highlighted word, or press number keys <kbd
 - **Privacy-First (On-Device)**: Your typing, vocabulary, and preferences never leave your device. No network calls, no analytics, and no telemetry.
 - **Modern Candidate HUD**: Floating suggestion bar with tactile shortcut keys (`[1]`, `[2]`), arrow navigation, and high-contrast styling.
 - **3 Typing Modes**: Choose between *Phonetic first* (exact phonetic spelling by default), *Smart suggestions* (dictionary auto-selection), or *Phonetic only* (direct inline output).
-- **Custom Fonts**: Choose any Bengali font installed on your system (Noto Sans Bengali, Kalpurush, Kohinoor Bangla, SolaimanLipi, etc.) with real-time size adjustments.
+- **Native Linux Frontends**: IBus integration for GNOME and a native fcitx5 addon for KDE Plasma, Hyprland, Omarchy, and other fcitx5 desktops, both sharing the same Rust engine.
+- **Custom Fonts**: Choose any Bengali font installed on your system (Noto Sans Bengali, Kalpurush, Kohinoor Bangla, SolaimanLipi, etc.) with real-time size adjustments. The fcitx5 candidate window follows the active fcitx5 theme.
 - **Desktop Settings & Cheatsheet**: Native welcome and settings application across macOS, Linux, and Windows with searchable layout guide and interactive typing playground.
 
 ---
@@ -192,10 +194,12 @@ Press <kbd>Space</kbd> to commit the highlighted word, or press number keys <kbd
 
 ### Build on Linux:
 ```sh
-./platforms/linux/scripts/install.sh
+# System-wide install with both IBus and fcitx5 frontends:
+sudo BONGO_FCITX5=1 ./platforms/linux/scripts/install.sh
+
 # Or create DEB / RPM packages:
-./platforms/linux/scripts/build-deb.sh
-./platforms/linux/scripts/build-rpm.sh
+BONGO_FCITX5=1 ./platforms/linux/scripts/build-deb.sh
+BONGO_FCITX5=1 ./platforms/linux/scripts/build-rpm.sh
 ```
 
 ### Build on Windows:
