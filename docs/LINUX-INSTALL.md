@@ -104,7 +104,21 @@ engine, settings app, and IBus frontend, skips the fcitx5 addon, and prints the
 
 ## Activation
 
+The installer detects your desktop and enables one of two groups automatically:
+
+| Desktop | Framework | What the installer does |
+|---------|-----------|-------------------------|
+| GNOME | IBus | Adds Bongo to the GNOME input sources (existing sources are preserved), then refreshes the IBus cache. |
+| KDE Plasma, Hyprland, Omarchy, other Wayland compositors | native fcitx5 | Adds Bongo to the fcitx5 profile, restarts fcitx5 (through its systemd user unit when one owns the process), and adds a session autostart entry when nothing else starts fcitx5. |
+
+Detection looks at the running desktop processes, so it also works when the
+installer runs through `sudo` or `pkexec` and `XDG_CURRENT_DESKTOP` is missing.
+The manual steps below are only needed when automatic setup was skipped
+(`--no-configure-fcitx5`) or your session is custom.
+
 ### GNOME / IBus
+
+Bongo is added to your input sources automatically. To add or remove it by hand:
 
 1. Open **Settings** -> **Keyboard**.
 2. Under **Input Sources**, click **Add** (`+`).

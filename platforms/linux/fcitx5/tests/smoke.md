@@ -81,6 +81,26 @@ restart is required.
 - [x] Typing still works after reinstalling the reconfigured addon
       (`ami ` + Space commits `আমি ` in foot).
 
+## Desktop auto-detection (installer)
+
+Verified on 2026-10-20 on Hyprland/Omarchy after re-running the installer
+through `pkexec`:
+
+- [x] Detection reports the running desktop (`wlwm`) even though `pkexec`
+      drops `XDG_CURRENT_DESKTOP`.
+- [x] The installer selects the native fcitx5 group and logs
+      `fcitx5 starts at login via omarchy-fcitx5.service`.
+- [x] fcitx5 is restarted through its systemd unit; `NRestarts=0` afterwards
+      and the profile keeps `DefaultIM=bongo`.
+- [x] GNOME input-source merge (append, already present, `@as []`) verified by
+      running the shipped `bongo_ibus_add_source`/`bongo_enable_gnome_source`
+      functions against a fake `gsettings`; the real schema path still needs a
+      GNOME session.
+- [x] Typing after the reinstall: `ami ` commits `আমি ` 5/5 runs with
+      `wtype -d 120` (human key rate). Zero-delay `wtype` can occasionally
+      deliver the forwarded Space before the commit in foot; that is a
+      test-injection artifact, not reproducible at normal typing speed.
+
 ## Regression
 
 - [ ] GNOME/IBus still works after installation (the fcitx5 changes must not

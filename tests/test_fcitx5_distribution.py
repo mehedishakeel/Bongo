@@ -1,3 +1,5 @@
+import re
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -76,6 +78,61 @@ class Fcitx5DistributionTests(unittest.TestCase):
         self.assertIn("systemctl --user start", install)
         self.assertIn("list-units", install)
         self.assertIn("MainPID", install)
+
+    def test_gnome_input_source_merge_preserves_existing_sources(self):
+        """The GNOME merge must keep existing sources and handle empty lists.
+
+        Runs the real shell function from install.sh so the tested code is the
+        shipped code. GNOME itself is not needed for this string-level check.
+        """
+        install = (ROOT / "platforms" / "linux" / "scripts" / "install.sh").read_text()
+        match = re.search(r"^bongo_ibus_add_source\(\) \{.*?^\}", install, re.M | re.S)
+        self.assertIsNotNone(match, "bongo_ibus_add_source helper is missing")
+        helper = match.group(0)
+        cases = {
+            "[('xkb', 'us')]": "[('xkb', 'us'), ('ibus', 'bongo')]",
+            "[('xkb', 'us'), ('xkb', 'bd')]": (
+                "[('xkb', 'us'), ('xkb', 'bd'), ('ibus', 'bongo')]"
+            ),
+            "@as []": "@as [('ibus', 'bongo')]",
+            "[]": "[('ibus', 'bongo')]",
+        }
+        for current, expected in cases.items():
+            result = subprocess.run(
+                ["bash", "-c", f"{helper}\nbongo_ibus_add_source \"$1\"", "bash", current],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(expected, result.stdout.strip())
+
+    def test_both_install_paths_enable_gnome_sources(self):
+        """Local builds and remote deb installs both enable GNOME input sources."""
+        install = (ROOT / "platforms" / "linux" / "scripts" / "install.sh").read_text()
+        self.assertGreaterEqual(install.count("bongo_enable_gnome_source"), 3)
+        self.assertIn("bongo_as_user ibus write-cache", install)
+        self.assertIn("IBUS_SOURCE_ENABLED", install)
+        # Only enabled units are treated as managing fcitx5 startup.
+        self.assertIn("$2 ~ /^enabled/", install)
+
+    def test_installer_detects_desktop_and_enables_two_groups(self):
+        """Enablement is split into two groups: GNOME->IBus, rest->fcitx5.
+
+        The installer must detect the running desktop instead of asking the
+        user to configure everything by hand: add Bongo to the GNOME input
+        sources on GNOME, and make fcitx5 start with the session on KDE and
+        tiling Wayland compositors.
+        """
+        install = (ROOT / "platforms" / "linux" / "scripts" / "install.sh").read_text()
+        self.assertIn("DESKTOP_KIND", install)
+        self.assertIn("IM_FRAMEWORK", install)
+        self.assertIn("gnome-shell", install)
+        self.assertIn("Hyprland", install)
+        self.assertIn("org.gnome.desktop.input-sources", install)
+        self.assertIn("gsettings", install)
+        self.assertIn("('ibus', 'bongo')", install)
+        self.assertIn("org.fcitx.Fcitx5.desktop", install)
+        self.assertIn("Exec=fcitx5 -d", install)
 
     def test_packages_recommend_fcitx5(self):
         deb = (ROOT / "platforms" / "linux" / "scripts" / "build-deb.sh").read_text()

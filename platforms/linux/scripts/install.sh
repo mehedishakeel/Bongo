@@ -18,6 +18,99 @@ if [[ -n "${SCRIPT_DIR}" && -f "${SCRIPT_DIR}/../ibus/bongo.xml" ]]; then
     IS_LOCAL=true
 fi
 
+# Describes the desktop user the installer configures input methods for.
+SUDO_HOME=""
+if [[ -n "${SUDO_USER:-}" ]]; then
+    SUDO_HOME="$(getent passwd "${SUDO_USER}" 2>/dev/null | cut -d: -f6 || true)"
+fi
+
+TARGET_USER_NAME="$(id -un)"
+TARGET_USER_ID="$(id -u)"
+TARGET_HOME="${HOME}"
+if [[ $EUID -eq 0 && -n "${SUDO_USER:-}" ]]; then
+    TARGET_USER_NAME="${SUDO_USER}"
+    TARGET_USER_ID="$(id -u "${SUDO_USER}")"
+    if [[ -n "${SUDO_HOME}" ]]; then
+        TARGET_HOME="${SUDO_HOME}"
+    fi
+fi
+TARGET_USER_GID="$(id -g "${TARGET_USER_NAME}" 2>/dev/null || id -g)"
+
+# Run a command inside the desktop user's session (DBus, XDG runtime dir) so
+# gsettings, ibus and systemctl --user talk to that session instead of root's.
+bongo_as_user() {
+    if [[ $EUID -eq 0 && -n "${SUDO_USER:-}" ]] && command -v runuser >/dev/null 2>&1; then
+        runuser -u "${SUDO_USER}" -- env \
+            "HOME=${TARGET_HOME}" \
+            "XDG_RUNTIME_DIR=/run/user/${TARGET_USER_ID}" \
+            "DBUS_SESSION_BUS_ADDRESS=/run/user/${TARGET_USER_ID}/bus" \
+            "$@"
+    else
+        "$@"
+    fi
+}
+
+# Returns 1 when pgrep is unavailable, so detection degrades safely.
+bongo_pgrep_user() {
+    command -v pgrep >/dev/null 2>&1 || return 1
+    pgrep -u "${TARGET_USER_ID}" -x "$1" >/dev/null 2>&1
+}
+
+# Detect the desktop that is actually running so Bongo is enabled in the
+# input-method framework that desktop uses: GNOME uses IBus, everything else
+# (KDE, Hyprland, other Wayland compositors) uses native fcitx5. Process
+# detection is more reliable than XDG_CURRENT_DESKTOP, which sudo/pkexec
+# usually drop and which uwsm sessions may leave empty.
+DESKTOP_KIND="unknown"
+if bongo_pgrep_user gnome-shell; then
+    DESKTOP_KIND="gnome"
+elif bongo_pgrep_user plasmashell; then
+    DESKTOP_KIND="kde"
+elif bongo_pgrep_user Hyprland || bongo_pgrep_user sway || \
+     bongo_pgrep_user river || bongo_pgrep_user wayfire || \
+     bongo_pgrep_user labwc; then
+    DESKTOP_KIND="wlwm"
+elif [[ "${XDG_CURRENT_DESKTOP:-}" == *GNOME* ]]; then
+    DESKTOP_KIND="gnome"
+elif [[ "${XDG_CURRENT_DESKTOP:-}" == *KDE* ]]; then
+    DESKTOP_KIND="kde"
+fi
+
+# Print a GNOME input-sources value with Bongo appended. Kept pure so the
+# distribution tests can exercise the merge without a GNOME session.
+bongo_ibus_add_source() {
+    local current="$1"
+    local updated="${current%]}"
+    if [[ "${updated}" == *"("* ]]; then
+        updated="${updated}, "
+    fi
+    printf '%s' "${updated}('ibus', 'bongo')]"
+}
+
+# Add Bongo to the desktop user's GNOME input sources when GNOME is in use.
+# Existing sources are preserved and the previous value is printed.
+bongo_enable_gnome_source() {
+    command -v gsettings >/dev/null 2>&1 || return 0
+    local current updated
+    current="$(bongo_as_user gsettings get \
+        org.gnome.desktop.input-sources sources 2>/dev/null || true)"
+    [[ -n "${current}" ]] || return 0
+    if [[ "${current}" == *"'bongo'"* ]]; then
+        IBUS_SOURCE_ENABLED=true
+        echo "--> Bongo is already in the GNOME input sources."
+        return 0
+    fi
+    updated="$(bongo_ibus_add_source "${current}")"
+    if bongo_as_user gsettings set \
+        org.gnome.desktop.input-sources sources "${updated}"; then
+        IBUS_SOURCE_ENABLED=true
+        echo "--> Added Bongo to the GNOME input sources."
+        echo "    (previous sources: ${current})"
+    fi
+}
+
+IBUS_SOURCE_ENABLED=false
+
 # ========================================================
 # Remote Mode (e.g. curl -sSL ... | bash)
 # ========================================================
@@ -95,12 +188,11 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
 
             if command -v ibus >/dev/null 2>&1; then
                 echo "--> Refreshing IBus component registry..."
-                if [[ -n "${SUDO_USER:-}" ]]; then
-                    ${SUDO} -u "${SUDO_USER}" ibus write-cache 2>/dev/null || true
-                    ${SUDO} -u "${SUDO_USER}" ibus restart 2>/dev/null || true
-                fi
-                ibus write-cache 2>/dev/null || true
-                ibus restart 2>/dev/null || true
+                bongo_as_user ibus write-cache 2>/dev/null || true
+                bongo_as_user ibus restart 2>/dev/null || true
+            fi
+            if [[ "${DESKTOP_KIND}" == "gnome" ]]; then
+                bongo_enable_gnome_source || true
             fi
 
             echo "=================================================="
@@ -108,9 +200,15 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
             echo "=================================================="
             echo ""
             echo "Next Steps:"
-            echo "1. Open GNOME / KDE Settings -> Keyboard -> Input Sources."
-            echo "2. Add 'Bengali (Bongo)' to your active keyboards."
-            echo "3. Switch keyboards anytime with Super + Space or Control + Space."
+            if [[ "${IBUS_SOURCE_ENABLED}" == "true" ]]; then
+                echo "1. Bongo has been added to your input sources."
+                echo "2. Switch input methods with Super + Space."
+                echo "3. If it is missing, open GNOME Settings -> Keyboard -> Input Sources."
+            else
+                echo "1. Open GNOME / KDE Settings -> Keyboard -> Input Sources."
+                echo "2. Add 'Bengali (Bongo)' to your active keyboards."
+                echo "3. Switch keyboards anytime with Super + Space or Control + Space."
+            fi
             echo "4. Launch 'bongo-settings' to customize typing modes and fonts."
             echo ""
             exit 0
@@ -196,23 +294,7 @@ echo "=================================================="
 
 # Locate Cargo / Rust. When the installer runs through sudo, prefer building as
 # the invoking user so a rustup installation in their home directory works and
-# build artifacts stay user-owned.
-SUDO_HOME=""
-if [[ -n "${SUDO_USER:-}" ]]; then
-    SUDO_HOME="$(getent passwd "${SUDO_USER}" 2>/dev/null | cut -d: -f6 || true)"
-fi
-
-# Describes the target desktop user for the fcitx5 profile configuration.
-TARGET_USER_NAME="$(id -un)"
-TARGET_USER_ID="$(id -u)"
-TARGET_HOME="${HOME}"
-if [[ $EUID -eq 0 && -n "${SUDO_USER:-}" ]]; then
-    TARGET_USER_NAME="${SUDO_USER}"
-    TARGET_USER_ID="$(id -u "${SUDO_USER}")"
-    if [[ -n "${SUDO_HOME}" ]]; then
-        TARGET_HOME="${SUDO_HOME}"
-    fi
-fi
+# build artifacts stay user-owned. SUDO_HOME was resolved above.
 
 CARGO_CMD=(cargo)
 if [[ $EUID -eq 0 && -n "${SUDO_HOME}" && -x "${SUDO_HOME}/.cargo/bin/cargo" ]] && \
@@ -262,6 +344,22 @@ if [[ "${HAS_IBUS}" != "true" && "${HAS_FCITX5_RUNTIME}" != "true" ]]; then
     echo "  Arch:          sudo pacman -S ibus fcitx5 fcitx5-configtool" >&2
     echo "  Fedora:        sudo dnf install -y ibus fcitx5 fcitx5-configtool" >&2
     exit 1
+fi
+
+# Two enablement groups:
+#   ibus   - GNOME (Bongo is added as an IBus input source)
+#   fcitx5 - KDE, tiling Wayland compositors and everything else
+# The group follows the running desktop first and falls back to whichever
+# framework is installed when no desktop session is visible (e.g. SSH).
+IM_FRAMEWORK=""
+if [[ "${DESKTOP_KIND}" == "gnome" ]]; then
+    IM_FRAMEWORK="ibus"
+elif [[ "${DESKTOP_KIND}" == "kde" || "${DESKTOP_KIND}" == "wlwm" ]]; then
+    IM_FRAMEWORK="fcitx5"
+elif [[ "${HAS_FCITX5_RUNTIME}" == "true" ]]; then
+    IM_FRAMEWORK="fcitx5"
+elif [[ "${HAS_IBUS}" == "true" ]]; then
+    IM_FRAMEWORK="ibus"
 fi
 
 if [[ "${HAS_IBUS}" != "true" ]]; then
@@ -442,17 +540,23 @@ if [[ -z "${DESTDIR}" ]]; then
         fi
     fi
 
-    # Restart IBus daemon if running
+    # Refresh the IBus registry inside the desktop user's session.
     if command -v ibus >/dev/null 2>&1; then
         echo "--> Refreshing IBus component registry..."
-        ibus write-cache || true
-        ibus restart || true
+        bongo_as_user ibus write-cache || true
+        bongo_as_user ibus restart || true
+    fi
+
+    # Group 1: GNOME uses IBus. Add Bongo to the input sources so it is
+    # available in the Super+Space switcher without manual setup.
+    if [[ "${IM_FRAMEWORK}" == "ibus" ]]; then
+        bongo_enable_gnome_source || true
     fi
 
     # Add Bongo to the invoking user's fcitx5 profile. fcitx5 rewrites this
     # profile when it exits, so edit it while fcitx5 is stopped and put the
     # user's input method framework back afterwards.
-    if [[ "${FCITX5_SYSTEM_INSTALL}" == "true" && "${CONFIGURE_FCITX5}" == "true" && "${HAS_FCITX5_RUNTIME}" == "true" ]]; then
+    if [[ "${IM_FRAMEWORK}" == "fcitx5" && "${FCITX5_SYSTEM_INSTALL}" == "true" && "${CONFIGURE_FCITX5}" == "true" && "${HAS_FCITX5_RUNTIME}" == "true" ]]; then
         FCITX5_SETUP="${PREFIX}/bin/bongo-fcitx5-setup"
         echo "--> Adding Bongo to the fcitx5 input method profile..."
         CONFIGURED=false
@@ -493,7 +597,7 @@ if [[ -z "${DESTDIR}" ]]; then
         FCITX5_UNIT=""
         SYSTEMD_RUNNER=()
         SYSTEMD_QUERY=false
-        if [[ -n "${FCITX5_PID}" ]] && command -v systemctl >/dev/null 2>&1; then
+        if command -v systemctl >/dev/null 2>&1; then
             if [[ $EUID -ne 0 ]]; then
                 SYSTEMD_QUERY=true
             elif [[ -n "${SUDO_USER:-}" ]] && command -v runuser >/dev/null 2>&1; then
@@ -505,7 +609,7 @@ if [[ -z "${DESTDIR}" ]]; then
                     "DBUS_SESSION_BUS_ADDRESS=/run/user/${TARGET_USER_ID}/bus"
                 )
             fi
-            if [[ "${SYSTEMD_QUERY}" == "true" ]]; then
+            if [[ "${SYSTEMD_QUERY}" == "true" && -n "${FCITX5_PID}" ]]; then
                 while read -r systemd_unit; do
                     [[ -z "${systemd_unit}" ]] && continue
                     unit_pid="$("${SYSTEMD_RUNNER[@]}" systemctl --user \
@@ -601,6 +705,51 @@ if [[ -z "${DESTDIR}" ]]; then
                     fi
                 fi
             fi
+
+            # Group 2: KDE and tiling compositors. Make fcitx5 start with
+            # the session unless systemd already supervises it (Omarchy) or
+            # the distro/user already ships an autostart entry.
+            if [[ "${DESKTOP_KIND}" == "kde" || "${DESKTOP_KIND}" == "wlwm" ]] && \
+               [[ -n "${SUDO_USER:-}" || $EUID -ne 0 ]]; then
+                AUTOSTART_FILE="${TARGET_HOME}/.config/autostart/org.fcitx.Fcitx5.desktop"
+                SYSTEMD_FCITX5_UNIT=""
+                if [[ "${SYSTEMD_QUERY}" == "true" ]]; then
+                    SYSTEMD_FCITX5_UNIT="$("${SYSTEMD_RUNNER[@]}" systemctl --user \
+                        list-unit-files --no-legend --plain '*.service' 2>/dev/null |
+                        awk '$2 ~ /^enabled/ {print $1}' |
+                        grep -i 'fcitx' | head -1 || true)"
+                fi
+                if [[ -n "${SYSTEMD_FCITX5_UNIT}" ]]; then
+                    FCITX5_STARTUP_MANAGED=true
+                    echo "--> fcitx5 starts at login via ${SYSTEMD_FCITX5_UNIT}."
+                elif [[ -f "${AUTOSTART_FILE}" ]]; then
+                    FCITX5_STARTUP_MANAGED=true
+                    echo "--> fcitx5 autostart entry already present."
+                else
+                    if [[ $EUID -eq 0 ]]; then
+                        install -d -o "${TARGET_USER_NAME}" -g "${TARGET_USER_GID}" \
+                            "${TARGET_HOME}/.config/autostart" 2>/dev/null || \
+                            mkdir -p "${TARGET_HOME}/.config/autostart"
+                    else
+                        mkdir -p "${TARGET_HOME}/.config/autostart"
+                    fi
+                    cat > "${AUTOSTART_FILE}" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=Fcitx 5
+Comment=Start Input Method
+Exec=fcitx5 -d
+Terminal=false
+X-GNOME-Autostart-enabled=true
+EOF
+                    if [[ $EUID -eq 0 ]]; then
+                        chown "${TARGET_USER_NAME}:${TARGET_USER_GID}" \
+                            "${AUTOSTART_FILE}" 2>/dev/null || true
+                    fi
+                    FCITX5_AUTOSTART_ADDED=true
+                    echo "--> Added fcitx5 to startup applications."
+                fi
+            fi
         fi
     fi
 fi
@@ -611,8 +760,10 @@ echo "=================================================="
 echo ""
 CONFIGURED="${CONFIGURED:-false}"
 FCITX5_RESTARTED="${FCITX5_RESTARTED:-false}"
+FCITX5_AUTOSTART_ADDED="${FCITX5_AUTOSTART_ADDED:-false}"
+FCITX5_STARTUP_MANAGED="${FCITX5_STARTUP_MANAGED:-false}"
 echo "Next Steps:"
-if [[ "${HAS_FCITX5_RUNTIME}" == "true" && "${FCITX5_SYSTEM_INSTALL}" == "true" ]]; then
+if [[ "${IM_FRAMEWORK}" == "fcitx5" ]]; then
     if [[ "${CONFIGURED}" == "true" ]]; then
         echo "1. Bongo has been added to your fcitx5 input method list."
         if [[ "${FCITX5_RESTARTED}" == "true" ]]; then
@@ -622,6 +773,14 @@ if [[ "${HAS_FCITX5_RUNTIME}" == "true" && "${FCITX5_SYSTEM_INSTALL}" == "true" 
         fi
         echo "3. Switch with Ctrl+Space, then type in any app."
         echo "4. Launch 'bongo-settings' to customize typing modes and fonts."
+        if [[ "${FCITX5_AUTOSTART_ADDED}" == "true" ]]; then
+            echo "5. fcitx5 will start automatically with your next login."
+        fi
+        if [[ "${DESKTOP_KIND}" == "wlwm" && "${FCITX5_STARTUP_MANAGED}" != "true" && "${FCITX5_AUTOSTART_ADDED}" != "true" ]]; then
+            echo "   If fcitx5 does not start at login, add to your compositor config:"
+            echo "     Hyprland: exec-once = fcitx5 -d"
+            echo "     sway:     exec fcitx5 -d"
+        fi
     else
         echo "1. Run: fcitx5-configtool"
         echo "2. Open Input Method -> add 'Bongo'."
@@ -629,9 +788,15 @@ if [[ "${HAS_FCITX5_RUNTIME}" == "true" && "${FCITX5_SYSTEM_INSTALL}" == "true" 
         echo "4. Launch 'bongo-settings' to customize typing modes and fonts."
     fi
 else
-    echo "1. Open GNOME / IBus Settings -> Keyboard -> Input Sources."
-    echo "2. Add 'Bengali (Bongo)' to your active keyboards."
-    echo "3. Switch keyboards anytime with Super + Space or Control + Space."
+    if [[ "${IBUS_SOURCE_ENABLED}" == "true" ]]; then
+        echo "1. Bongo has been added to your input sources."
+        echo "2. Switch input methods with Super + Space."
+        echo "3. If it is missing, open your desktop's keyboard settings."
+    else
+        echo "1. Open GNOME / IBus Settings -> Keyboard -> Input Sources."
+        echo "2. Add 'Bengali (Bongo)' to your active keyboards."
+        echo "3. Switch keyboards anytime with Super + Space or Control + Space."
+    fi
     echo "4. Launch 'bongo-settings' to customize typing modes and fonts."
     if [[ "${BUILD_FCITX5}" == "true" && "${FCITX5_SYSTEM_INSTALL}" != "true" ]]; then
         echo ""

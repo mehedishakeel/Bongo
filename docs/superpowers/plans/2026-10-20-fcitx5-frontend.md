@@ -783,6 +783,42 @@ the live instance was no longer supervised by the session.
       unit came back with a new MainPID, stayed active without restarts,
       and Ctrl+Space + typing still work).
 
+## Task 11: Desktop auto-detection with two enablement groups (functional)
+
+User request: the installer should detect the desktop and enable Bongo itself,
+grouped as **GNOME (IBus)** and **native fcitx5** (KDE, Hyprland, other WMs) —
+two groups, not four desktop-specific paths.
+
+- [x] Detect the running desktop by process (`gnome-shell`, `plasmashell`,
+      `Hyprland`/`sway`/`river`/`wayfire`/`labwc`) before the remote/local
+      split, so detection also works through `sudo`/`pkexec` where
+      `XDG_CURRENT_DESKTOP` is dropped.
+- [x] Map detection to `IM_FRAMEWORK=ibus|fcitx5`; fall back to whichever
+      framework is installed when no session is visible (SSH).
+- [x] Group 1 (GNOME): append `('ibus', 'bongo')` to
+      `org.gnome.desktop.input-sources sources`, preserving existing sources,
+      and print the previous value. Runs in the user's session via a shared
+      `bongo_as_user` helper.
+- [x] Group 2 (fcitx5): keep the profile rewrite, and add a session autostart
+      entry (`~/.config/autostart/org.fcitx.Fcitx5.desktop`) only when no
+      systemd unit and no existing entry starts fcitx5. Print `exec-once`
+      guidance for Wayland WMs when startup is not managed.
+- [x] Apply the GNOME enablement to the remote `curl | bash` deb path as well.
+- [x] Keep the pure merge logic in `bongo_ibus_add_source` so distribution
+      tests execute the shipped function with sample gsettings values.
+- [x] Tests: 27 Python distribution tests pass, including the merge cases
+      (`[('xkb','us')]`, two sources, `@as []`, `[]`) and both-path coverage.
+- [x] Live verification on Omarchy (Hyprland): installer detected `wlwm`,
+      chose fcitx5, logged `fcitx5 starts at login via
+      omarchy-fcitx5.service`, restarted through the unit
+      (`NRestarts=0` afterwards), profile kept `DefaultIM=bongo`.
+- [ ] GNOME path not live-tested locally (no GNOME/IBus on this machine);
+      verified with a fake `gsettings` harness for append/already-present/
+      empty-list and left for maintainer GNOME testing.
+- [ ] Remote deb path can only enable the IBus group today because the
+      released 1.0.1 deb has no fcitx5 addon; enable fcitx5 there when the
+      release deb ships the addon.
+
 ## Deferred: settings UI look-and-feel on Omarchy/Hyprland
 
 User feedback: the GTK settings window "feels nothing to do with Hyprland".

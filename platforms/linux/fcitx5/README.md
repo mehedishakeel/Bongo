@@ -65,6 +65,13 @@ The addon searches for the engine next to itself and in the standard
 
 ## Enable
 
+The installer adds **Bongo** to your fcitx5 input-method profile, restarts
+fcitx5 (using its systemd user unit when one owns the process), and adds a
+session autostart entry unless systemd or your distribution already starts
+fcitx5. Switch with <kbd>Ctrl + Space</kbd>.
+
+To configure it by hand instead:
+
 ```bash
 fcitx5-configtool
 ```
@@ -75,8 +82,8 @@ Add **Bongo** under **Input Method**, apply, and restart fcitx5:
 fcitx5-remote -r
 ```
 
-Switch with <kbd>Ctrl + Space</kbd>. The candidate font follows the fcitx5
-theme; Bongo's `candidate_font` setting is used by the IBus frontend only.
+The candidate font follows the fcitx5 theme; Bongo's `candidate_font` setting
+is used by the IBus frontend only.
 
 ## Profile helper
 
