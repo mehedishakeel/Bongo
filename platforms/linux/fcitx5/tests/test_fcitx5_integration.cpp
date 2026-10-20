@@ -11,9 +11,13 @@
 #include <fcitx/inputpanel.h>
 #include <fcitx/instance.h>
 
+#include <chrono>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <string>
+#include <thread>
 
 using namespace fcitx;
 
@@ -31,6 +35,33 @@ bool expect(bool condition, const std::string &message) {
         return false;
     }
     return true;
+}
+
+void writeSettings(const char *json) {
+    const char *xdg = std::getenv("XDG_CONFIG_HOME");
+    const auto path = xdg && *xdg
+                          ? std::filesystem::path(xdg) / "bongo" / "settings.json"
+                          : std::filesystem::path(std::getenv("HOME")) /
+                                ".config" / "bongo" / "settings.json";
+    std::filesystem::create_directories(path.parent_path());
+    {
+        std::ofstream file(path);
+        file << json;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+}
+
+std::string firstCandidate(fcitx::InputContext *ic) {
+    const auto list = ic->inputPanel().candidateList();
+    if (!list || list->size() == 0) {
+        return {};
+    }
+    return list->candidate(0).text().toString();
+}
+
+int candidateCount(fcitx::InputContext *ic) {
+    const auto list = ic->inputPanel().candidateList();
+    return list ? list->size() : 0;
 }
 
 } // namespace
@@ -100,6 +131,19 @@ int main() {
         key("a");
         key("m");
         key("i");
+        key("Down");
+        ok = expect(preedit(ic) == "আমই",
+                    "down selects the second candidate") &&
+             ok;
+        key("Up");
+        ok = expect(preedit(ic) == "আমি",
+                    "up returns to the first candidate") &&
+             ok;
+        key("Escape");
+
+        key("a");
+        key("m");
+        key("i");
         key("BackSpace");
         ok = expect(!preedit(ic).empty() && preedit(ic) != "আমি",
                     "backspace edits preedit") &&
@@ -119,6 +163,49 @@ int main() {
         frontend->call<ITestFrontend::pushCommitExpectation>("আমি");
         key("Control+c");
         ok = expect(preedit(ic).empty(), "ctrl commits composition") && ok;
+
+        key("Escape");
+        writeSettings(R"({"typing_mode": 2, "suggest_emoji": false})");
+        key("a");
+        key("m");
+        key("i");
+        ok = expect(candidateCount(ic) == 1,
+                    "phonetic-only mode has one candidate") &&
+             ok;
+        ok = expect(firstCandidate(ic) == "আমি",
+                    "phonetic-only candidate is direct") &&
+             ok;
+        key("1");
+        ok = expect(preedit(ic) != "আমি",
+                    "digit is text when only one candidate exists") &&
+             ok;
+        key("Escape");
+
+        writeSettings(R"({"typing_mode": 0, "suggest_emoji": false})");
+        key(":");
+        key(")");
+        ok = expect(!firstCandidate(ic).empty(),
+                    "emoticon produced candidates") &&
+             ok;
+        ok = expect(firstCandidate(ic).find("😃") == std::string::npos,
+                    "emoji can be disabled") &&
+             ok;
+        key("Escape");
+
+        writeSettings(R"({"typing_mode": 0, "suggest_emoji": true})");
+        key(":");
+        key(")");
+        ok = expect(firstCandidate(ic).find("😃") != std::string::npos,
+                    "emoji setting is applied") &&
+             ok;
+        key("Escape");
+
+        key("a");
+        key("m");
+        key("i");
+        frontend->call<ITestFrontend::pushCommitExpectation>("আমি");
+        ic->focusOut();
+        ok = expect(preedit(ic).empty(), "focus out clears preedit") && ok;
 
         instance.exit();
     });

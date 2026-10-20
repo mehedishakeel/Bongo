@@ -40,24 +40,20 @@ KeyDecision decideKey(fcitx::KeySym sym, fcitx::KeyStates states,
 
     if (composing) {
         if (sym == FcitxKey_Up || sym == FcitxKey_KP_Up ||
-            sym == FcitxKey_ISO_Left_Tab) {
+            sym == FcitxKey_Page_Up ||
+            sym == FcitxKey_ISO_Left_Tab ||
+            (sym == FcitxKey_Tab && states.test(fcitx::KeyState::Shift))) {
             return {KeyAction::PreviousCandidate};
         }
-        if (sym == FcitxKey_Tab) {
+        if (sym == FcitxKey_Tab || sym == FcitxKey_Down ||
+            sym == FcitxKey_KP_Down || sym == FcitxKey_Page_Down) {
             return {KeyAction::NextCandidate};
         }
-        if (sym == FcitxKey_Down || sym == FcitxKey_KP_Down) {
-            return {KeyAction::NextCandidate};
-        }
-        if (sym == FcitxKey_Page_Up) {
-            return {KeyAction::PreviousPage};
-        }
-        if (sym == FcitxKey_Page_Down) {
-            return {KeyAction::NextPage};
-        }
-        if (sym >= FcitxKey_1 && sym <= FcitxKey_9) {
+        if (!states.test(fcitx::KeyState::Shift) && sym >= FcitxKey_1 &&
+            sym <= FcitxKey_9) {
             return {KeyAction::SelectCandidate,
-                    static_cast<int>(sym - FcitxKey_1)};
+                    static_cast<int>(sym - FcitxKey_1),
+                    static_cast<uint32_t>(sym), false};
         }
     } else if (isTab(sym)) {
         return {KeyAction::Ignore};

@@ -47,9 +47,11 @@ int main() {
     expectAction(bongo::decideKey(FcitxKey_ISO_Left_Tab, shift, true),
                  bongo::KeyAction::PreviousCandidate, "shift tab");
     expectAction(bongo::decideKey(FcitxKey_Page_Up, none, true),
-                 bongo::KeyAction::PreviousPage, "page up");
+                 bongo::KeyAction::PreviousCandidate,
+                 "page up selects the previous candidate");
     expectAction(bongo::decideKey(FcitxKey_Page_Down, none, true),
-                 bongo::KeyAction::NextPage, "page down");
+                 bongo::KeyAction::NextCandidate,
+                 "page down selects the next candidate");
 
     const auto select = bongo::decideKey(FcitxKey_1, none, true);
     expectAction(select, bongo::KeyAction::SelectCandidate, "digit selects");
@@ -57,6 +59,8 @@ int main() {
         std::cerr << "FAIL: digit index\n";
         ++failures;
     }
+    expectAction(bongo::decideKey(FcitxKey_1, shift, true),
+                 bongo::KeyAction::Text, "shifted digit is text");
     expectAction(bongo::decideKey(FcitxKey_1, none, false),
                  bongo::KeyAction::Text, "digit idle is text");
 

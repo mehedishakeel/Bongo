@@ -99,11 +99,21 @@ void BongoState::keyEvent(fcitx::KeyEvent &event) {
         event.filterAndAccept();
         return;
     case KeyAction::SelectCandidate:
-        if (decision.index >= 0 &&
+        if (candidates_.size() > 1 && decision.index >= 0 &&
             decision.index < static_cast<int>(candidates_.size())) {
             commitCandidate(decision.index);
+            event.filterAndAccept();
+            return;
         }
-        event.filterAndAccept();
+        // Match IBus: a digit with one candidate or an out-of-range index is
+        // ordinary text, not a swallowed selection key.
+        if (feedChar(decision.codepoint ? decision.codepoint
+                                        : static_cast<uint32_t>('1') +
+                                              static_cast<uint32_t>(
+                                                  std::max(decision.index, 0)),
+                     decision.shift)) {
+            event.filterAndAccept();
+        }
         return;
     case KeyAction::Text:
         if (feedChar(decision.codepoint, decision.shift)) {
