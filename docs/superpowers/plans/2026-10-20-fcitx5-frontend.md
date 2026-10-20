@@ -763,6 +763,35 @@ from `bongo-settings` or another platform's GUI, both stay consistent.
       walkthrough was half-done (window closed mid-test); the DBus contract
       fcitx5-configtool uses is verified above.
 
+## Task 10: Restart systemd-managed fcitx5 through its unit (functional)
+
+Debugging "nothing works on Hyprland" surfaced a real installer flaw: on
+Omarchy, fcitx5 runs as `omarchy-fcitx5.service` (Restart=always). The
+installer stopped it with `fcitx5-remote -e` and restarted a bare
+`fcitx5 -d`; the unit then kept trying to start a competing instance that
+exited because the manual one held the DBus name — an auto-restart loop, and
+the live instance was no longer supervised by the session.
+
+- [x] Detect the systemd user unit whose `MainPID` owns the running fcitx5
+      (query as the desktop user via `runuser` + the user manager).
+- [x] Stop/start that unit around the profile rewrite instead of killing and
+      spawning a bare process; keep the old path when no unit owns fcitx5.
+- [x] Failure message names the unit when the systemd path is used.
+- [x] Distribution test locks the detection in.
+- [x] Live reinstall on Omarchy verifies the unit keeps its PID ownership
+      (installer logged "Stopping fcitx5 via omarchy-fcitx5.service", the
+      unit came back with a new MainPID, stayed active without restarts,
+      and Ctrl+Space + typing still work).
+
+## Deferred: settings UI look-and-feel on Omarchy/Hyprland
+
+User feedback: the GTK settings window "feels nothing to do with Hyprland".
+Decision (2026-10-20): **function only for now** — the look and feel of the
+settings app is the maintainer's product call and a redesign would add
+subjective noise to a PR already queued for v1.1.0 review. Revisit after the
+fcitx5 frontend merges, with maintainer direction on the desired desktop
+integration (theme matching, launch style, window rules).
+
 ---
 
 ## Notes for the Implementer

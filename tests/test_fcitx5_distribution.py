@@ -59,6 +59,24 @@ class Fcitx5DistributionTests(unittest.TestCase):
         self.assertIn("FCITX_INSTALL_USE_FCITX_SYS_PATHS=OFF", install)
         self.assertIn("-DCMAKE_INSTALL_LIBDIR=", install)
 
+    def test_installer_restarts_systemd_managed_fcitx5(self):
+        """Restart fcitx5 through its systemd user unit when one owns it.
+
+        Omarchy runs fcitx5 as omarchy-fcitx5.service (Restart=always).
+        Killing the process and spawning `fcitx5 -d` makes that unit start
+        a competing instance on every exit, so the manual and systemd
+        instances fight over the DBus name and the unit crash-loops.
+        The installer must detect the unit that owns the running PID and
+        stop/start that unit instead.
+        """
+        install = (ROOT / "platforms" / "linux" / "scripts" / "install.sh").read_text()
+        self.assertIn("FCITX5_SYSTEMD", install)
+        self.assertIn("FCITX5_UNIT", install)
+        self.assertIn("systemctl --user stop", install)
+        self.assertIn("systemctl --user start", install)
+        self.assertIn("list-units", install)
+        self.assertIn("MainPID", install)
+
     def test_packages_recommend_fcitx5(self):
         deb = (ROOT / "platforms" / "linux" / "scripts" / "build-deb.sh").read_text()
         self.assertIn("Recommends:", deb)

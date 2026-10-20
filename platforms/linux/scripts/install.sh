@@ -485,21 +485,63 @@ if [[ -z "${DESTDIR}" ]]; then
             )
         fi
 
-        if [[ -n "${FCITX5_PID}" ]]; then
-            echo "--> Stopping the running fcitx5 session so the profile is not overwritten..."
-            if command -v fcitx5-remote >/dev/null 2>&1; then
-                (
-                    cd /
-                    "${FCITX5_RUNNER[@]}" fcitx5-remote -e
-                ) >/dev/null 2>&1 || true
-                for _ in $(seq 1 25); do
-                    if ! pgrep -u "${TARGET_USER_ID}" -x fcitx5 >/dev/null 2>&1; then
-                        FCITX5_STOPPED=true
+        # Some desktops manage fcitx5 through a systemd user unit (Omarchy
+        # ships omarchy-fcitx5.service). Killing the process and spawning a
+        # bare fcitx5 there makes the unit start a competing instance on
+        # every restart, so stop/start the owning unit instead.
+        FCITX5_SYSTEMD=false
+        FCITX5_UNIT=""
+        SYSTEMD_RUNNER=()
+        SYSTEMD_QUERY=false
+        if [[ -n "${FCITX5_PID}" ]] && command -v systemctl >/dev/null 2>&1; then
+            if [[ $EUID -ne 0 ]]; then
+                SYSTEMD_QUERY=true
+            elif [[ -n "${SUDO_USER:-}" ]] && command -v runuser >/dev/null 2>&1; then
+                SYSTEMD_QUERY=true
+                SYSTEMD_RUNNER=(
+                    runuser -u "${SUDO_USER}" -- env
+                    "HOME=${TARGET_HOME}"
+                    "XDG_RUNTIME_DIR=/run/user/${TARGET_USER_ID}"
+                    "DBUS_SESSION_BUS_ADDRESS=/run/user/${TARGET_USER_ID}/bus"
+                )
+            fi
+            if [[ "${SYSTEMD_QUERY}" == "true" ]]; then
+                while read -r systemd_unit; do
+                    [[ -z "${systemd_unit}" ]] && continue
+                    unit_pid="$("${SYSTEMD_RUNNER[@]}" systemctl --user \
+                        show -p MainPID --value "${systemd_unit}" 2>/dev/null || true)"
+                    if [[ -n "${unit_pid}" && "${unit_pid}" == "${FCITX5_PID}" ]]; then
+                        FCITX5_UNIT="${systemd_unit}"
+                        FCITX5_SYSTEMD=true
                         break
                     fi
-                    sleep 0.2
-                done
+                done < <("${SYSTEMD_RUNNER[@]}" systemctl --user list-units \
+                    --type=service --state=running --no-legend --plain \
+                    '*.service' 2>/dev/null | awk '{print $1}' || true)
             fi
+        fi
+
+        if [[ -n "${FCITX5_PID}" ]]; then
+            if [[ "${FCITX5_SYSTEMD}" == "true" ]]; then
+                echo "--> Stopping fcitx5 via ${FCITX5_UNIT} so the profile is not overwritten..."
+                "${SYSTEMD_RUNNER[@]}" systemctl --user stop "${FCITX5_UNIT}" \
+                    >/dev/null 2>&1 || true
+            else
+                echo "--> Stopping the running fcitx5 session so the profile is not overwritten..."
+                if command -v fcitx5-remote >/dev/null 2>&1; then
+                    (
+                        cd /
+                        "${FCITX5_RUNNER[@]}" fcitx5-remote -e
+                    ) >/dev/null 2>&1 || true
+                fi
+            fi
+            for _ in $(seq 1 25); do
+                if ! pgrep -u "${TARGET_USER_ID}" -x fcitx5 >/dev/null 2>&1; then
+                    FCITX5_STOPPED=true
+                    break
+                fi
+                sleep 0.2
+            done
             if [[ "${FCITX5_STOPPED}" != "true" ]]; then
                 echo "Warning: could not stop fcitx5 automatically." >&2
                 echo "Stop fcitx5, run ${FCITX5_SETUP}, then start it again to" >&2
@@ -534,10 +576,15 @@ if [[ -z "${DESTDIR}" ]]; then
 
             if [[ "${FCITX5_STOPPED}" == "true" && -n "${FCITX5_PID}" ]]; then
                 echo "--> Restarting fcitx5..."
-                (
-                    cd "${TARGET_HOME}" 2>/dev/null || cd /
-                    "${FCITX5_RUNNER[@]}" fcitx5 -d
-                ) >/dev/null 2>&1
+                if [[ "${FCITX5_SYSTEMD}" == "true" ]]; then
+                    "${SYSTEMD_RUNNER[@]}" systemctl --user start \
+                        "${FCITX5_UNIT}" >/dev/null 2>&1 || true
+                else
+                    (
+                        cd "${TARGET_HOME}" 2>/dev/null || cd /
+                        "${FCITX5_RUNNER[@]}" fcitx5 -d
+                    ) >/dev/null 2>&1
+                fi
                 for _ in $(seq 1 40); do
                     if "${FCITX5_RUNNER[@]}" fcitx5-remote >/dev/null 2>&1; then
                         FCITX5_RESTARTED=true
@@ -547,7 +594,11 @@ if [[ -z "${DESTDIR}" ]]; then
                 done
                 if [[ "${FCITX5_RESTARTED}" != "true" ]]; then
                     echo "Warning: fcitx5 could not be restarted automatically." >&2
-                    echo "Start it with: fcitx5 -d" >&2
+                    if [[ "${FCITX5_SYSTEMD}" == "true" ]]; then
+                        echo "Start it with: systemctl --user start ${FCITX5_UNIT}" >&2
+                    else
+                        echo "Start it with: fcitx5 -d" >&2
+                    fi
                 fi
             fi
         fi
