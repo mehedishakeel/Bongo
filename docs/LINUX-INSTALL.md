@@ -121,15 +121,17 @@ engine, settings app, and IBus frontend, skips the fcitx5 addon, and prints the
 4. Restart fcitx5 with `fcitx5-remote -r`.
 5. Switch input methods with <kbd>Ctrl + Space</kbd>.
 
-The installer normally adds Bongo to your fcitx5 profile automatically. You can
-re-run the helper at any time:
+The installer normally adds Bongo to your fcitx5 profile automatically, stopping
+and restarting fcitx5 around the edit. You can re-run the helper manually, but
+fcitx5 must be stopped first (it rewrites the profile on exit):
 
 ```bash
-bongo-fcitx5-setup
+fcitx5-remote -e          # stop fcitx5
+bongo-fcitx5-setup        # add Bongo to the profile
+fcitx5 -d                 # start fcitx5 again
 ```
 
-It preserves the existing input-method order and is idempotent. It does not
-restart fcitx5 for you.
+It preserves the existing input-method order and is idempotent.
 
 ---
 
@@ -139,8 +141,10 @@ restart fcitx5 for you.
 
 - Confirm the package is installed system-wide:
   `fcitx5-configtool` reads addons from the system paths, not `~/.local`.
-- Run `fcitx5-remote -r` or log out and back in.
-- Re-run `bongo-fcitx5-setup`.
+- Restart fcitx5 completely (`fcitx5-remote -e`, then `fcitx5 -d`); a plain
+  `fcitx5-remote -r` does not load newly installed addons.
+- Re-run `bongo-fcitx5-setup` while fcitx5 is stopped (see above), then start
+  fcitx5 and press <kbd>Ctrl + Space</kbd>.
 - Check that fcitx5 is the active input framework for your session:
   `GTK_IM_MODULE`, `QT_IM_MODULE`, and `XMODIFIERS` should point to fcitx5
   (Omarchy and KDE set these for you).

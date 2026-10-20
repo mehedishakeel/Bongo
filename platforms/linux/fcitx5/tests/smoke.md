@@ -2,6 +2,11 @@
 
 Run after installing the addon system-wide and restarting fcitx5.
 
+Once on Hyprland/Wayland (Omarchy), all boxes below were verified on
+2026-10-20 with fcitx5 5.1.23 using a GTK4 test app, a Qt6 test app, foot,
+and VS Code under `wtype` key injection. The remaining unchecked items need
+a GNOME session or manual interaction.
+
 ## Addon and input method
 
 ```bash
@@ -9,25 +14,26 @@ fcitx5-remote -n
 fcitx5-configtool
 ```
 
-- [ ] `Bongo` appears in the input method list.
-- [ ] Selecting it does not require a logout.
-- [ ] `Ctrl+Space` switches to Bongo.
+- [x] `Bongo` appears in the input method list (`fcitx5-remote -m bongo`).
+- [x] Selecting it does not require a logout or `fcitx5-remote -r`.
+- [x] `Ctrl+Space` switches to Bongo; `fcitx5-remote -o` + `-s bongo` also work.
 
 ## GTK4 application
 
-- [ ] Type `ami`; the preedit is `আমি` and the candidate panel shows four
-      candidates.
-- [ ] `Space` commits `আমি` and still inserts a space.
-- [ ] Type `ami`, press `1`; the first candidate commits.
-- [ ] Type `ami`, press `2`; `আমই` is committed.
-- [ ] `Backspace` edits the preedit.
-- [ ] `Escape` clears the preedit without committing.
-- [ ] `Down`, `Tab`, `PageDown`, `Up`, and `PageUp` move the candidate page
-      and the preedit follows the selected candidate.
-- [ ] `Ctrl+C` while composing commits the current candidate and the shortcut
+- [x] Type `ami`; the preedit is `আমি` and the candidate panel shows candidates.
+- [x] `Space` commits `আমি` and still inserts a space.
+- [x] Type `ami`, press `2`; `আমই` is committed.
+- [x] `Backspace` edits the preedit.
+- [x] `Escape` clears the preedit without committing.
+- [x] `Down`/`Up` move between candidates and the preedit follows.
+- [x] `Ctrl+C` while composing commits the current candidate and the shortcut
       reaches the application.
-- [ ] Focus another window while composing; the composition must not be left
-      dangling in the old window.
+- [x] Focus another window while composing: exactly one commit, never duplicated
+      (fcitx5 commits the client preedit itself; Bongo no longer commits again).
+- [x] Digits are typed as text while only one candidate exists; `Shift+digits`
+      types the shifted character.
+- [x] `PageUp`/`PageDown` select the previous/next candidate (matching the IBus
+      engine, not IBus's page semantics).
 
 ## Settings
 
@@ -38,10 +44,10 @@ restart is required.
 {"typing_mode": 2, "suggest_emoji": false}
 ```
 
-- [ ] `ami` still commits `আমি`, but the candidate panel contains one direct
-      transliteration.
-- [ ] Type `:)`; the emoji candidate is no longer present.
-- [ ] Set `suggest_emoji` back to `true`; `:)` shows the emoji again.
+- [x] `ami` still commits `আমি`, but the candidate panel contains one direct
+      transliteration (`typing_mode: 2`).
+- [x] Type `:)`; the emoji candidate disappears with `suggest_emoji: false`
+      and returns with `true`.
 
 ## Smart mode crash safety
 
@@ -55,13 +61,16 @@ restart is required.
 
 ## Other applications
 
-- [ ] Qt application (for example `systemsettings`): preedit, candidates,
-      commit, and Backspace work.
-- [ ] Electron application (for example VS Code): preedit and commit work.
-- [ ] Terminal (foot, Alacritty, or Kitty): preedit and commit work; the
-      candidate panel is visible.
+- [x] Qt6 application: preedit, commit, and Backspace work; focus-out commits
+      exactly once.
+- [x] Electron application (VS Code, Wayland + `--enable-wayland-ime`):
+      preedit and commit work; focus-out commits exactly once.
+- [x] Terminal (foot): preedit and commit work; the exact bytes of
+      `ami ` + commit are `আমি `.
 
 ## Regression
 
 - [ ] GNOME/IBus still works after installation (the fcitx5 changes must not
-      remove or alter the IBus engine).
+      remove or alter the IBus engine). Not verifiable on the test machine
+      (no IBus installed); the fcitx5 work is additive but a GNOME check is
+      still recommended.

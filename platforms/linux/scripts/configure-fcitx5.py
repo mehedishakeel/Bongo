@@ -3,6 +3,11 @@
 
 The helper edits the line-based profile instead of rewriting it with
 configparser. Existing groups, items, comments, and ordering are preserved.
+
+Run this only while fcitx5 is stopped: fcitx5 rewrites the profile when it
+exits and would discard the change. Stop it with ``fcitx5-remote -e``,
+run the helper, then start fcitx5 again (``fcitx5 -d``). The Bongo
+installer performs this stop-configure-restart sequence automatically.
 """
 
 import argparse

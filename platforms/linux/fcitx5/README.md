@@ -79,3 +79,14 @@ The repository ships `platforms/linux/scripts/configure-fcitx5.py`, installed as
 `bongo-fcitx5-setup`. It appends Bongo to the first fcitx5 input-method group,
 preserves existing order, and makes a backup before editing. It never restarts
 fcitx5 or overwrites unrelated settings.
+
+Because fcitx5 rewrites its profile when it exits, run the helper only while
+fcitx5 is stopped:
+
+```bash
+fcitx5-remote -e          # stop fcitx5
+bongo-fcitx5-setup        # edit the profile
+fcitx5 -d                 # start fcitx5 again
+```
+
+The Bongo installer performs this stop-configure-restart sequence for you.

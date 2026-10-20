@@ -133,19 +133,17 @@ DESTDIR=/tmp/bongo-stage PREFIX=/usr BONGO_FCITX5=1 \
 
 ### Configuring fcitx5
 
-The installer adds Bongo to the invoking user's fcitx5 profile when it runs
-system-wide with `sudo`. It preserves the existing input-method order and is
-safe to run more than once. If automatic configuration is skipped, run:
+The installer stops fcitx5, adds Bongo to the invoking user's profile, and
+restarts fcitx5 (fcitx5 rewrites its profile on exit, so editing it while
+running would be lost). If automatic configuration is skipped, run:
 
 ```bash
-bongo-fcitx5-setup
+fcitx5-remote -e          # stop fcitx5
+bongo-fcitx5-setup        # add Bongo to the profile
+fcitx5 -d                 # start fcitx5 again
 ```
 
-or add Bongo manually in `fcitx5-configtool`, then restart fcitx5:
-
-```bash
-fcitx5-remote -r
-```
+or add Bongo manually in `fcitx5-configtool`.
 
 Switch input methods with <kbd>Ctrl + Space</kbd>. On Wayland, make sure your
 desktop session exports the usual fcitx5 variables (`GTK_IM_MODULE`,
