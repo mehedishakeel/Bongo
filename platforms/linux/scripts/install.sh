@@ -426,7 +426,9 @@ if [[ -z "${DESTDIR}" ]]; then
         CONFIGURED=false
         if [[ -n "${SUDO_USER:-}" ]]; then
             if command -v runuser >/dev/null 2>&1; then
-                if runuser -u "${SUDO_USER}" -- python3 "${FCITX5_SETUP}"; then
+                if runuser -u "${SUDO_USER}" -- env \
+                    "HOME=${SUDO_HOME:-/home/${SUDO_USER}}" \
+                    python3 "${FCITX5_SETUP}"; then
                     CONFIGURED=true
                 fi
             fi
