@@ -387,6 +387,25 @@ if [[ "${BUILD_FCITX5}" == "true" ]]; then
             -DCMAKE_INSTALL_PREFIX="${PREFIX}"
             -DBUILD_TESTING=OFF
         )
+        fcitx5_libdir=""
+        if command -v pkg-config >/dev/null 2>&1; then
+            fcitx5_libdir="$(pkg-config --variable=libdir Fcitx5Core 2>/dev/null || true)"
+        fi
+        # fcitx5 discovers addons from its compiled-in addon directory, which
+        # differs per distribution: /usr/lib/fcitx5 on Arch, lib64 on Fedora,
+        # and the multiarch lib dir on Debian/Ubuntu. Derive it from the
+        # installed Fcitx5Core package instead of trusting macro defaults.
+        if [[ -n "${fcitx5_libdir}" && "${fcitx5_libdir}" == /* ]]; then
+            fcitx5_libdir_rel="${fcitx5_libdir#"/usr/"}"
+            FCITX5_ADDONDIR="${fcitx5_libdir}/fcitx5"
+            CMAKE_ARGS+=(
+                -DFCITX_INSTALL_USE_FCITX_SYS_PATHS=OFF
+                -DCMAKE_INSTALL_LIBDIR="${fcitx5_libdir_rel}"
+            )
+        else
+            FCITX5_ADDONDIR="${PREFIX}/lib/fcitx5"
+        fi
+        echo "    fcitx5 addon directory: ${FCITX5_ADDONDIR}"
         if command -v ninja >/dev/null 2>&1; then
             CMAKE_ARGS+=(-G Ninja)
         fi

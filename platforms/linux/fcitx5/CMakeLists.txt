@@ -72,9 +72,26 @@ if(BUILD_TESTING)
     if(DEFINED ENV{BONGO_ENGINE_LIB} AND NOT BONGO_ENGINE_LIB)
         set(BONGO_ENGINE_LIB "$ENV{BONGO_ENGINE_LIB}")
     endif()
+    # Derive the distribution's fcitx5 addon directory (lib on Arch,
+    # lib64 on Fedora, lib/<arch> on Debian/Ubuntu) from the installed
+    # Fcitx5Core package, with the known layouts as fallbacks.
+    set(FCITX5_DYNAMIC_ADDONDIRS "")
+    find_program(PKG_CONFIG_EXECUTABLE pkg-config)
+    if(PKG_CONFIG_EXECUTABLE)
+        execute_process(
+            COMMAND "${PKG_CONFIG_EXECUTABLE}" --variable=libdir Fcitx5Core
+            OUTPUT_VARIABLE FCITX5_PKG_LIBDIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+        if(FCITX5_PKG_LIBDIR)
+            list(APPEND FCITX5_DYNAMIC_ADDONDIRS "${FCITX5_PKG_LIBDIR}/fcitx5")
+        endif()
+    endif()
     find_file(FCITX5_TESTFRONTEND_LIB
         NAMES libtestfrontend.so
         PATHS
+            ${FCITX5_DYNAMIC_ADDONDIRS}
             /usr/lib/fcitx5
             /usr/lib64/fcitx5
             /usr/lib/x86_64-linux-gnu/fcitx5
@@ -90,7 +107,9 @@ if(BUILD_TESTING)
         target_link_libraries(bongo-fcitx5-integration-test PRIVATE Fcitx5::Core)
         add_test(NAME bongo-fcitx5-integration
             COMMAND ${CMAKE_COMMAND} -E env
-                "FCITX_ADDON_DIRS=${CMAKE_BINARY_DIR}:${FCITX5_TESTFRONTEND_DIR}:/usr/lib/fcitx5:/usr/lib64/fcitx5:/usr/lib/x86_64-linux-gnu/fcitx5"
+                "FCITX_ADDON_DIRS=${CMAKE_BINARY_DIR}\
+:${FCITX5_DYNAMIC_ADDONDIRS}:${FCITX5_TESTFRONTEND_DIR}\
+:/usr/lib/fcitx5:/usr/lib64/fcitx5:/usr/lib/x86_64-linux-gnu/fcitx5"
                 "FCITX_DATA_HOME=${CMAKE_BINARY_DIR}/testdata"
                 "XDG_CONFIG_HOME=${CMAKE_BINARY_DIR}/testconfig"
                 "BONGO_ENGINE_LIB=${BONGO_ENGINE_LIB}"
