@@ -72,7 +72,16 @@ if(BUILD_TESTING)
     if(DEFINED ENV{BONGO_ENGINE_LIB} AND NOT BONGO_ENGINE_LIB)
         set(BONGO_ENGINE_LIB "$ENV{BONGO_ENGINE_LIB}")
     endif()
-    if(BONGO_ENGINE_LIB)
+    find_file(FCITX5_TESTFRONTEND_LIB
+        NAMES libtestfrontend.so
+        PATHS
+            /usr/lib/fcitx5
+            /usr/lib64/fcitx5
+            /usr/lib/x86_64-linux-gnu/fcitx5
+    )
+    if(BONGO_ENGINE_LIB AND FCITX5_TESTFRONTEND_LIB)
+        get_filename_component(FCITX5_TESTFRONTEND_DIR
+            "${FCITX5_TESTFRONTEND_LIB}" DIRECTORY)
         add_executable(bongo-fcitx5-integration-test
             tests/test_fcitx5_integration.cpp
         )
@@ -81,7 +90,7 @@ if(BUILD_TESTING)
         target_link_libraries(bongo-fcitx5-integration-test PRIVATE Fcitx5::Core)
         add_test(NAME bongo-fcitx5-integration
             COMMAND ${CMAKE_COMMAND} -E env
-                "FCITX_ADDON_DIRS=${CMAKE_BINARY_DIR}:/usr/lib/fcitx5:/usr/lib64/fcitx5:/usr/lib/x86_64-linux-gnu/fcitx5"
+                "FCITX_ADDON_DIRS=${CMAKE_BINARY_DIR}:${FCITX5_TESTFRONTEND_DIR}:/usr/lib/fcitx5:/usr/lib64/fcitx5:/usr/lib/x86_64-linux-gnu/fcitx5"
                 "FCITX_DATA_HOME=${CMAKE_BINARY_DIR}/testdata"
                 "XDG_CONFIG_HOME=${CMAKE_BINARY_DIR}/testconfig"
                 "BONGO_ENGINE_LIB=${BONGO_ENGINE_LIB}"
