@@ -29,27 +29,37 @@ Summary:        Native Avro phonetic Bengali typing for Linux
 License:        MPL-2.0
 URL:            https://getbongo.app
 
-Requires:       ibus
 Requires:       python3
 Requires:       python3-gobject
 Requires:       gtk4
+Recommends:    ibus
+Recommends:    fcitx5
+Suggests:       fcitx5-configtool
+BuildRequires:  cmake
+BuildRequires:  fcitx5-devel
 
 %description
 Bongo brings fast, natural Avro phonetic Bengali typing to modern Linux desktops
 (GNOME, KDE Plasma, XFCE). Powered by a pure-Rust offline transliteration engine
-with full candidate suggestions and IBus integration.
+with full candidate suggestions and both IBus and fcitx5 frontends.
 
 %install
-DESTDIR=%{buildroot} PREFIX=/usr bash ${SCRIPT_DIR}/install.sh
+DESTDIR=%{buildroot} PREFIX=/usr BONGO_FCITX5=1 bash ${SCRIPT_DIR}/install.sh
 
 %files
 /usr/lib/bongo/libbongo_engine.so
-/usr/libexec/bongo-ibus-engine
-/usr/share/ibus/component/bongo.xml
-/usr/bin/bongo-settings
-/usr/share/applications/app.getbongo.Bongo.desktop
-/usr/share/metainfo/app.getbongo.Bongo.metainfo.xml
-/usr/share/icons/hicolor/*/apps/bongo.png
+%{_libexecdir}/bongo-ibus-engine
+%{_datadir}/ibus/component/bongo.xml
+%{_bindir}/bongo-settings
+%{_bindir}/bongo-fcitx5-setup
+%{_datadir}/applications/app.getbongo.Bongo.desktop
+%{_datadir}/applications/bongo.desktop
+%{_datadir}/metainfo/app.getbongo.Bongo.metainfo.xml
+%{_datadir}/icons/hicolor/*/apps/bongo.png
+%{_datadir}/pixmaps/bongo.png
+%{_libdir}/fcitx5/libbongo.so
+%{_datadir}/fcitx5/addon/bongo.conf
+%{_datadir}/fcitx5/inputmethod/bongo.conf
 
 %post
 if [ \$1 -eq 1 ]; then

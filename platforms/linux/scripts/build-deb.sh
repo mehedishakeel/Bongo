@@ -28,8 +28,10 @@ rm -rf "${BUILD_ROOT}"
 mkdir -p "${BUILD_ROOT}/DEBIAN"
 mkdir -p "${DIST_DIR}"
 
-# Run install.sh into DESTDIR
-DESTDIR="${BUILD_ROOT}" PREFIX="/usr" bash "${SCRIPT_DIR}/install.sh"
+# Run install.sh into DESTDIR. Force the fcitx5 addon when its headers are
+# available so the package ships both frontends; set BONGO_FCITX5=0 to skip it.
+BONGO_FCITX5="${BONGO_FCITX5:-auto}" \
+    DESTDIR="${BUILD_ROOT}" PREFIX="/usr" bash "${SCRIPT_DIR}/install.sh"
 
 # Create DEBIAN/control
 cat <<EOF > "${BUILD_ROOT}/DEBIAN/control"
@@ -39,12 +41,14 @@ Section: utils
 Priority: optional
 Architecture: ${DEB_ARCH}
 Maintainer: Mehedi Shakeel <contact@getbongo.app>
-Depends: ibus, python3, python3-gi, gir1.2-ibus-1.0, gir1.2-gtk-4.0 | gir1.2-gtk-3.0
+Depends: python3, python3-gi, gir1.2-gtk-4.0 | gir1.2-gtk-3.0
+Recommends: ibus, gir1.2-ibus-1.0, fcitx5
+Suggests: fcitx5-configtool
 Homepage: https://getbongo.app
 Description: Native Avro phonetic Bengali typing for Linux
  Bongo brings fast, natural Avro phonetic Bengali typing to modern Linux desktops
  (GNOME, KDE Plasma, XFCE). Powered by a pure-Rust offline transliteration engine
- with full candidate suggestions and IBus integration.
+ with full candidate suggestions and both IBus and fcitx5 frontends.
 EOF
 
 # Create DEBIAN/postinst

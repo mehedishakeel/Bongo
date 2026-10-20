@@ -39,6 +39,28 @@ class Fcitx5DistributionTests(unittest.TestCase):
             self.assertNotIn("OpenBangla", text, path)
             self.assertNotIn("GPL-3", text, path)
 
+    def test_installer_builds_and_configures_fcitx5(self):
+        install = (ROOT / "platforms" / "linux" / "scripts" / "install.sh").read_text()
+        self.assertIn("BONGO_FCITX5", install)
+        self.assertIn("configure-fcitx5.py", install)
+        self.assertIn("FCITX5_SYSTEM_INSTALL", install)
+        self.assertIn("bongo-fcitx5-setup", install)
+
+    def test_packages_recommend_fcitx5(self):
+        deb = (ROOT / "platforms" / "linux" / "scripts" / "build-deb.sh").read_text()
+        self.assertIn("Recommends:", deb)
+        self.assertIn("fcitx5", deb)
+        rpm = (ROOT / "platforms" / "linux" / "scripts" / "build-rpm.sh").read_text()
+        self.assertIn("Recommends:    fcitx5", rpm)
+        self.assertIn("%{_libdir}/fcitx5", rpm)
+        self.assertIn("%{_datadir}/fcitx5", rpm)
+
+    def test_ci_builds_fcitx5_addon(self):
+        ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+        self.assertIn("libfcitx5core-dev", ci)
+        self.assertIn("platforms/linux/fcitx5", ci)
+        self.assertIn("configure-fcitx5.py", ci)
+
 
 if __name__ == "__main__":
     unittest.main()

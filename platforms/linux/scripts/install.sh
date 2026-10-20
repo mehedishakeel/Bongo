@@ -194,16 +194,34 @@ echo "=================================================="
 echo "           Bongo Linux Installation               "
 echo "=================================================="
 
-# Check for Cargo / Rust (including in user home if running under sudo)
-if ! command -v cargo >/dev/null 2>&1; then
-    if [[ -n "${SUDO_USER:-}" && -x "/home/${SUDO_USER}/.cargo/bin/cargo" ]]; then
-        export PATH="/home/${SUDO_USER}/.cargo/bin:${PATH}"
+# Locate Cargo / Rust. When the installer runs through sudo, prefer building as
+# the invoking user so a rustup installation in their home directory works and
+# build artifacts stay user-owned.
+SUDO_HOME=""
+if [[ -n "${SUDO_USER:-}" ]]; then
+    SUDO_HOME="$(getent passwd "${SUDO_USER}" 2>/dev/null | cut -d: -f6 || true)"
+fi
+
+CARGO_CMD=(cargo)
+if [[ $EUID -eq 0 && -n "${SUDO_HOME}" && -x "${SUDO_HOME}/.cargo/bin/cargo" ]] && \
+   command -v runuser >/dev/null 2>&1; then
+    CARGO_CMD=(
+        runuser -u "${SUDO_USER}" -- env
+        "HOME=${SUDO_HOME}"
+        "PATH=${SUDO_HOME}/.cargo/bin:${PATH}"
+        cargo
+    )
+elif ! command -v cargo >/dev/null 2>&1; then
+    if [[ -n "${SUDO_HOME}" && -x "${SUDO_HOME}/.cargo/bin/cargo" ]]; then
+        export PATH="${SUDO_HOME}/.cargo/bin:${PATH}"
+        export RUSTUP_HOME="${RUSTUP_HOME:-${SUDO_HOME}/.rustup}"
+        export CARGO_HOME="${CARGO_HOME:-${SUDO_HOME}/.cargo}"
     elif [[ -x "${HOME}/.cargo/bin/cargo" ]]; then
         export PATH="${HOME}/.cargo/bin:${PATH}"
     fi
 fi
 
-if ! command -v cargo >/dev/null 2>&1; then
+if [[ "${CARGO_CMD[0]}" == "cargo" ]] && ! command -v cargo >/dev/null 2>&1; then
     echo "Error: cargo (Rust package manager) is required to build Bongo." >&2
     echo "Install Rust via: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh" >&2
     echo "Or on Ubuntu/Debian: sudo apt install -y cargo rustc" >&2
@@ -268,7 +286,7 @@ LIB_TARGET="${BONGO_LIB_TARGET:-${LINUX_ROOT}/engine/target/release/libbongo_eng
 if [[ ! -f "${LIB_TARGET}" ]]; then
     echo "--> Building native engine (libbongo_engine.so)..."
     cd "${LINUX_ROOT}/engine"
-    cargo build --release
+    "${CARGO_CMD[@]}" build --release
 fi
 
 if [[ ! -f "${LIB_TARGET}" ]]; then
@@ -438,7 +456,7 @@ if [[ "${HAS_FCITX5_RUNTIME}" == "true" && "${FCITX5_SYSTEM_INSTALL}" == "true" 
     echo "3. Apply and restart fcitx5, then switch with Ctrl+Space."
     echo "4. Launch 'bongo-settings' to customize typing modes and fonts."
 else
-    echo "1. Open GNOME / KDE Settings -> Keyboard -> Input Sources."
+    echo "1. Open GNOME / IBus Settings -> Keyboard -> Input Sources."
     echo "2. Add 'Bengali (Bongo)' to your active keyboards."
     echo "3. Switch keyboards anytime with Super + Space or Control + Space."
     echo "4. Launch 'bongo-settings' to customize typing modes and fonts."
