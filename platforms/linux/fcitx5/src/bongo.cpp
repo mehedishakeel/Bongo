@@ -4,6 +4,9 @@
 #include <fcitx/event.h>
 #include <fcitx/inputcontext.h>
 #include <fcitx/inputcontextmanager.h>
+#include <fcitx-utils/log.h>
+
+#include "bongo_api.h"
 
 namespace bongo {
 
@@ -13,6 +16,10 @@ Bongo::Bongo(fcitx::Instance *instance)
           return new BongoState(this, &ic);
       }) {
     instance_->inputContextManager().registerProperty("bongo", &factory_);
+    if (!EngineApi::instance().valid()) {
+        FCITX_ERROR() << "Bongo: the native engine library is unavailable; "
+                         "keys will pass through";
+    }
 }
 
 void Bongo::keyEvent(const fcitx::InputMethodEntry &,
