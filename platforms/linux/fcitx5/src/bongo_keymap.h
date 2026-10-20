@@ -16,8 +16,6 @@ enum class KeyAction {
     Reset,
     PreviousCandidate,
     NextCandidate,
-    PreviousPage,
-    NextPage,
     SelectCandidate,
     Text,
 };

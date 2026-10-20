@@ -207,6 +207,19 @@ int main() {
         ic->focusOut();
         ok = expect(preedit(ic).empty(), "focus out clears preedit") && ok;
 
+        // A key the engine has no keycode for (non-Latin text) must commit
+        // the active composition and pass the key through to the application
+        // instead of being swallowed.
+        ic->focusIn();
+        key("a");
+        key("m");
+        key("i");
+        frontend->call<ITestFrontend::pushCommitExpectation>("আমি");
+        key("Cyrillic_ef");
+        ok = expect(preedit(ic).empty(),
+                    "unknown key commits the composition") &&
+             ok;
+
         // With client preedit enabled, fcitx5 commits the preedit on focus-out
         // itself. The engine must not commit it a second time.
         ic->focusIn();

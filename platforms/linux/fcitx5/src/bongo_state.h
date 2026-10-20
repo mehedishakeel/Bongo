@@ -45,7 +45,6 @@ private:
     bool hasSession() const;
     int selectedIndex() const;
     void moveCandidate(bool next);
-    void movePage(bool next);
 
     Bongo *addon_;
     fcitx::InputContext *ic_;

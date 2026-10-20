@@ -90,14 +90,6 @@ void BongoState::keyEvent(fcitx::KeyEvent &event) {
         moveCandidate(true);
         event.filterAndAccept();
         return;
-    case KeyAction::PreviousPage:
-        movePage(false);
-        event.filterAndAccept();
-        return;
-    case KeyAction::NextPage:
-        movePage(true);
-        event.filterAndAccept();
-        return;
     case KeyAction::SelectCandidate:
         if (candidates_.size() > 1 && decision.index >= 0 &&
             decision.index < static_cast<int>(candidates_.size())) {
@@ -311,25 +303,6 @@ void BongoState::moveCandidate(bool next) {
     } else {
         candidateList_->prevCandidate();
     }
-    selected_ = candidateList_->globalCursorIndex();
-    if (selected_ < 0) {
-        selected_ = 0;
-    }
-    preedit_ = candidates_[static_cast<size_t>(
-        std::min(selected_, static_cast<int>(candidates_.size()) - 1))];
-    updatePreedit();
-}
-
-void BongoState::movePage(bool next) {
-    if (!candidateList_ || candidates_.empty()) {
-        return;
-    }
-    if (next) {
-        candidateList_->next();
-    } else {
-        candidateList_->prev();
-    }
-    candidateList_->setCursorIndex(0);
     selected_ = candidateList_->globalCursorIndex();
     if (selected_ < 0) {
         selected_ = 0;
