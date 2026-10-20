@@ -83,6 +83,23 @@ int main() {
     expectAction(bongo::decideKey(FcitxKey_c, ctrl, false),
                  bongo::KeyAction::Ignore, "ctrl while idle");
 
+    // Control-producing keysyms must pass through to the application
+    // instead of being fed to the engine (see the matching IBus fix on
+    // upstream main: BackSpace/Delete/Clear etc. keep working when no
+    // composition is active and are never treated as text).
+    expectAction(bongo::decideKey(FcitxKey_BackSpace, none, false),
+                 bongo::KeyAction::Ignore, "backspace while idle passes through");
+    expectAction(bongo::decideKey(FcitxKey_Delete, none, false),
+                 bongo::KeyAction::Ignore, "delete while idle passes through");
+    expectAction(bongo::decideKey(FcitxKey_Delete, none, true),
+                 bongo::KeyAction::Ignore, "delete while composing passes through");
+    expectAction(bongo::decideKey(FcitxKey_Clear, none, false),
+                 bongo::KeyAction::Ignore, "clear passes through");
+    expectAction(bongo::decideKey(FcitxKey_KP_Tab, none, false),
+                 bongo::KeyAction::Ignore, "kp_tab passes through");
+    expectAction(bongo::decideKey(FcitxKey_KP_Enter, none, false),
+                 bongo::KeyAction::Ignore, "kp_enter while idle passes through");
+
     if (failures) {
         std::cerr << failures << " failure(s)\n";
         return 1;

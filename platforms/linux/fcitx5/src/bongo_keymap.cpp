@@ -63,6 +63,13 @@ KeyDecision decideKey(fcitx::KeySym sym, fcitx::KeyStates states,
     if (codepoint == 0) {
         return {KeyAction::Ignore};
     }
+    // fcitx5 maps "special" keysyms (Delete, Clear, KP_Tab, ...) through
+    // sym & 0x7f, which yields control codes that must not be typed into
+    // the composition. Pass them to the application like the IBus engine
+    // does since upstream commit 84a2137 and keep printable keysyms.
+    if (codepoint < 0x20 || codepoint == 0x7f) {
+        return {KeyAction::Ignore};
+    }
     return {KeyAction::Text, -1, codepoint, states.test(fcitx::KeyState::Shift)};
 }
 
