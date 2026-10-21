@@ -55,8 +55,10 @@ jobs:
             platforms/macos/release/*.sha256
 
   build-linux:
-    name: Build Linux DEB
-    runs-on: ubuntu-latest
+    name: Build Linux Packages
+    # Pin the oldest supported runner so prebuilt binaries keep the glibc 2.39
+    # floor documented in the README. Moving to a newer image raises it.
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -67,29 +69,34 @@ jobs:
       - name: Install IBus, Fcitx5 & Packaging Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y dpkg-dev libibus-1.0-dev libfcitx5core-dev extra-cmake-modules cmake ninja-build fcitx5
+          sudo apt-get install -y dpkg-dev libibus-1.0-dev libfcitx5core-dev cmake ninja-build fcitx5
 
       - name: Build Debian Package
         run: |
           bash platforms/linux/scripts/build-deb.sh
 
+      - name: Build Universal Linux Tarball
+        run: |
+          bash platforms/linux/scripts/build-tarball.sh
+
       - name: Generate Checksums
         run: |
           cd platforms/linux/release
-          for deb in *.deb; do
-            if [ -f "$deb" ]; then
-              shasum -a 256 "$deb" > "${deb}.sha256"
-              echo "Generated checksum for $deb:"
-              cat "${deb}.sha256"
+          for artifact in *.deb *.tar.gz; do
+            if [ -f "$artifact" ]; then
+              shasum -a 256 "$artifact" > "${artifact}.sha256"
+              echo "Generated checksum for $artifact:"
+              cat "${artifact}.sha256"
             fi
           done
 
-      - name: Upload DEB Artifact
+      - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: bongo-linux-amd64-deb
+          name: bongo-linux-packages
           path: |
             platforms/linux/release/*.deb
+            platforms/linux/release/*.tar.gz
             platforms/linux/release/*.sha256
 
   build-windows:
@@ -143,6 +150,7 @@ jobs:
           files: |
             release-artifacts/*.dmg
             release-artifacts/*.deb
+            release-artifacts/*.tar.gz
             release-artifacts/*.exe
             release-artifacts/*.msi
             release-artifacts/*.zip

@@ -18,6 +18,22 @@ if [[ -n "${SCRIPT_DIR}" && -f "${SCRIPT_DIR}/../ibus/bongo.xml" ]]; then
     IS_LOCAL=true
 fi
 
+# Prebuilt payload mode (used by the universal tarball): install the staged
+# tree shipped next to this script instead of compiling from a checkout.
+PREBUILT=false
+for arg in "$@"; do
+    if [[ "${arg}" == "--prebuilt" ]]; then
+        PREBUILT=true
+    fi
+done
+if [[ "${PREBUILT}" == "true" ]]; then
+    IS_LOCAL=true
+    if [[ ! -d "${SCRIPT_DIR}/payload" ]]; then
+        echo "Error: --prebuilt requires a payload/ directory next to install.sh." >&2
+        exit 1
+    fi
+fi
+
 # Describes the desktop user the installer configures input methods for.
 SUDO_HOME=""
 if [[ -n "${SUDO_USER:-}" ]]; then
@@ -258,8 +274,10 @@ for arg in "$@"; do
         --configure-fcitx5)
             CONFIGURE_FCITX5=true
             ;;
+        --prebuilt)
+            ;;
         -h|--help)
-            echo "Usage: install.sh [--no-configure-fcitx5]"
+            echo "Usage: install.sh [--prebuilt] [--no-configure-fcitx5]"
             echo "Environment: BONGO_FCITX5=auto|1|0 PREFIX=... DESTDIR=..."
             exit 0
             ;;
@@ -288,6 +306,16 @@ if [[ $EUID -ne 0 && "${PREFIX}" == "/usr" && -z "${DESTDIR}" ]]; then
     PREFIX="${HOME}/.local"
 fi
 
+if [[ "${PREBUILT}" == "true" ]]; then
+    if [[ -z "${DESTDIR}" && "${PREFIX}" != "/usr" ]]; then
+        echo "Error: the prebuilt tarball installs system-wide under /usr." >&2
+        echo "Run it with sudo, or use the source installer for a user-local install." >&2
+        exit 1
+    fi
+    # The payload already contains (or omits) the fcitx5 addon.
+    BONGO_FCITX5=0
+fi
+
 echo "=================================================="
 echo "           Bongo Linux Installation               "
 echo "=================================================="
@@ -296,6 +324,7 @@ echo "=================================================="
 # the invoking user so a rustup installation in their home directory works and
 # build artifacts stay user-owned. SUDO_HOME was resolved above.
 
+if [[ "${PREBUILT}" != "true" ]]; then
 CARGO_CMD=(cargo)
 if [[ $EUID -eq 0 && -n "${SUDO_HOME}" && -x "${SUDO_HOME}/.cargo/bin/cargo" ]] && \
    command -v runuser >/dev/null 2>&1; then
@@ -320,6 +349,7 @@ if [[ "${CARGO_CMD[0]}" == "cargo" ]] && ! command -v cargo >/dev/null 2>&1; the
     echo "Install Rust via: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh" >&2
     echo "Or on Ubuntu/Debian: sudo apt install -y cargo rustc" >&2
     exit 1
+fi
 fi
 
 HAS_IBUS=false
@@ -364,7 +394,11 @@ fi
 
 if [[ "${HAS_IBUS}" != "true" ]]; then
     echo "Warning: IBus was not detected; GNOME users need IBus." >&2
-    echo "The fcitx5 frontend will still be installed when its headers are available." >&2
+    if [[ "${PREBUILT}" == "true" ]]; then
+        echo "The bundled fcitx5 addon will still be installed." >&2
+    else
+        echo "The fcitx5 frontend will still be installed when its headers are available." >&2
+    fi
 fi
 
 BUILD_FCITX5=false
@@ -392,6 +426,53 @@ if [[ "${BUILD_FCITX5}" == "true" ]]; then
     fi
 fi
 
+# A prebuilt payload either contains the addon or it does not; use that to
+# decide whether the profile should be configured after installation.
+if [[ "${PREBUILT}" == "true" ]]; then
+    if [[ -f "${SCRIPT_DIR}/fcitx5/libbongo.so" ]]; then
+        FCITX5_SYSTEM_INSTALL=true
+    fi
+fi
+
+if [[ "${PREBUILT}" == "true" ]]; then
+    echo "--> Installing the prebuilt payload to ${DESTDIR}${PREFIX}..."
+    install -d "${DESTDIR}${PREFIX}"
+    # Do not preserve the ownership of the user who extracted the archive;
+    # a sudo install must produce root-owned system files.
+    cp -a --no-preserve=ownership "${SCRIPT_DIR}/payload/." "${DESTDIR}${PREFIX}/"
+
+    # Place the fcitx5 addon in this distribution's addon directory.
+    if [[ -f "${SCRIPT_DIR}/fcitx5/libbongo.so" ]]; then
+        fcitx5_addondir=""
+        # The .pc file is only present with the development package, so treat
+        # it as the first choice and fall back to the runtime layout.
+        if command -v pkg-config >/dev/null 2>&1; then
+            fcitx5_libdir="$(pkg-config --variable=libdir Fcitx5Core 2>/dev/null || true)"
+            if [[ "${fcitx5_libdir}" == /* ]]; then
+                fcitx5_addondir="${fcitx5_libdir}/fcitx5"
+            fi
+        fi
+        if [[ -z "${fcitx5_addondir}" ]]; then
+            for candidate in /usr/lib/fcitx5 /usr/lib64/fcitx5 /usr/lib/*-linux-gnu*/fcitx5; do
+                if [[ -d "${DESTDIR}${candidate}" || -d "${candidate}" ]]; then
+                    fcitx5_addondir="${candidate}"
+                    break
+                fi
+            done
+        fi
+        if [[ -z "${fcitx5_addondir}" ]] && command -v ldconfig >/dev/null 2>&1; then
+            fcitx5_core="$(ldconfig -p 2>/dev/null | awk '/libfcitx5core\.so/{print $NF; exit}')"
+            if [[ -n "${fcitx5_core}" ]]; then
+                fcitx5_addondir="$(dirname "${fcitx5_core}")/fcitx5"
+            fi
+        fi
+        fcitx5_addondir="${fcitx5_addondir:-/usr/lib/fcitx5}"
+        install -d "${DESTDIR}${fcitx5_addondir}"
+        install -m 755 "${SCRIPT_DIR}/fcitx5/libbongo.so" \
+            "${DESTDIR}${fcitx5_addondir}/libbongo.so"
+        echo "--> Installed fcitx5 addon in ${fcitx5_addondir}"
+    fi
+else
 LIB_TARGET="${BONGO_LIB_TARGET:-${LINUX_ROOT}/engine/target/release/libbongo_engine.so}"
 if [[ ! -f "${LIB_TARGET}" ]]; then
     echo "--> Building native engine (libbongo_engine.so)..."
@@ -465,11 +546,14 @@ done
 # Install pixmaps fallback
 install -d "${DESTDIR}${PREFIX}/share/pixmaps"
 install -m 644 "${LINUX_ROOT}/data/icons/bongo.png" "${DESTDIR}${PREFIX}/share/pixmaps/bongo.png"
+fi
 
 # 9. Build and install the fcitx5 addon.
 # fcitx5 only discovers addons from its system addon directory, so a local
 # ~/.local install is intentionally skipped and the sudo command is printed.
-if [[ "${BUILD_FCITX5}" == "true" ]]; then
+if [[ "${PREBUILT}" == "true" ]]; then
+    : # The payload already contains the addon when it was staged with fcitx5.
+elif [[ "${BUILD_FCITX5}" == "true" ]]; then
     if [[ "${FCITX5_SYSTEM_INSTALL}" == "true" ]]; then
         if ! command -v cmake >/dev/null 2>&1; then
             echo "Error: cmake is required to build the fcitx5 addon." >&2
@@ -514,7 +598,7 @@ if [[ "${BUILD_FCITX5}" == "true" ]]; then
     else
         echo "--> Skipping the fcitx5 addon: it must be installed system-wide."
         echo "    Run this command from the Bongo checkout:"
-        echo "    sudo BONGO_FCITX5=1 bash ${SCRIPT_DIR}/install.sh"
+        echo "    sudo bash ${SCRIPT_DIR}/install.sh"
     fi
 elif [[ "${BONGO_FCITX5}" == "1" ]]; then
     echo "Error: fcitx5 was requested but cannot be built." >&2
@@ -802,7 +886,7 @@ else
     if [[ "${BUILD_FCITX5}" == "true" && "${FCITX5_SYSTEM_INSTALL}" != "true" ]]; then
         echo ""
         echo "For fcitx5, run this installer system-wide from the checkout:"
-        echo "  sudo BONGO_FCITX5=1 bash ${SCRIPT_DIR}/install.sh"
+        echo "  sudo bash ${SCRIPT_DIR}/install.sh"
     fi
 fi
 echo ""
