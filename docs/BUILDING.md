@@ -91,9 +91,9 @@ platforms\windows\scripts\build-windows.bat
 powershell -ExecutionPolicy Bypass -File platforms\windows\scripts\build-windows.ps1
 ```
 Artifacts are saved into `platforms/windows/release/`:
-- `Bongo-Setup-1.0.1.exe`
-- `Bongo-1.0.1-x64.msi`
-- `Bongo-1.0.1-windows-portable.zip`
+- `Bongo-Setup-1.1.0.exe`
+- `Bongo-1.1.0-x64.msi`
+- `Bongo-1.1.0-windows-portable.zip`
 - Accompanying `.sha256` checksums
 
 ---

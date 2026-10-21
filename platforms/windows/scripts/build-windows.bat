@@ -92,7 +92,7 @@ if defined CANDLE_EXE (
         echo Error: candle failed with error !ERRORLEVEL!.
         exit /b !ERRORLEVEL!
     )
-    light -ext WixUIExtension -sval -out "%RELEASE_DIR%\Bongo-1.0.1-x64.msi" "%BUILD_DIR%\bongo.wixobj"
+    light -ext WixUIExtension -sval -out "%RELEASE_DIR%\Bongo-1.1.0-x64.msi" "%BUILD_DIR%\bongo.wixobj"
     if !ERRORLEVEL! neq 0 (
         echo Error: light failed with error !ERRORLEVEL!.
         exit /b !ERRORLEVEL!
@@ -100,7 +100,7 @@ if defined CANDLE_EXE (
     echo Built WiX MSI installer in %RELEASE_DIR%
 )
 if not defined CANDLE_EXE if defined WIX_EXE (
-    "%WIX_EXE%" build -arch x64 -out "%RELEASE_DIR%\Bongo-1.0.1-x64.msi" "%WINDOWS_ROOT%\installer\bongo.wxs"
+    "%WIX_EXE%" build -arch x64 -out "%RELEASE_DIR%\Bongo-1.1.0-x64.msi" "%WINDOWS_ROOT%\installer\bongo.wxs"
     if !ERRORLEVEL! neq 0 (
         echo Error: wix build failed with error !ERRORLEVEL!.
         exit /b !ERRORLEVEL!
@@ -124,8 +124,8 @@ if exist "%WINDOWS_ROOT%\data\bongo_32.png" copy /y "%WINDOWS_ROOT%\data\bongo_3
 if exist "%PROJECT_ROOT%\LICENSE" copy /y "%PROJECT_ROOT%\LICENSE" "%PORTABLE_DIR%\"
 if exist "%PROJECT_ROOT%\THIRD_PARTY_NOTICES.md" copy /y "%PROJECT_ROOT%\THIRD_PARTY_NOTICES.md" "%PORTABLE_DIR%\"
 
-powershell -Command "Compress-Archive -Path '%PORTABLE_DIR%\*' -DestinationPath '%RELEASE_DIR%\Bongo-1.0.1-windows-portable.zip' -Force"
-echo Built Portable ZIP package: %RELEASE_DIR%\Bongo-1.0.1-windows-portable.zip
+powershell -Command "Compress-Archive -Path '%PORTABLE_DIR%\*' -DestinationPath '%RELEASE_DIR%\Bongo-1.1.0-windows-portable.zip' -Force"
+echo Built Portable ZIP package: %RELEASE_DIR%\Bongo-1.1.0-windows-portable.zip
 
 echo Generating SHA256 checksums...
 powershell -Command "if (Test-Path '%RELEASE_DIR%\*.exe') { Get-ChildItem '%RELEASE_DIR%\*.exe' | ForEach-Object { (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower() + '  ' + $_.Name | Set-Content ($_.FullName + '.sha256') } }"

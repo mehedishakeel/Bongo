@@ -38,7 +38,7 @@ platforms/windows/
 * **Native Look and Feel**: Dark mode Settings application with 4 sections (Getting Started, Bongo Layout, Settings, Fonts).
 * **Live Candidate HUD**: Floating candidate bar preview with configurable Bengali fonts and sizes.
 * **Diagnostics & Logging**: Service activity and keystroke events are logged to `%APPDATA%\Bongo\bongo_service.log` for easy troubleshooting.
-* **Clean Distribution**: Available as a standard Inno Setup executable (`Bongo-Setup-1.0.1.exe`), an enterprise MSI package (`Bongo-1.0.1-x64.msi`), and a portable ZIP (`Bongo-1.0.1-windows-portable.zip`).
+* **Clean Distribution**: Available as a standard Inno Setup executable (`Bongo-Setup-1.1.0.exe`), an enterprise MSI package (`Bongo-1.1.0-x64.msi`), and a portable ZIP (`Bongo-1.1.0-windows-portable.zip`).
 
 ---
 
@@ -63,9 +63,9 @@ platforms\windows\scripts\build-windows.bat
 This will:
 1. Compile `bongo_engine.dll` using Cargo.
 2. Compile standalone executables `bongo.exe` and `bongo-settings.exe` using PyInstaller.
-3. Build the Inno Setup installer `platforms\windows\release\Bongo-Setup-1.0.1.exe`.
-4. Build the WiX MSI installer `platforms\windows\release\Bongo-1.0.1-x64.msi`.
-5. Build the Portable ZIP package `platforms\windows\release\Bongo-1.0.1-windows-portable.zip`.
+3. Build the Inno Setup installer `platforms\windows\release\Bongo-Setup-1.1.0.exe`.
+4. Build the WiX MSI installer `platforms\windows\release\Bongo-1.1.0-x64.msi`.
+5. Build the Portable ZIP package `platforms\windows\release\Bongo-1.1.0-windows-portable.zip`.
 5. Generate SHA256 checksums for each release package.
 
 ---

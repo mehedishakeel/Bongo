@@ -29,6 +29,11 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.1.0" date="2026-10-21">
+      <description>
+        <p>Introduces full National / Bijoy layout (BDS 1738:2004) support, native Fcitx5 frontend, and interactive layout cheatsheet switcher.</p>
+      </description>
+    </release>
     <release version="1.0.1" date="2026-10-20">
       <description>
         <p>Hotfix release resolving duplicate application launcher in GNOME menus and Backspace control key handling in IBus.</p>

@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LINUX_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 DIST_DIR="${LINUX_ROOT}/release"
 
-VERSION="${VERSION:-1.0.1}"
+VERSION="${VERSION:-1.1.0}"
 ARCH="$(dpkg --print-architecture 2>/dev/null || uname -m)"
 case "${ARCH}" in
     x86_64) DEB_ARCH="amd64" ;;

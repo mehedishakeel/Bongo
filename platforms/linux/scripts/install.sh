@@ -156,8 +156,8 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
     if command -v apt-get >/dev/null 2>&1 || command -v apt >/dev/null 2>&1 || command -v dpkg >/dev/null 2>&1; then
         echo "--> Detected Debian / Ubuntu based system (${DEB_ARCH})"
         TMP_DEB="/tmp/bongo_${DEB_ARCH}.deb"
-        DEB_URL="https://github.com/mehedishakeel/Bongo/releases/latest/download/bongo_1.0.1_${DEB_ARCH}.deb"
-        FALLBACK_URL="https://github.com/mehedishakeel/Bongo/releases/download/v1.0.1/bongo_1.0.1_${DEB_ARCH}.deb"
+        DEB_URL="https://github.com/mehedishakeel/Bongo/releases/latest/download/bongo_1.1.0_${DEB_ARCH}.deb"
+        FALLBACK_URL="https://github.com/mehedishakeel/Bongo/releases/download/v1.1.0/bongo_1.1.0_${DEB_ARCH}.deb"
 
         DOWNLOADED=false
         echo "--> Downloading ${DEB_URL}..."

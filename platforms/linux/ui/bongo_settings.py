@@ -524,7 +524,7 @@ class BongoSettingsApp:
         bottom_box.set_valign(Gtk.Align.END)
         bottom_box.set_vexpand(True)
 
-        ver_label = Gtk.Label(label="v1.0.1 · linux")
+        ver_label = Gtk.Label(label="v1.1.0 · linux")
         ver_label.set_xalign(0)
         ver_label.get_style_context().add_class("dim-label") if gtk_version != '4.0' else None
 

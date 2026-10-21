@@ -29,7 +29,7 @@ native frontends that share the same Rust engine:
 On Windows, Bongo operates through a background service and low-level keyboard hook:
 - **Keyboard Hook Daemon (`bongo_service.py`)**: Uses Win32 `SetWindowsHookExW` (`WH_KEYBOARD_LL`) to capture keystrokes, feeds them into the Rust phonetic engine, and injects converted Bengali Unicode text via Win32 `SendInput`. Supports global toggle hotkey (`F12`) and taskbar tray icon.
 - **Settings Suite (`bongo_settings.py`)**: Native Tkinter-based settings and layout reference app with immersive dark mode.
-- **Packaging**: Distributed as an Inno Setup standalone executable (`Bongo-Setup-1.0.1.exe`), a WiX Toolset MSI installer (`Bongo-1.0.1-x64.msi`), and a standalone portable ZIP (`Bongo-1.0.1-windows-portable.zip`).
+- **Packaging**: Distributed as an Inno Setup standalone executable (`Bongo-Setup-1.1.0.exe`), a WiX Toolset MSI installer (`Bongo-1.1.0-x64.msi`), and a standalone portable ZIP (`Bongo-1.1.0-windows-portable.zip`).
 
 ## 5. Releases and Updates
 

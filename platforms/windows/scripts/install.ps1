@@ -6,8 +6,8 @@ Write-Host "==================================================" -ForegroundColor
 Write-Host "           Bongo Windows Installation             " -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
 
-$InstallerUrl = "https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-Setup-1.0.1.exe"
-$TempInstaller = Join-Path $env:TEMP "Bongo-Setup-1.0.1.exe"
+$InstallerUrl = "https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-Setup-1.1.0.exe"
+$TempInstaller = Join-Path $env:TEMP "Bongo-Setup-1.1.0.exe"
 
 Write-Host "--> Downloading Bongo Setup from GitHub..." -ForegroundColor Yellow
 Invoke-WebRequest -Uri $InstallerUrl -OutFile $TempInstaller -UseBasicParsing

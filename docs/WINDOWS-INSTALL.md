@@ -16,7 +16,7 @@ Bongo provides native Avro phonetic Bengali typing on modern Windows (Windows 10
 
 This is the recommended installation method for all individual users:
 
-1. Download **`Bongo-Setup-1.0.1.exe`** from the [GitHub Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page.
+1. Download **`Bongo-Setup-1.1.0.exe`** from the [GitHub Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page.
 2. Run the installer:
    * Select your preferred options (desktop shortcut, start on Windows startup).
    * Click **Install**.
@@ -29,11 +29,11 @@ This is the recommended installation method for all individual users:
 
 For network administrators and silent deployments:
 
-1. Download **`Bongo-1.0.1-x64.msi`** from the [GitHub Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page.
+1. Download **`Bongo-1.1.0-x64.msi`** from the [GitHub Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page.
 2. Install silently via command line or group policy:
 
 ```cmd
-msiexec /i Bongo-1.0.1-x64.msi /qn /norestart
+msiexec /i Bongo-1.1.0-x64.msi /qn /norestart
 ```
 
 ---
@@ -42,7 +42,7 @@ msiexec /i Bongo-1.0.1-x64.msi /qn /norestart
 
 For users on restricted or managed enterprise PCs:
 
-1. Download **`Bongo-1.0.1-windows-portable.zip`** from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
+1. Download **`Bongo-1.1.0-windows-portable.zip`** from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
 2. Extract the archive into any folder (e.g. `C:\Users\<YourUser>\Bongo`).
 3. Launch `bongo.exe`. Bongo is immediately active in your system tray without requiring installation or UAC elevation.
 

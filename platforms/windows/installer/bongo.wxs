@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- WiX Toolset Configuration for Bongo Windows 64-bit MSI Package -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="Bongo" Language="1033" Version="1.0.1.0" Manufacturer="Bongo Team" UpgradeCode="4C1B8386-8E8E-4545-927A-949AE938D86C">
+  <Product Id="*" Name="Bongo" Language="1033" Version="1.1.0.0" Manufacturer="Bongo Team" UpgradeCode="4C1B8386-8E8E-4545-927A-949AE938D86C">
     <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" Description="Bongo - Native Bangla Phonetic Input Method" />
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of Bongo is already installed." />

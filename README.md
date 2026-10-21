@@ -15,39 +15,39 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0.1-macos-arm64.dmg">
+  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.1.0-macos-arm64.dmg">
     <img src="https://img.shields.io/badge/macOS-Apple_Silicon_DMG-4f46e5?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS Apple Silicon DMG">
   </a>
   &nbsp;
-  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0.1-macos-intel-x86_64.dmg">
+  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.1.0-macos-intel-x86_64.dmg">
     <img src="https://img.shields.io/badge/macOS-Intel_x86__64_DMG-3730a3?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS Intel DMG">
   </a>
   &nbsp;
-  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0.1-macos-universal.dmg">
+  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.1.0-macos-universal.dmg">
     <img src="https://img.shields.io/badge/macOS-Universal_DMG-1e1b4b?style=for-the-badge&logo=apple&logoColor=white" alt="Download macOS Universal DMG">
   </a>
   <br>
-  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/bongo_1.0.1_amd64.deb">
+  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/bongo_1.1.0_amd64.deb">
     <img src="https://img.shields.io/badge/Linux-amd64_DEB-e11d48?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux amd64 DEB">
   </a>
   &nbsp;
-  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/bongo_1.0.1_arm64.deb">
+  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/bongo_1.1.0_arm64.deb">
     <img src="https://img.shields.io/badge/Linux-arm64_DEB-be123c?style=for-the-badge&logo=linux&logoColor=white" alt="Download Linux arm64 DEB">
   </a>
   <br>
-  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-Setup-1.0.1.exe">
+  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-Setup-1.1.0.exe">
     <img src="https://img.shields.io/badge/Windows-Setup_EXE-0284c7?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows Setup EXE">
   </a>
   &nbsp;
-  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0.1-x64.msi">
+  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.1.0-x64.msi">
     <img src="https://img.shields.io/badge/Windows-MSI_Installer-0369a1?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows MSI Package">
   </a>
   &nbsp;
-  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0.1-windows-portable.zip">
+  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.1.0-windows-portable.zip">
     <img src="https://img.shields.io/badge/Windows-Portable_ZIP-0284c7?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows Portable ZIP">
   </a>
   <br>
-  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.0.1-android.apk">
+  <a href="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-1.1.0-android.apk">
     <img src="https://img.shields.io/badge/Android-APK_Download-22c55e?style=for-the-badge&logo=android&logoColor=white" alt="Download Android APK">
   </a>
 </p>
@@ -70,7 +70,7 @@ brew install --cask mehedishakeel/bongo/bongo
 ```
 
 #### Option 2: Via Direct DMG Download
-1. **Download**: Get `Bongo-1.0.1-macos-arm64.dmg` (for Apple Silicon) or `Bongo-1.0.1-macos-intel-x86_64.dmg` (for Intel) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest). A Universal 2 DMG (`Bongo-1.0.1-macos-universal.dmg`) is also available.
+1. **Download**: Get `Bongo-1.1.0-macos-arm64.dmg` (for Apple Silicon) or `Bongo-1.1.0-macos-intel-x86_64.dmg` (for Intel) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest). A Universal 2 DMG (`Bongo-1.1.0-macos-universal.dmg`) is also available.
 2. **Install**: Open the DMG and drag **Bongo.app** into your **Applications** folder.
 3. **Activate**:
    - Open **Bongo** from Applications once (it registers the keyboard service with macOS).
@@ -81,10 +81,10 @@ See [docs/MACOS-INSTALL.md](docs/MACOS-INSTALL.md) or [platforms/macos/README.md
 
 ### Linux (Ubuntu, Debian, Fedora, Arch, Omarchy)
 
-1. **Download**: Get `bongo_1.0.1_amd64.deb` (standard 64-bit PC) or `bongo_1.0.1_arm64.deb` (ARM64) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
+1. **Download**: Get `bongo_1.1.0_amd64.deb` (standard 64-bit PC) or `bongo_1.1.0_arm64.deb` (ARM64) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
 2. **Install**:
    ```bash
-   sudo apt install ./bongo_1.0.1_amd64.deb
+   sudo apt install ./bongo_1.1.0_amd64.deb
    ```
    Or install from source with both frontends:
    ```bash
@@ -100,8 +100,8 @@ See [docs/LINUX-INSTALL.md](docs/LINUX-INSTALL.md) or [platforms/linux/README.md
 
 ### Windows (Windows 10 & 11)
 
-- **Installer (Recommended)**: Download `Bongo-Setup-1.0.1.exe` (or `Bongo-1.0.1-x64.msi` for enterprise deployment) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) and run setup.
-- **Portable ZIP**: Download `Bongo-1.0.1-windows-portable.zip`, extract anywhere, and run `bongo.exe`. No installation or administrator permissions required!
+- **Installer (Recommended)**: Download `Bongo-Setup-1.1.0.exe` (or `Bongo-1.1.0-x64.msi` for enterprise deployment) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) and run setup.
+- **Portable ZIP**: Download `Bongo-1.1.0-windows-portable.zip`, extract anywhere, and run `bongo.exe`. No installation or administrator permissions required!
 - **Activate**:
   - Press <kbd>F12</kbd> anywhere (browsers, Word, Notepad, IDEs) to toggle between Bangla and English mode.
   - Access settings, fonts, and layout cheat sheets anytime from the system tray icon or Start Menu.
@@ -110,7 +110,7 @@ See [docs/WINDOWS-INSTALL.md](docs/WINDOWS-INSTALL.md) or [platforms/windows/REA
 
 ### Android (Smartphones & Tablets)
 
-1. **Download**: Get `Bongo-1.0.1-android.apk` from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
+1. **Download**: Get `Bongo-1.1.0-android.apk` from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
 2. **Install**: Tap the downloaded APK to install. Allow "Install unknown apps" in Android settings if prompted.
 3. **Activate**:
    - Open **Bongo Settings** from your app drawer.

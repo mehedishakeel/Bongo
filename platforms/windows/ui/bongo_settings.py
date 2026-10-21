@@ -436,7 +436,7 @@ class BongoSettingsApp:
 
         ver_label = tk.Label(
             footer_frame,
-            text="v1.0.1 · windows",
+            text="v1.1.0 · windows",
             font=("Segoe UI", 8),
             fg=TEXT_MUTED,
             bg=BG_SIDEBAR

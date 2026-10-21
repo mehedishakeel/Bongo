@@ -28,12 +28,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Select Apple Silicon Rust target
-        run: rustup target add aarch64-apple-darwin
-
-      - name: Build macOS DMG
+      - name: Select Apple Silicon and Intel Rust targets
         run: |
-          ./platforms/macos/scripts/create-dmg.sh
+          rustup target add aarch64-apple-darwin
+          rustup target add x86_64-apple-darwin
+
+      - name: Build macOS DMGs (Apple Silicon, Intel, Universal)
+        run: |
+          ./platforms/macos/scripts/create-dmg.sh all
 
       - name: Generate Checksums
         run: |
@@ -46,17 +48,25 @@ jobs:
             fi
           done
 
-      - name: Upload DMG Artifact
+      - name: Upload DMG Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: bongo-macos-arm64-dmg
+          name: bongo-macos-dmgs
           path: |
             platforms/macos/release/*.dmg
             platforms/macos/release/*.sha256
 
   build-linux:
-    name: Build Linux DEB
-    runs-on: ubuntu-latest
+    name: Build Linux DEB (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -87,7 +97,7 @@ jobs:
       - name: Upload DEB Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bongo-linux-amd64-deb
+          name: bongo-linux-${{ matrix.arch }}-deb
           path: |
             platforms/linux/release/*.deb
             platforms/linux/release/*.sha256

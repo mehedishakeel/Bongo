@@ -1,7 +1,7 @@
 cask "bongo" do
   arch arm: "arm64", intel: "intel-x86_64"
 
-  version "1.0.1"
+  version "1.1.0"
   sha256 arm:   "e665524a77f47fd5c88cacdd0a8d2ec1c9cfadbfb68b7fba212f787a8e5c6d64",
          intel: "0fa7551e74b140511510a3080fab592210ce61ec7cd64c5ed7850e70cc8e9fe6"
 

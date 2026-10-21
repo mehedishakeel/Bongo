@@ -66,7 +66,7 @@ if (-not $wix) {
 if ($wix) {
     Write-Host "Compiling with WiX: $wix"
     Push-Location "$windowsRoot\installer"
-    & "$wix" build -arch x64 -o "$releaseDir\Bongo-1.0.1-x64.msi" "$wxsPath"
+    & "$wix" build -arch x64 -o "$releaseDir\Bongo-1.1.0-x64.msi" "$wxsPath"
     Pop-Location
     Write-Host "WiX compilation finished."
 } else {
@@ -75,7 +75,7 @@ if ($wix) {
     if ($candle -and $light) {
         Push-Location "$windowsRoot\installer"
         & candle.exe -arch x64 -out "$buildDir\bongo.wixobj" "$wxsPath"
-        & light.exe -ext WixUIExtension -out "$releaseDir\Bongo-1.0.1-x64.msi" "$buildDir\bongo.wixobj"
+        & light.exe -ext WixUIExtension -out "$releaseDir\Bongo-1.1.0-x64.msi" "$buildDir\bongo.wixobj"
         Pop-Location
         Write-Host "WiX v3 compilation finished."
     } else {
@@ -96,7 +96,7 @@ if (Test-Path "$windowsRoot\data") { Copy-Item "$windowsRoot\data\*" "$portableD
 if (Test-Path "$projectRoot\LICENSE") { Copy-Item "$projectRoot\LICENSE" "$portableDir\" }
 if (Test-Path "$projectRoot\THIRD_PARTY_NOTICES.md") { Copy-Item "$projectRoot\THIRD_PARTY_NOTICES.md" "$portableDir\" }
 
-$zipPath = "$releaseDir\Bongo-1.0.1-windows-portable.zip"
+$zipPath = "$releaseDir\Bongo-1.1.0-windows-portable.zip"
 if (Test-Path $zipPath) { Remove-Item -Force $zipPath }
 Compress-Archive -Path "$portableDir\*" -DestinationPath $zipPath -Force
 Write-Host "Portable ZIP created: $zipPath"

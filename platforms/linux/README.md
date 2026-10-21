@@ -87,16 +87,16 @@ the package recommends it rather than forcing it.
 
 ### Option 1: Install a Package
 
-Download `bongo_1.0.1_amd64.deb` (or `bongo_1.0.1_arm64.deb`) from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page:
+Download `bongo_1.1.0_amd64.deb` (or `bongo_1.1.0_arm64.deb`) from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page:
 
 ```bash
-sudo apt install ./bongo_1.0.1_amd64.deb
+sudo apt install ./bongo_1.1.0_amd64.deb
 ```
 
 or:
 
 ```bash
-sudo dnf install ./bongo-1.0.1-1.x86_64.rpm
+sudo dnf install ./bongo-1.1.0-1.x86_64.rpm
 ```
 
 The same package ships both frontends. On GNOME, add **Bengali (Bongo)** under

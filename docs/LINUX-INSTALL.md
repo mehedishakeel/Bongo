@@ -23,16 +23,16 @@ You only need the input framework your desktop already uses. The `.deb` and
 
 ## Option 1: Install from a Package
 
-Download `bongo_1.0.1_amd64.deb` (or `bongo_1.0.1_arm64.deb`) from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then install via terminal:
+Download `bongo_1.1.0_amd64.deb` (or `bongo_1.1.0_arm64.deb`) from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then install via terminal:
 
 ```bash
-sudo apt install ./bongo_1.0.1_amd64.deb
+sudo apt install ./bongo_1.1.0_amd64.deb
 ```
 
 Fedora:
 
 ```bash
-sudo dnf install ./bongo-1.0.1-1.x86_64.rpm
+sudo dnf install ./bongo-1.1.0-1.x86_64.rpm
 ```
 
 The package installs the engine and settings app, and includes the fcitx5 addon

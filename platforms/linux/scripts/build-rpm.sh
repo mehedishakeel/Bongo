@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LINUX_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 DIST_DIR="${LINUX_ROOT}/release"
 
-VERSION="${VERSION:-1.0.1}"
+VERSION="${VERSION:-1.1.0}"
 ARCH="$(uname -m)"
 BUILD_ROOT="${LINUX_ROOT}/build/rpm"
 
