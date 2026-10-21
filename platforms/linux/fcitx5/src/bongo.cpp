@@ -86,4 +86,4 @@ public:
 
 } // namespace bongo
 
-FCITX_ADDON_FACTORY_V2(bongo, bongo::BongoFactory);
+FCITX_ADDON_FACTORY(bongo::BongoFactory);
