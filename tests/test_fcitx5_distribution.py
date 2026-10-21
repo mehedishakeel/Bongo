@@ -148,6 +148,16 @@ class Fcitx5DistributionTests(unittest.TestCase):
             cmake,
         )
 
+    def test_uses_factory_macro_available_in_fcitx5_5_1_x(self):
+        """FCITX_ADDON_FACTORY_V2 only exists in newer fcitx5 releases.
+
+        Ubuntu 24.04 ships 5.1.7, whose addoninstance.h defines only
+        FCITX_ADDON_FACTORY, so the _V2 spelling fails to compile there.
+        """
+        source = (FCITX5 / "src" / "bongo.cpp").read_text()
+        self.assertIn("FCITX_ADDON_FACTORY(bongo::BongoFactory)", source)
+        self.assertNotIn("FCITX_ADDON_FACTORY_V2", source)
+
     def test_packages_recommend_fcitx5(self):
         deb = (ROOT / "platforms" / "linux" / "scripts" / "build-deb.sh").read_text()
         self.assertIn("Recommends:", deb)

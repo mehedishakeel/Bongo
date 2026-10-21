@@ -76,7 +76,9 @@ int main() {
     instance.addonManager().registerDefaultLoader(nullptr);
 
     bool ok = true;
-    instance.eventDispatcher().schedule([&]() {
+    fcitx::EventDispatcher dispatcher;
+    dispatcher.attach(&instance.eventLoop());
+    dispatcher.schedule([&]() {
         auto *frontend = instance.addonManager().addon("testfrontend");
         auto *bongo = instance.addonManager().addon("bongo", true);
         ok = expect(frontend != nullptr, "testfrontend addon loaded") && ok;

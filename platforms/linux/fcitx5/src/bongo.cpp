@@ -82,4 +82,6 @@ public:
 
 } // namespace bongo
 
-FCITX_ADDON_FACTORY_V2(bongo, bongo::BongoFactory);
+// FCITX_ADDON_FACTORY is available in 5.1.x; the _V2 spelling only exists in
+// newer fcitx5 releases, so use the portable macro.
+FCITX_ADDON_FACTORY(bongo::BongoFactory);

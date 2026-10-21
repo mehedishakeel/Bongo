@@ -199,7 +199,7 @@ public:
     }
 };
 
-FCITX_ADDON_FACTORY_V2(bongo, BongoFactory);
+FCITX_ADDON_FACTORY(BongoFactory);
 ```
 
 - [x] Register the per-context property in the constructor:
