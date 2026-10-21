@@ -107,6 +107,10 @@ int main() {
     expectSettings(bongo::loadSettings(path2), 1, false,
                    "merge writer creates a file");
 
+    bongo::applySettingsOverride(path2, bongo::Settings{1, true, 1});
+    expectSettings(bongo::loadSettings(path2), 1, true,
+                   "merge writer supports layout override", 1);
+
     std::filesystem::remove_all(temp);
 
     if (failures) {

@@ -11,6 +11,10 @@ struct Settings {
     int typingMode = 0;
     int keyboardLayout = 0;
     bool suggestEmoji = true;
+
+    Settings() = default;
+    Settings(int mode, bool emoji, int layout = 0)
+        : typingMode(mode), keyboardLayout(layout), suggestEmoji(emoji) {}
 };
 
 Settings parseSettings(std::string_view text);
