@@ -855,39 +855,53 @@ class BongoSettingsApp:
         self.append_widget(self.national_cheatsheet_container, self.make_section_label("Consonants · ব্যঞ্জনবর্ণ (BDS 1738:2004)"))
         nat_c_table = self.build_key_grid([
             ("ক", "j"), ("ট", "t"), ("প", "r"), ("স", "s"),
-            ("খ", "J (Shift+j)"), ("ঠ", "T (Shift+t)"), ("ফ", "R (Shift+r)"), ("হ", "i"),
-            ("গ", "o"), ("ড", "b"), ("ব", "h"), ("ড়", "P (Shift+p)"),
-            ("ঘ", "O (Shift+o)"), ("ঢ", "B (Shift+b)"), ("ভ", "H (Shift+h)"), ("ঢ়", "V (Shift+v)"),
-            ("ঙ", "q"), ("ণ", "p"), ("ম", "m"), ("য়", "W (Shift+w)"),
-            ("চ", "y"), ("ত", "k"), ("য", "w"), ("ৎ", "` (Grave)"),
-            ("ছ", "Y (Shift+y)"), ("থ", "K (Shift+k)"), ("র", "v"), ("ং", "Q (Shift+q)"),
-            ("জ", "u"), ("দ", "l"), ("ল", "n"), ("ঃ", "X (Shift+x)"),
-            ("ঝ", "U (Shift+u)"), ("ধ", "L (Shift+l)"), ("শ", "M (Shift+m)"), ("ঁ", "x"),
-            ("ঞ", "e"), ("ন", "b"), ("ষ", "N (Shift+n)"), ("", "")
+            ("খ", "J"), ("ঠ", "T"), ("ফ", "R"), ("হ", "i"),
+            ("গ", "o"), ("ড", "b"), ("ব", "h"), ("ড়", "P"),
+            ("ঘ", "O"), ("ঢ", "B"), ("ভ", "H"), ("ঢ়", "V"),
+            ("ঙ", "q"), ("ণ", "p"), ("ম", "m"), ("য়", "W"),
+            ("চ", "y"), ("ত", "k"), ("য", "w"), ("ৎ", "`"),
+            ("ছ", "Y"), ("থ", "K"), ("র", "v"), ("ং", "Q"),
+            ("জ", "u"), ("দ", "l"), ("ল", "n"), ("ঃ", "X"),
+            ("ঝ", "U"), ("ধ", "L"), ("শ", "M"), ("ঁ", "x"),
+            ("ঞ", "e"), ("ন", "b"), ("ষ", "N"), ("", "")
         ], cols=4, container_id="national")
         self.append_widget(self.national_cheatsheet_container, nat_c_table)
 
         # Section 2: Vowels & Kars
         self.append_widget(self.national_cheatsheet_container, self.make_section_label("Vowels & Kars · স্বরবর্ণ ও কার"))
         nat_v_table = self.build_key_grid([
-            ("অ", "F (Shift+f)"), ("আ / া", "g+f / f"), ("ই / ি", "g+d / d"),
+            ("অ", "F"), ("আ / া", "g+f / f"), ("ই / ি", "g+d / d"),
             ("ঈ / ী", "g+D / D"), ("উ / ু", "g+s / s"), ("ঊ / ূ", "g+S / S"),
             ("ঋ / ৃ", "A / a"), ("এ / ে", "g+c / c"), ("ঐ / ৈ", "g+C / C"),
             ("ও / ো", "g+1 / c+f"), ("ঔ / ৌ", "g+X / X"), ("", "")
         ], cols=3, container_id="national")
         self.append_widget(self.national_cheatsheet_container, nat_v_table)
 
-        # Section 3: Conjuncts & Special Rules
-        self.append_widget(self.national_cheatsheet_container, self.make_section_label("Conjuncts & Special Rules · যুক্তবর্ণ ও নিয়ম"))
+        # Section 3: Modifiers & Conjunct Keys
+        self.append_widget(self.national_cheatsheet_container, self.make_section_label("Modifiers & Conjuncts · বিশেষ ও যুক্তচিহ্ন"))
         nat_s_table = self.build_key_grid([
-            ("্ হসন্ত (Link Key)", "g (যেমন: j+g+k → ক্ত)"),
-            ("্ র-ফলা", "z (যেমন: j+z → ক্র)"),
-            ("্ য-ফলা", "Z (Shift+z)"),
-            ("রেফ", "A (Shift+a) (যেমন: A+j → র্ক)"),
-            ("কার আগে টাইপ (Pre-base)", "d + j → কি (যেমন বিজয়ে)"),
-            ("দাঁড়ি / টাকা", "G (Shift+g) → । | $ → ৳")
-        ], cols=2, container_id="national")
+            ("্ হসন্ত (Link)", "g"), ("্ র-ফলা", "z"), ("রেফ", "A"),
+            ("্ য-ফলা", "Z"), ("। দাঁড়ি", "G"), ("৳ টাকা", "$")
+        ], cols=3, container_id="national")
         self.append_widget(self.national_cheatsheet_container, nat_s_table)
+
+        # Section 4: Typing Rules & Hints
+        rule_card = self.make_card()
+        rule_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        r1 = Gtk.Label(label="• <b>যুক্তবর্ণ (Conjuncts)</b>: ব্যঞ্জনবর্ণ + <b>g</b> + ব্যঞ্জনবর্ণ (যেমন: <b>j + g + k</b> → <b>ক্ত</b>)")
+        r1.set_use_markup(True)
+        r1.set_xalign(0)
+        r2 = Gtk.Label(label="• <b>কার আগে টাইপ (Pre-base Kar)</b>: বিজয়ের মতো কার আগে চাপুন (যেমন: <b>d + j</b> → <b>কি</b>)")
+        r2.set_use_markup(True)
+        r2.set_xalign(0)
+        r3 = Gtk.Label(label="• <b>বড় হাতের অক্ষর (Shift)</b>: Shift চেপে টাইপ করুন (যেমন: Shift+j = <b>J</b> → <b>খ</b>)")
+        r3.set_use_markup(True)
+        r3.set_xalign(0)
+        self.append_widget(rule_box, r1)
+        self.append_widget(rule_box, r2)
+        self.append_widget(rule_box, r3)
+        self.set_card_content(rule_card, rule_box)
+        self.append_widget(self.national_cheatsheet_container, rule_card)
 
         # Section 4: Numbers
         self.append_widget(self.national_cheatsheet_container, self.make_section_label("Numbers · সংখ্যা"))

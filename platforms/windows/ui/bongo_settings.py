@@ -912,39 +912,43 @@ class BongoSettingsApp:
         self.make_section_label(self.national_layout_frame, "Consonants · ব্যঞ্জনবর্ণ (BDS 1738:2004)")
         nat_c_pairs = [
             ("ক", "j"), ("ট", "t"), ("প", "r"), ("স", "s"),
-            ("খ", "J (Shift+j)"), ("ঠ", "T (Shift+t)"), ("ফ", "R (Shift+r)"), ("হ", "i"),
-            ("গ", "o"), ("ড", "b"), ("ব", "h"), ("ড়", "P (Shift+p)"),
-            ("ঘ", "O (Shift+o)"), ("ঢ", "B (Shift+b)"), ("ভ", "H (Shift+h)"), ("ঢ়", "V (Shift+v)"),
-            ("ঙ", "q"), ("ণ", "p"), ("ম", "m"), ("য়", "W (Shift+w)"),
-            ("চ", "y"), ("ত", "k"), ("য", "w"), ("ৎ", "` (Grave)"),
-            ("ছ", "Y (Shift+y)"), ("থ", "K (Shift+k)"), ("র", "v"), ("ং", "Q (Shift+q)"),
-            ("জ", "u"), ("দ", "l"), ("ল", "n"), ("ঃ", "X (Shift+x)"),
-            ("ঝ", "U (Shift+u)"), ("ধ", "L (Shift+l)"), ("শ", "M (Shift+m)"), ("ঁ", "x"),
-            ("ঞ", "e"), ("ন", "b"), ("ষ", "N (Shift+n)"), ("", "")
+            ("খ", "J"), ("ঠ", "T"), ("ফ", "R"), ("হ", "i"),
+            ("গ", "o"), ("ড", "b"), ("ব", "h"), ("ড়", "P"),
+            ("ঘ", "O"), ("ঢ", "B"), ("ভ", "H"), ("ঢ়", "V"),
+            ("ঙ", "q"), ("ণ", "p"), ("ম", "m"), ("য়", "W"),
+            ("চ", "y"), ("ত", "k"), ("য", "w"), ("ৎ", "`"),
+            ("ছ", "Y"), ("থ", "K"), ("র", "v"), ("ং", "Q"),
+            ("জ", "u"), ("দ", "l"), ("ল", "n"), ("ঃ", "X"),
+            ("ঝ", "U"), ("ধ", "L"), ("শ", "M"), ("ঁ", "x"),
+            ("ঞ", "e"), ("ন", "b"), ("ষ", "N"), ("", "")
         ]
         self.create_key_grid(self.national_layout_frame, nat_c_pairs, cols=4, container_id="national")
 
         # Section 2: Vowels & Kars
         self.make_section_label(self.national_layout_frame, "Vowels & Kars · স্বরবর্ণ ও কার")
         nat_v_pairs = [
-            ("অ", "F (Shift+f)"), ("আ / া", "g+f / f"), ("ই / ি", "g+d / d"),
+            ("অ", "F"), ("আ / া", "g+f / f"), ("ই / ি", "g+d / d"),
             ("ঈ / ী", "g+D / D"), ("উ / ু", "g+s / s"), ("ঊ / ূ", "g+S / S"),
             ("ঋ / ৃ", "A / a"), ("এ / ে", "g+c / c"), ("ঐ / ৈ", "g+C / C"),
             ("ও / ো", "g+1 / c+f"), ("ঔ / ৌ", "g+X / X"), ("", "")
         ]
         self.create_key_grid(self.national_layout_frame, nat_v_pairs, cols=3, container_id="national")
 
-        # Section 3: Conjuncts & Special Rules
-        self.make_section_label(self.national_layout_frame, "Conjuncts & Special Rules · যুক্তবর্ণ ও নিয়ম")
+        # Section 3: Modifiers & Conjunct Keys
+        self.make_section_label(self.national_layout_frame, "Modifiers & Conjuncts · বিশেষ ও যুক্তচিহ্ন")
         nat_s_pairs = [
-            ("্ হসন্ত (Link Key)", "g (যেমন: j+g+k → ক্ত)"),
-            ("্ র-ফলা", "z (যেমন: j+z → ক্র)"),
-            ("্ য-ফলা", "Z (Shift+z)"),
-            ("রেফ", "A (Shift+a) (যেমন: A+j → র্ক)"),
-            ("কার আগে টাইপ (Pre-base)", "d + j → কি (যেমন বিজয়ে)"),
-            ("দাঁড়ি / টাকা", "G (Shift+g) → । | $ → ৳")
+            ("্ হসন্ত (Link)", "g"), ("্ র-ফলা", "z"), ("রেফ", "A"),
+            ("্ য-ফলা", "Z"), ("। দাঁড়ি", "G"), ("৳ টাকা", "$")
         ]
-        self.create_key_grid(self.national_layout_frame, nat_s_pairs, cols=2, container_id="national")
+        self.create_key_grid(self.national_layout_frame, nat_s_pairs, cols=3, container_id="national")
+
+        # Section 4: Rules & Hints
+        rule_card = self.make_card(self.national_layout_frame)
+        r_box = tk.Frame(rule_card, bg=BG_CARD)
+        r_box.pack(fill=tk.X, padx=6, pady=4)
+        tk.Label(r_box, text="• যুক্তবর্ণ: ব্যঞ্জনবর্ণ + g + ব্যঞ্জনবর্ণ (যেমন: j + g + k → ক্ত)", font=("Segoe UI", 9), fg=TEXT_SECONDARY, bg=BG_CARD).pack(anchor="w")
+        tk.Label(r_box, text="• কার আগে টাইপ (Pre-base Kar): বিজয়ের মতো কার আগে চাপুন (যেমন: d + j → কি)", font=("Segoe UI", 9), fg=TEXT_SECONDARY, bg=BG_CARD).pack(anchor="w")
+        tk.Label(r_box, text="• বড় হাতের অক্ষর: Shift চেপে টাইপ করুন (যেমন: Shift+j = J → খ)", font=("Segoe UI", 9), fg=TEXT_SECONDARY, bg=BG_CARD).pack(anchor="w")
 
         # Section 4: Numbers
         self.make_section_label(self.national_layout_frame, "Numbers · সংখ্যা")
