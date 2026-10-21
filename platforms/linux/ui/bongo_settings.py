@@ -304,6 +304,37 @@ headerbar button:hover, .bongo-headerbar button:hover {
     border-radius: 10px;
     padding: 14px 18px;
 }
+
+.bongo-toggle-container {
+    background-color: #202024;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 6px;
+}
+
+.bongo-toggle-btn {
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: transparent;
+    color: #a1a1aa;
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+.bongo-toggle-btn:hover {
+    color: #f4f4f5;
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.bongo-toggle-btn.active {
+    background-color: #6366f1;
+    color: #ffffff;
+    font-weight: 700;
+}
 """
 
 
@@ -731,17 +762,48 @@ class BongoSettingsApp:
     def create_cheatsheet_view(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
 
-        # Search filter box
+        # 1. Dual Layout Switcher Bar
+        toggle_wrapper = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        if gtk_version == '4.0':
+            toggle_wrapper.add_css_class("bongo-toggle-container")
+        else:
+            toggle_wrapper.get_style_context().add_class("bongo-toggle-container")
+
+        toggle_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        toggle_box.set_homogeneous(True)
+        toggle_box.set_hexpand(True)
+
+        self.btn_avro_cheatsheet = Gtk.Button(label="Avro Phonetic Layout")
+        self.btn_national_cheatsheet = Gtk.Button(label="National / Bijoy (জাতীয়)")
+
+        for btn in (self.btn_avro_cheatsheet, self.btn_national_cheatsheet):
+            if gtk_version == '4.0':
+                btn.add_css_class("bongo-toggle-btn")
+            else:
+                btn.get_style_context().add_class("bongo-toggle-btn")
+
+        self.btn_avro_cheatsheet.connect("clicked", lambda b: self.switch_cheatsheet_mode("avro"))
+        self.btn_national_cheatsheet.connect("clicked", lambda b: self.switch_cheatsheet_mode("national"))
+
+        self.append_widget(toggle_box, self.btn_avro_cheatsheet)
+        self.append_widget(toggle_box, self.btn_national_cheatsheet)
+        self.append_widget(toggle_wrapper, toggle_box)
+        self.append_widget(box, toggle_wrapper)
+
+        # 2. Search filter box
         self.search_entry = Gtk.SearchEntry()
-        self.search_entry.set_placeholder_text("Quick filter keys (e.g. k, sh, a, Z)...")
+        self.search_entry.set_placeholder_text("Quick filter keys (e.g. k, sh, a, Z, ক, য)...")
         self.search_entry.connect("search-changed", self.filter_cheatsheet)
         self.append_widget(box, self.search_entry)
 
         # Cheatsheet Data
         self.cheatsheet_rows = []
 
+        # 3. Avro Layout Container
+        self.avro_cheatsheet_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+
         # Section 1: Consonants
-        box.append(self.make_section_label("Consonants · ব্যঞ্জনবর্ণ")) if gtk_version == '4.0' else box.pack_start(self.make_section_label("Consonants · ব্যঞ্জনবর্ণ"), False, False, 0)
+        self.append_widget(self.avro_cheatsheet_container, self.make_section_label("Consonants · ব্যঞ্জনবর্ণ"))
         c_table = self.build_key_grid([
             ("ক", "k"), ("ট", "T"), ("প", "p"), ("স", "s"),
             ("খ", "kh"), ("ঠ", "Th"), ("ফ", "ph, f"), ("হ", "h"),
@@ -753,40 +815,97 @@ class BongoSettingsApp:
             ("জ", "j"), ("দ", "d"), ("ল", "l"), ("ং", "ng"),
             ("ঝ", "jh"), ("ধ", "dh"), ("ঃ", ":"), ("ঁ", "^"),
             ("ঞ", "NG"), ("ন", "n"), ("ৎ", "t``"), ("", "")
-        ], cols=4)
-        self.append_widget(box, c_table)
+        ], cols=4, container_id="avro")
+        self.append_widget(self.avro_cheatsheet_container, c_table)
 
         # Section 2: Vowels
-        box.append(self.make_section_label("Vowels · স্বরবর্ণ")) if gtk_version == '4.0' else box.pack_start(self.make_section_label("Vowels · স্বরবর্ণ"), False, False, 0)
+        self.append_widget(self.avro_cheatsheet_container, self.make_section_label("Vowels · স্বরবর্ণ"))
         v_table = self.build_key_grid([
             ("অ", "o"), ("ই / কি", "i"), ("উ / কু", "u"),
             ("আ / কা", "a"), ("ঈ / কী", "I"), ("ঊ / কূ", "U"),
             ("ঋ / কৃ", "rri"), ("এ / কে", "e"), ("ও / কো", "O"),
             ("ঐ / কৈ", "OI"), ("ঔ / কৌ", "OU"), ("", "")
-        ], cols=3)
-        self.append_widget(box, v_table)
+        ], cols=3, container_id="avro")
+        self.append_widget(self.avro_cheatsheet_container, v_table)
 
         # Section 3: Special & Modifiers
-        box.append(self.make_section_label("Special & Modifiers · বিশেষ")) if gtk_version == '4.0' else box.pack_start(self.make_section_label("Special & Modifiers · বিশেষ"), False, False, 0)
+        self.append_widget(self.avro_cheatsheet_container, self.make_section_label("Special & Modifiers · বিশেষ"))
         s_table = self.build_key_grid([
             ("্ হসন্ত", ",,"), ("ব-ফলা", "w"), ("রেফ", "rr (v)"),
             ("় নুক্তা", ".."), ("য-ফলা", "y, Z"), ("। দাঁড়ি", "."),
             ("ZWJ", "`"), ("র-ফলা", "r"), ("৳ টাকা", "$"),
             ("ZWNJ", "~"), ("", ""), ("", "")
-        ], cols=3)
-        self.append_widget(box, s_table)
+        ], cols=3, container_id="avro")
+        self.append_widget(self.avro_cheatsheet_container, s_table)
 
         # Section 4: Numbers
-        box.append(self.make_section_label("Numbers · সংখ্যা")) if gtk_version == '4.0' else box.pack_start(self.make_section_label("Numbers · সংখ্যা"), False, False, 0)
+        self.append_widget(self.avro_cheatsheet_container, self.make_section_label("Numbers · সংখ্যা"))
         n_table = self.build_key_grid([
             ("০", "0"), ("১", "1"), ("২", "2"), ("৩", "3"), ("৪", "4"),
             ("৫", "5"), ("৬", "6"), ("৭", "7"), ("৮", "8"), ("৯", "9")
-        ], cols=5)
-        self.append_widget(box, n_table)
+        ], cols=5, container_id="avro")
+        self.append_widget(self.avro_cheatsheet_container, n_table)
+
+        self.append_widget(box, self.avro_cheatsheet_container)
+
+        # 4. National / Bijoy Layout Container
+        self.national_cheatsheet_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+
+        # Section 1: Consonants (BDS 1738:2004)
+        self.append_widget(self.national_cheatsheet_container, self.make_section_label("Consonants · ব্যঞ্জনবর্ণ (BDS 1738:2004)"))
+        nat_c_table = self.build_key_grid([
+            ("ক", "j"), ("ট", "t"), ("প", "r"), ("স", "s"),
+            ("খ", "J (Shift+j)"), ("ঠ", "T (Shift+t)"), ("ফ", "R (Shift+r)"), ("হ", "i"),
+            ("গ", "o"), ("ড", "b"), ("ব", "h"), ("ড়", "P (Shift+p)"),
+            ("ঘ", "O (Shift+o)"), ("ঢ", "B (Shift+b)"), ("ভ", "H (Shift+h)"), ("ঢ়", "V (Shift+v)"),
+            ("ঙ", "q"), ("ণ", "p"), ("ম", "m"), ("য়", "W (Shift+w)"),
+            ("চ", "y"), ("ত", "k"), ("য", "w"), ("ৎ", "` (Grave)"),
+            ("ছ", "Y (Shift+y)"), ("থ", "K (Shift+k)"), ("র", "v"), ("ং", "Q (Shift+q)"),
+            ("জ", "u"), ("দ", "l"), ("ল", "n"), ("ঃ", "X (Shift+x)"),
+            ("ঝ", "U (Shift+u)"), ("ধ", "L (Shift+l)"), ("শ", "M (Shift+m)"), ("ঁ", "x"),
+            ("ঞ", "e"), ("ন", "b"), ("ষ", "N (Shift+n)"), ("", "")
+        ], cols=4, container_id="national")
+        self.append_widget(self.national_cheatsheet_container, nat_c_table)
+
+        # Section 2: Vowels & Kars
+        self.append_widget(self.national_cheatsheet_container, self.make_section_label("Vowels & Kars · স্বরবর্ণ ও কার"))
+        nat_v_table = self.build_key_grid([
+            ("অ", "F (Shift+f)"), ("আ / া", "g+f / f"), ("ই / ি", "g+d / d"),
+            ("ঈ / ী", "g+D / D"), ("উ / ু", "g+s / s"), ("ঊ / ূ", "g+S / S"),
+            ("ঋ / ৃ", "A / a"), ("এ / ে", "g+c / c"), ("ঐ / ৈ", "g+C / C"),
+            ("ও / ো", "g+1 / c+f"), ("ঔ / ৌ", "g+X / X"), ("", "")
+        ], cols=3, container_id="national")
+        self.append_widget(self.national_cheatsheet_container, nat_v_table)
+
+        # Section 3: Conjuncts & Special Rules
+        self.append_widget(self.national_cheatsheet_container, self.make_section_label("Conjuncts & Special Rules · যুক্তবর্ণ ও নিয়ম"))
+        nat_s_table = self.build_key_grid([
+            ("্ হসন্ত (Link Key)", "g (যেমন: j+g+k → ক্ত)"),
+            ("্ র-ফলা", "z (যেমন: j+z → ক্র)"),
+            ("্ য-ফলা", "Z (Shift+z)"),
+            ("রেফ", "A (Shift+a) (যেমন: A+j → র্ক)"),
+            ("কার আগে টাইপ (Pre-base)", "d + j → কি (যেমন বিজয়ে)"),
+            ("দাঁড়ি / টাকা", "G (Shift+g) → । | $ → ৳")
+        ], cols=2, container_id="national")
+        self.append_widget(self.national_cheatsheet_container, nat_s_table)
+
+        # Section 4: Numbers
+        self.append_widget(self.national_cheatsheet_container, self.make_section_label("Numbers · সংখ্যা"))
+        nat_n_table = self.build_key_grid([
+            ("০", "0"), ("১", "1"), ("২", "2"), ("৩", "3"), ("৪", "4"),
+            ("৫", "5"), ("৬", "6"), ("৭", "7"), ("৮", "8"), ("৯", "9")
+        ], cols=5, container_id="national")
+        self.append_widget(self.national_cheatsheet_container, nat_n_table)
+
+        self.append_widget(box, self.national_cheatsheet_container)
+
+        # Set default active mode to match current layout setting
+        initial_mode = "national" if self.settings.get("keyboard_layout", 0) == 1 else "avro"
+        self.switch_cheatsheet_mode(initial_mode)
 
         return box
 
-    def build_key_grid(self, pairs, cols=4):
+    def build_key_grid(self, pairs, cols=4, container_id="avro"):
         card = self.make_card()
         grid = Gtk.Grid()
         grid.set_column_spacing(18)
@@ -813,7 +932,7 @@ class BongoSettingsApp:
             self.append_widget(item_box, chip)
 
             grid.attach(item_box, c, r, 1, 1)
-            self.cheatsheet_rows.append((item_box, f"{bn} {en}".lower()))
+            self.cheatsheet_rows.append((item_box, f"{bn} {en}".lower(), container_id))
 
             c += 1
             if c >= cols:
@@ -823,13 +942,40 @@ class BongoSettingsApp:
         self.set_card_content(card, grid)
         return card
 
+    def switch_cheatsheet_mode(self, mode):
+        self.cheatsheet_mode = mode
+        is_avro = (mode == "avro")
+        self.avro_cheatsheet_container.set_visible(is_avro)
+        self.national_cheatsheet_container.set_visible(not is_avro)
+
+        if gtk_version == '4.0':
+            if is_avro:
+                self.btn_avro_cheatsheet.add_css_class("active")
+                self.btn_national_cheatsheet.remove_css_class("active")
+            else:
+                self.btn_national_cheatsheet.add_css_class("active")
+                self.btn_avro_cheatsheet.remove_css_class("active")
+        else:
+            ctx_a = self.btn_avro_cheatsheet.get_style_context()
+            ctx_n = self.btn_national_cheatsheet.get_style_context()
+            if is_avro:
+                ctx_a.add_class("active")
+                ctx_n.remove_class("active")
+            else:
+                ctx_n.add_class("active")
+                ctx_a.remove_class("active")
+
+        if hasattr(self, 'search_entry'):
+            self.filter_cheatsheet(self.search_entry)
+
     def filter_cheatsheet(self, entry):
         query = entry.get_text().lower().strip()
-        for widget, text in self.cheatsheet_rows:
-            if not query or query in text:
-                widget.set_visible(True)
-            else:
-                widget.set_visible(False)
+        for widget, text, container_id in self.cheatsheet_rows:
+            if container_id == getattr(self, 'cheatsheet_mode', 'avro'):
+                if not query or query in text:
+                    widget.set_visible(True)
+                else:
+                    widget.set_visible(False)
 
     # -------------------------------------------------------------
     # 3. Settings Tab
@@ -991,6 +1137,10 @@ class BongoSettingsApp:
                     ctx.remove_class("bongo-card-active")
             if hasattr(card, '_check_label'):
                 card._check_label.set_markup("<b>●</b>" if is_cur else "○")
+
+        if hasattr(self, 'cheatsheet_mode') and hasattr(self, 'switch_cheatsheet_mode'):
+            mode = "national" if layout_id == 1 else "avro"
+            self.switch_cheatsheet_mode(mode)
 
     def make_mode_card(self, mode_id, title, desc, recommended, selected=False):
         card = self.make_card()

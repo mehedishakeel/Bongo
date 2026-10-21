@@ -804,7 +804,39 @@ class BongoSettingsApp:
     def create_layout_view(self, parent):
         container = tk.Frame(parent, bg=BG_DARK)
 
-        # Search Bar
+        # 1. Dual Layout Switcher Bar
+        toggle_frame = tk.Frame(container, bg=BG_CARD, highlightbackground=BG_CARD_BORDER, highlightthickness=1, padx=4, pady=4)
+        toggle_frame.pack(fill=tk.X, pady=(0, 12))
+
+        self.cheatsheet_mode = "national" if self.settings.get("keyboard_layout", 0) == 1 else "avro"
+
+        self.btn_avro_cheatsheet = tk.Button(
+            toggle_frame,
+            text="Avro Phonetic Layout",
+            font=("Segoe UI", 9, "bold"),
+            relief=tk.FLAT,
+            bd=0,
+            padx=16,
+            pady=6,
+            cursor="hand2",
+            command=lambda: self.switch_layout_mode("avro")
+        )
+        self.btn_avro_cheatsheet.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+
+        self.btn_national_cheatsheet = tk.Button(
+            toggle_frame,
+            text="National / Bijoy (জাতীয়)",
+            font=("Segoe UI", 9, "bold"),
+            relief=tk.FLAT,
+            bd=0,
+            padx=16,
+            pady=6,
+            cursor="hand2",
+            command=lambda: self.switch_layout_mode("national")
+        )
+        self.btn_national_cheatsheet.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+
+        # 2. Search Bar
         search_frame = tk.Frame(container, bg=BG_CARD, highlightbackground=BG_CARD_BORDER, highlightthickness=1, padx=12, pady=8)
         search_frame.pack(fill=tk.X, pady=(0, 16))
 
@@ -826,8 +858,11 @@ class BongoSettingsApp:
 
         self.layout_items = []
 
+        # 3. Avro Layout Container
+        self.avro_layout_frame = tk.Frame(container, bg=BG_DARK)
+
         # Section 1: Consonants
-        self.make_section_label(container, "Consonants · ব্যঞ্জনবর্ণ")
+        self.make_section_label(self.avro_layout_frame, "Consonants · ব্যঞ্জনবর্ণ")
         c_pairs = [
             ("ক", "k"), ("ট", "T"), ("প", "p"), ("স", "s"),
             ("খ", "kh"), ("ঠ", "Th"), ("ফ", "ph, f"), ("হ", "h"),
@@ -840,42 +875,108 @@ class BongoSettingsApp:
             ("ঝ", "jh"), ("ধ", "dh"), ("ঃ", ":"), ("ঁ", "^"),
             ("ঞ", "NG"), ("ন", "n"), ("ৎ", "t``"), ("ক্ষ", "kkh")
         ]
-        self.create_key_grid(container, c_pairs, cols=4)
+        self.create_key_grid(self.avro_layout_frame, c_pairs, cols=4, container_id="avro")
 
         # Section 2: Vowels
-        self.make_section_label(container, "Vowels · স্বরবর্ণ")
+        self.make_section_label(self.avro_layout_frame, "Vowels · স্বরবর্ণ")
         v_pairs = [
             ("অ", "o"), ("ই / কি", "i"), ("উ / কু", "u"),
             ("আ / কা", "a"), ("ঈ / কী", "I"), ("ঊ / কূ", "U"),
             ("ঋ / কৃ", "rri"), ("এ / কে", "e"), ("ও / কো", "O"),
             ("ঐ / কৈ", "OI"), ("ঔ / কৌ", "OU"), ("া ি ী", "kar")
         ]
-        self.create_key_grid(container, v_pairs, cols=3)
+        self.create_key_grid(self.avro_layout_frame, v_pairs, cols=3, container_id="avro")
 
         # Section 3: Special & Modifiers
-        self.make_section_label(container, "Special & Modifiers · বিশেষ")
+        self.make_section_label(self.avro_layout_frame, "Special & Modifiers · বিশেষ")
         s_pairs = [
             ("্ হসন্ত", ",,"), ("ব-ফলা", "w"), ("রেফ", "rr (v)"),
             ("় নুক্তা", ".."), ("য-ফলা", "y, Z"), ("। দাঁড়ি", "."),
             ("ZWJ", "`"), ("র-ফলা", "r"), ("৳ টাকা", "$"),
             ("ZWNJ", "~"), ("্য ্র", "conj"), ("্ হস", ",,")
         ]
-        self.create_key_grid(container, s_pairs, cols=3)
+        self.create_key_grid(self.avro_layout_frame, s_pairs, cols=3, container_id="avro")
 
         # Section 4: Numbers
-        self.make_section_label(container, "Numbers · সংখ্যা")
+        self.make_section_label(self.avro_layout_frame, "Numbers · সংখ্যা")
         n_pairs = [
             ("০", "0"), ("১", "1"), ("২", "2"), ("৩", "3"), ("৪", "4"),
             ("৫", "5"), ("৬", "6"), ("৭", "7"), ("৮", "8"), ("৯", "9")
         ]
-        self.create_key_grid(container, n_pairs, cols=5)
+        self.create_key_grid(self.avro_layout_frame, n_pairs, cols=5, container_id="avro")
+
+        # 4. National / Bijoy Layout Container
+        self.national_layout_frame = tk.Frame(container, bg=BG_DARK)
+
+        # Section 1: Consonants (BDS 1738:2004)
+        self.make_section_label(self.national_layout_frame, "Consonants · ব্যঞ্জনবর্ণ (BDS 1738:2004)")
+        nat_c_pairs = [
+            ("ক", "j"), ("ট", "t"), ("প", "r"), ("স", "s"),
+            ("খ", "J (Shift+j)"), ("ঠ", "T (Shift+t)"), ("ফ", "R (Shift+r)"), ("হ", "i"),
+            ("গ", "o"), ("ড", "b"), ("ব", "h"), ("ড়", "P (Shift+p)"),
+            ("ঘ", "O (Shift+o)"), ("ঢ", "B (Shift+b)"), ("ভ", "H (Shift+h)"), ("ঢ়", "V (Shift+v)"),
+            ("ঙ", "q"), ("ণ", "p"), ("ম", "m"), ("য়", "W (Shift+w)"),
+            ("চ", "y"), ("ত", "k"), ("য", "w"), ("ৎ", "` (Grave)"),
+            ("ছ", "Y (Shift+y)"), ("থ", "K (Shift+k)"), ("র", "v"), ("ং", "Q (Shift+q)"),
+            ("জ", "u"), ("দ", "l"), ("ল", "n"), ("ঃ", "X (Shift+x)"),
+            ("ঝ", "U (Shift+u)"), ("ধ", "L (Shift+l)"), ("শ", "M (Shift+m)"), ("ঁ", "x"),
+            ("ঞ", "e"), ("ন", "b"), ("ষ", "N (Shift+n)"), ("", "")
+        ]
+        self.create_key_grid(self.national_layout_frame, nat_c_pairs, cols=4, container_id="national")
+
+        # Section 2: Vowels & Kars
+        self.make_section_label(self.national_layout_frame, "Vowels & Kars · স্বরবর্ণ ও কার")
+        nat_v_pairs = [
+            ("অ", "F (Shift+f)"), ("আ / া", "g+f / f"), ("ই / ি", "g+d / d"),
+            ("ঈ / ী", "g+D / D"), ("উ / ু", "g+s / s"), ("ঊ / ূ", "g+S / S"),
+            ("ঋ / ৃ", "A / a"), ("এ / ে", "g+c / c"), ("ঐ / ৈ", "g+C / C"),
+            ("ও / ো", "g+1 / c+f"), ("ঔ / ৌ", "g+X / X"), ("", "")
+        ]
+        self.create_key_grid(self.national_layout_frame, nat_v_pairs, cols=3, container_id="national")
+
+        # Section 3: Conjuncts & Special Rules
+        self.make_section_label(self.national_layout_frame, "Conjuncts & Special Rules · যুক্তবর্ণ ও নিয়ম")
+        nat_s_pairs = [
+            ("্ হসন্ত (Link Key)", "g (যেমন: j+g+k → ক্ত)"),
+            ("্ র-ফলা", "z (যেমন: j+z → ক্র)"),
+            ("্ য-ফলা", "Z (Shift+z)"),
+            ("রেফ", "A (Shift+a) (যেমন: A+j → র্ক)"),
+            ("কার আগে টাইপ (Pre-base)", "d + j → কি (যেমন বিজয়ে)"),
+            ("দাঁড়ি / টাকা", "G (Shift+g) → । | $ → ৳")
+        ]
+        self.create_key_grid(self.national_layout_frame, nat_s_pairs, cols=2, container_id="national")
+
+        # Section 4: Numbers
+        self.make_section_label(self.national_layout_frame, "Numbers · সংখ্যা")
+        nat_n_pairs = [
+            ("০", "0"), ("১", "1"), ("২", "2"), ("৩", "3"), ("৪", "4"),
+            ("৫", "5"), ("৬", "6"), ("৭", "7"), ("৮", "8"), ("৯", "9")
+        ]
+        self.create_key_grid(self.national_layout_frame, nat_n_pairs, cols=5, container_id="national")
+
+        # Set default active layout view
+        self.switch_layout_mode(self.cheatsheet_mode)
 
         # Hook search filtering
         self.search_var.trace_add("write", self.filter_layout)
 
         return container
 
-    def create_key_grid(self, parent, pairs, cols=4):
+    def switch_layout_mode(self, mode):
+        self.cheatsheet_mode = mode
+        if mode == "avro":
+            self.btn_avro_cheatsheet.configure(bg=ACCENT, fg=TEXT_WHITE)
+            self.btn_national_cheatsheet.configure(bg=BG_CARD, fg=TEXT_SECONDARY)
+            self.national_layout_frame.pack_forget()
+            self.avro_layout_frame.pack(fill=tk.BOTH, expand=True)
+        else:
+            self.btn_national_cheatsheet.configure(bg=ACCENT, fg=TEXT_WHITE)
+            self.btn_avro_cheatsheet.configure(bg=BG_CARD, fg=TEXT_SECONDARY)
+            self.avro_layout_frame.pack_forget()
+            self.national_layout_frame.pack(fill=tk.BOTH, expand=True)
+        self.filter_layout()
+
+    def create_key_grid(self, parent, pairs, cols=4, container_id="avro"):
         card = self.make_card(parent)
         grid_frame = tk.Frame(card, bg=BG_CARD)
         grid_frame.pack(fill=tk.X)
@@ -886,6 +987,13 @@ class BongoSettingsApp:
         row = 0
         col = 0
         for bn, en in pairs:
+            if not bn and not en:
+                col += 1
+                if col >= cols:
+                    col = 0
+                    row += 1
+                continue
+
             cell = tk.Frame(grid_frame, bg=BG_CARD, padx=8, pady=6)
             cell.grid(row=row, column=col, sticky="w")
 
@@ -903,7 +1011,7 @@ class BongoSettingsApp:
             chip = self.make_key_chip(cell, en)
             chip.pack(side=tk.LEFT)
 
-            self.layout_items.append((cell, f"{bn} {en}".lower()))
+            self.layout_items.append((cell, f"{bn} {en}".lower(), container_id))
 
             col += 1
             if col >= cols:
@@ -912,11 +1020,12 @@ class BongoSettingsApp:
 
     def filter_layout(self, *args):
         query = self.search_var.get().strip().lower()
-        for cell, text in self.layout_items:
-            if not query or query in text:
-                cell.grid()
-            else:
-                cell.grid_remove()
+        for cell, text, container_id in self.layout_items:
+            if container_id == getattr(self, 'cheatsheet_mode', 'avro'):
+                if not query or query in text:
+                    cell.grid()
+                else:
+                    cell.grid_remove()
 
     # -------------------------------------------------------------
     # 3. Settings Tab
@@ -1239,6 +1348,10 @@ class BongoSettingsApp:
                 text="●" if is_cur else "○",
                 fg=ACCENT_LIGHT if is_cur else TEXT_MUTED
             )
+
+        if hasattr(self, 'switch_layout_mode'):
+            mode = "national" if layout_id == 1 else "avro"
+            self.switch_layout_mode(mode)
 
     def select_mode(self, mode_id):
         self.settings["typing_mode"] = mode_id
