@@ -24,14 +24,18 @@ jobs:
           bash -n platforms/macos/scripts/create-dmg.sh
           bash -n platforms/linux/scripts/install.sh
           bash -n platforms/linux/scripts/build-deb.sh
+          bash -n platforms/linux/scripts/build-tarball.sh
           bash -n platforms/linux/scripts/build-rpm.sh
           python3 -m py_compile platforms/linux/ui/bongo_settings.py platforms/linux/ibus/bongo_ibus_engine.py platforms/linux/scripts/configure-fcitx5.py
           python3 -m py_compile platforms/windows/ui/bongo_settings.py platforms/windows/service/bongo_service.py platforms/windows/scripts/package_windows.py
 
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Run repository tests
+        run: |
+          python3 -m unittest discover -s tests -q
       - name: Install Rust toolchain
         run: rustup default stable
       - name: Build Linux Engine
@@ -40,7 +44,7 @@ jobs:
       - name: Install fcitx5 build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libfcitx5core-dev extra-cmake-modules cmake ninja-build fcitx5
+          sudo apt-get install -y libfcitx5core-dev cmake ninja-build fcitx5
       - name: Build and test fcitx5 addon
         env:
           BONGO_ENGINE_LIB: ${{ github.workspace }}/platforms/linux/engine/target/release/libbongo_engine.so
@@ -55,6 +59,62 @@ jobs:
           BONGO_FCITX5: "1"
         run: |
           bash platforms/linux/scripts/build-deb.sh
+          bash platforms/linux/scripts/build-tarball.sh
+      - name: Upload Linux Tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: bongo-linux-tarball
+          path: platforms/linux/release/*.tar.gz
+
+  distro-matrix:
+    name: Install on ${{ matrix.name }}
+    needs: linux
+    runs-on: ubuntu-24.04
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu 24.04
+            image: ubuntu:24.04
+          - name: Debian 13
+            image: debian:13
+          - name: Fedora latest
+            image: fedora:latest
+          - name: Arch Linux
+            image: archlinux:latest
+    steps:
+      - name: Install runtime dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          if command -v apt-get >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y --no-install-recommends python3 python3-gi gir1.2-gtk-4.0 fcitx5 ca-certificates
+          elif command -v dnf >/dev/null 2>&1; then
+            dnf install -y python3 python3-gobject gobject-introspection gtk4 fcitx5 ca-certificates
+          else
+            pacman -Syu --noconfirm --needed python python-gobject gtk4 fcitx5 ca-certificates
+          fi
+      - name: Download Linux tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: bongo-linux-tarball
+          path: /tmp/bongo-tarball
+      - name: Install, verify, and uninstall
+        run: |
+          tar -xzf /tmp/bongo-tarball/*.tar.gz -C /tmp
+          cd /tmp/Bongo-*-linux-x86_64
+          bash install.sh --prebuilt --no-configure-fcitx5
+          python3 -c 'import ctypes; ctypes.CDLL("/usr/lib/bongo/libbongo_engine.so")'
+          addon="$(find /usr/lib* -path '*/fcitx5/libbongo.so' -print -quit 2>/dev/null)"
+          test -n "$addon"
+          ldd -r "$addon" 2>&1 | tee /tmp/bongo-ldd.txt
+          ! grep -qE 'not found|undefined symbol' /tmp/bongo-ldd.txt
+          test -f /usr/share/fcitx5/addon/bongo.conf
+          test -x /usr/bin/bongo-fcitx5-setup
+          bash install.sh --uninstall
+          test ! -e /usr/bin/bongo-settings
 
   macos:
     runs-on: macos-15

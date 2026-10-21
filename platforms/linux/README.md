@@ -33,7 +33,8 @@ platforms/linux/
 │   ├── install.sh                       # Local build and install script
 │   ├── configure-fcitx5.py              # Safe, idempotent profile helper
 │   ├── build-deb.sh                     # Debian / Ubuntu package builder
-│   └── build-rpm.sh                     # Fedora / RHEL package builder
+│   ├── build-tarball.sh                 # Universal prebuilt tarball builder
+│   └── build-rpm.sh                     # Legacy Fedora / RHEL package builder
 └── ui/
     └── bongo_settings.py                # GTK settings and welcome application
 ```
@@ -63,7 +64,7 @@ sudo apt install -y ibus libibus-1.0-dev gir1.2-ibus-1.0
 ```bash
 sudo dnf install -y cargo rust cmake ninja-build \
   fcitx5-devel fcitx5 fcitx5-configtool \
-  python3 python3-gobject gtk4
+  python3 python3-gobject gobject-introspection gtk4
 # For the IBus frontend on GNOME:
 sudo dnf install -y ibus ibus-devel
 ```
@@ -85,7 +86,30 @@ the package recommends it rather than forcing it.
 
 ## Installation
 
-### Option 1: Install a Package
+### Option 1: Universal Tarball (any distribution)
+
+Download `Bongo-1.0.1-linux-x86_64.tar.gz` (64-bit PC) or
+`Bongo-1.0.1-linux-aarch64.tar.gz` (ARM64) from the
+[Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then
+install the prebuilt payload:
+
+```bash
+tar -xzf Bongo-1.0.1-linux-x86_64.tar.gz
+cd Bongo-1.0.1-linux-x86_64
+sudo bash install.sh --prebuilt
+```
+
+The archive needs glibc 2.39+ (Ubuntu 24.04+, Debian 13+, Fedora 40+, Arch) and
+Python 3 with GTK 4 for the settings app. It carries an `ARCH` marker and the
+installer refuses a mismatched or unverified archive.
+
+To uninstall a tarball install:
+
+```bash
+sudo bash install.sh --uninstall
+```
+
+### Option 2: Debian / Ubuntu Package
 
 Download `bongo_1.0.1_amd64.deb` (or `bongo_1.0.1_arm64.deb`) from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page:
 
@@ -93,16 +117,11 @@ Download `bongo_1.0.1_amd64.deb` (or `bongo_1.0.1_arm64.deb`) from the [Releases
 sudo apt install ./bongo_1.0.1_amd64.deb
 ```
 
-or:
-
-```bash
-sudo dnf install ./bongo-1.0.1-1.x86_64.rpm
-```
-
-The same package ships both frontends. On GNOME, add **Bengali (Bongo)** under
+The package ships both frontends and uses the same glibc 2.39+ floor as the
+tarball (Ubuntu 24.04+, Debian 13+). On GNOME, add **Bengali (Bongo)** under
 IBus. On KDE, Hyprland, or Omarchy, add **Bongo** in `fcitx5-configtool`.
 
-### Option 2: Build & Install from Source
+### Option 3: Build & Install from Source
 
 For a normal system-wide install, run the installer with `sudo`. The fcitx5
 addon must live in fcitx5's system addon directory; user-local addon installs
@@ -110,11 +129,11 @@ are not supported.
 
 ```bash
 # From the repository root
-sudo BONGO_FCITX5=1 ./platforms/linux/scripts/install.sh
+sudo ./platforms/linux/scripts/install.sh
 ```
 
 The installer detects fcitx5 and its headers automatically. Use
-`BONGO_FCITX5=1` to require the addon or `BONGO_FCITX5=0` to skip it.
+`BONGO_FCITX5=0` to skip the addon.
 
 A non-root install can still install the engine, settings app, and IBus
 frontend into `~/.local`. It deliberately skips the fcitx5 addon and prints the
@@ -218,12 +237,12 @@ The fcitx5 candidate font follows the active fcitx5 theme. Bongo's
 # Debian / Ubuntu
 ./platforms/linux/scripts/build-deb.sh
 
-# Fedora / RHEL
-./platforms/linux/scripts/build-rpm.sh
+# Universal prebuilt tarball (any distribution)
+./platforms/linux/scripts/build-tarball.sh
 ```
 
-The package builders force the fcitx5 addon when the development headers are
-available. Packages recommend IBus and fcitx5 rather than requiring either one,
+The package builders include the fcitx5 addon when the development headers are
+available. Packages include both frontends rather than requiring either one,
 so GNOME and KDE users can install only the frontend they need.
 
 ---

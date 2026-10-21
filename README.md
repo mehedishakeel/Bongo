@@ -81,20 +81,38 @@ See [docs/MACOS-INSTALL.md](docs/MACOS-INSTALL.md) or [platforms/macos/README.md
 
 ### Linux (Ubuntu, Debian, Fedora, Arch, Omarchy)
 
+#### Option 1: Universal tarball (any distribution)
+1. **Download**: Get `Bongo-1.0.1-linux-x86_64.tar.gz` (64-bit PC) or `Bongo-1.0.1-linux-aarch64.tar.gz` (ARM64) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
+2. **Install**:
+   ```bash
+   tar -xzf Bongo-1.0.1-linux-x86_64.tar.gz
+   cd Bongo-1.0.1-linux-x86_64
+   sudo bash install.sh --prebuilt
+   ```
+   The tarball needs glibc 2.39+ (Ubuntu 24.04+, Debian 13+, Fedora 40+, Arch) and Python 3 + GTK 4 for the settings app. The installer verifies every file against `MANIFEST.sha256` and installs the matching architecture only.
+3. **Activate**: The installer detects your desktop and enables Bongo automatically:
+   - **GNOME / IBus**: added to your GNOME input sources; toggle with <kbd>Super + Space</kbd>.
+   - **KDE / Hyprland / Omarchy / fcitx5**: added to the fcitx5 profile; switch with <kbd>Ctrl + Space</kbd>.
+4. **Uninstall** (from the extracted folder):
+   ```bash
+   sudo bash install.sh --uninstall
+   ```
+
+#### Option 2: Debian / Ubuntu package
 1. **Download**: Get `bongo_1.0.1_amd64.deb` (standard 64-bit PC) or `bongo_1.0.1_arm64.deb` (ARM64) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
 2. **Install**:
    ```bash
    sudo apt install ./bongo_1.0.1_amd64.deb
    ```
-   Or install from source with both frontends:
-   ```bash
-   sudo BONGO_FCITX5=1 ./platforms/linux/scripts/install.sh
-   ```
-3. **Activate**:
-   - **GNOME / IBus**: Go to **Settings -> Keyboard -> Input Sources -> Add**, and add **Bengali (Bongo)**.
-   - **KDE / Hyprland / Omarchy / fcitx5**: Run `fcitx5-configtool`, add **Bongo** under **Input Method**, and apply.
-   - Switch keyboards with <kbd>Super + Space</kbd> or <kbd>Control + Space</kbd>.
-   - Open **Bongo Settings** (`bongo-settings`) from the app launcher anytime.
+   These packages use the same glibc 2.39+ floor (Ubuntu 24.04+, Debian 13+).
+3. **Activate**: Add **Bengali (Bongo)** under **Settings -> Keyboard -> Input Sources** (GNOME), or run `fcitx5-configtool` and add **Bongo** (KDE / Hyprland / Omarchy).
+
+#### Option 3: Build from source
+For older distributions or development:
+```bash
+sudo ./platforms/linux/scripts/install.sh
+```
+The installer builds the fcitx5 addon automatically when its development headers are present; set `BONGO_FCITX5=0` to skip it.
 
 See [docs/LINUX-INSTALL.md](docs/LINUX-INSTALL.md) or [platforms/linux/README.md](platforms/linux/README.md) for details.
 
@@ -195,11 +213,11 @@ Press <kbd>Space</kbd> to commit the highlighted word, or press number keys <kbd
 ### Build on Linux:
 ```sh
 # System-wide install with both IBus and fcitx5 frontends:
-sudo BONGO_FCITX5=1 ./platforms/linux/scripts/install.sh
+sudo ./platforms/linux/scripts/install.sh
 
-# Or create DEB / RPM packages:
-BONGO_FCITX5=1 ./platforms/linux/scripts/build-deb.sh
-BONGO_FCITX5=1 ./platforms/linux/scripts/build-rpm.sh
+# Or create DEB / universal tarball packages:
+./platforms/linux/scripts/build-deb.sh
+./platforms/linux/scripts/build-tarball.sh
 ```
 
 ### Build on Windows:

@@ -55,8 +55,18 @@ jobs:
             platforms/macos/release/*.sha256
 
   build-linux:
-    name: Build Linux DEB
-    runs-on: ubuntu-latest
+    name: Build Linux Packages (${{ matrix.arch }})
+    # Pin the oldest supported runners so prebuilt binaries keep the glibc 2.39
+    # floor documented in the README. Moving to a newer image raises it.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -67,29 +77,50 @@ jobs:
       - name: Install IBus, Fcitx5 & Packaging Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y dpkg-dev libibus-1.0-dev libfcitx5core-dev extra-cmake-modules cmake ninja-build fcitx5
+          sudo apt-get install -y dpkg-dev libibus-1.0-dev libfcitx5core-dev cmake ninja-build fcitx5 python3-gi gir1.2-gtk-4.0
 
       - name: Build Debian Package
         run: |
           bash platforms/linux/scripts/build-deb.sh
 
+      - name: Build Universal Linux Tarball
+        run: |
+          bash platforms/linux/scripts/build-tarball.sh
+
+      - name: Smoke-test Prebuilt Install
+        run: |
+          tarball="$(ls platforms/linux/release/Bongo-*-linux-${{ matrix.arch }}.tar.gz)"
+          tmp="$(mktemp -d)"
+          tar -xzf "$tarball" -C "$tmp"
+          cd "$tmp"/Bongo-*-linux-${{ matrix.arch }}
+          sudo bash install.sh --prebuilt --no-configure-fcitx5
+          python3 -c 'import ctypes; ctypes.CDLL("/usr/lib/bongo/libbongo_engine.so")'
+          addon="$(find /usr/lib* -path '*/fcitx5/libbongo.so' -print -quit 2>/dev/null)"
+          test -n "$addon"
+          ldd -r "$addon" 2>&1 | tee /tmp/bongo-ldd.txt
+          ! grep -qE 'not found|undefined symbol' /tmp/bongo-ldd.txt
+          test -f /usr/share/fcitx5/addon/bongo.conf
+          sudo bash install.sh --uninstall
+          test ! -e /usr/bin/bongo-settings
+
       - name: Generate Checksums
         run: |
           cd platforms/linux/release
-          for deb in *.deb; do
-            if [ -f "$deb" ]; then
-              shasum -a 256 "$deb" > "${deb}.sha256"
-              echo "Generated checksum for $deb:"
-              cat "${deb}.sha256"
+          for artifact in *.deb *.tar.gz; do
+            if [ -f "$artifact" ]; then
+              shasum -a 256 "$artifact" > "${artifact}.sha256"
+              echo "Generated checksum for $artifact:"
+              cat "${artifact}.sha256"
             fi
           done
 
-      - name: Upload DEB Artifact
+      - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: bongo-linux-amd64-deb
+          name: bongo-linux-packages-${{ matrix.arch }}
           path: |
             platforms/linux/release/*.deb
+            platforms/linux/release/*.tar.gz
             platforms/linux/release/*.sha256
 
   build-windows:
@@ -143,6 +174,7 @@ jobs:
           files: |
             release-artifacts/*.dmg
             release-artifacts/*.deb
+            release-artifacts/*.tar.gz
             release-artifacts/*.exe
             release-artifacts/*.msi
             release-artifacts/*.zip

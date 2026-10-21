@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Build Debian/Ubuntu (.deb) package for Bongo
-# Supports Ubuntu 22.04+, 24.04+, Debian 12+, Linux Mint, Pop!_OS
+# Supports Ubuntu 24.04+, Debian 13+, Linux Mint, Pop!_OS (glibc 2.39+)
 #
 
 set -euo pipefail
