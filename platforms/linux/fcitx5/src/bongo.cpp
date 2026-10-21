@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 #include "bongo.h"
 
+#include <fcitx/addoninstance.h>
 #include <fcitx/event.h>
 #include <fcitx/inputcontext.h>
 #include <fcitx/inputcontextmanager.h>
