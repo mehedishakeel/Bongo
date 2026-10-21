@@ -484,6 +484,7 @@ if [[ "${BUILD_FCITX5}" == "true" ]]; then
             -DCMAKE_BUILD_TYPE=Release
             -DCMAKE_INSTALL_PREFIX="${PREFIX}"
             -DBUILD_TESTING=OFF
+            -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
         )
         fcitx5_libdir=""
         if command -v pkg-config >/dev/null 2>&1; then
