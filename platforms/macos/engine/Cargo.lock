@@ -220,7 +220,6 @@ checksum = "a96887878f22d7bad8a3b6dc5b7440e0ada9a245242924394987b21cf2210a4c"
 [[package]]
 name = "riti"
 version = "0.1.0"
-source = "git+https://github.com/OpenBangla/riti.git#9afef322d29807e7c93ff589e910b0794f3812ec"
 dependencies = [
  "ahash",
  "edit-distance",

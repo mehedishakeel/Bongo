@@ -9,4 +9,4 @@ name = "avrobangla_engine"
 crate-type = ["staticlib"]
 
 [dependencies]
-riti = { git = "https://github.com/OpenBangla/riti.git" }
+riti = { path = "../../../vendor/rust/riti" }

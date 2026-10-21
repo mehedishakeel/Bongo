@@ -80,6 +80,11 @@ func setMode(_ mode: String) {
     UserDefaults.standard.set(mode, forKey: BongoInputController.typingModeKey)
     NotificationCenter.default.post(name: .bongoTypingModeChanged, object: nil)
 }
+
+func setLayout(_ layout: String) {
+    UserDefaults.standard.set(layout, forKey: BongoInputController.keyboardLayoutKey)
+    NotificationCenter.default.post(name: .bongoKeyboardLayoutChanged, object: nil)
+}
 func setEmoji(_ on: Bool) {
     UserDefaults.standard.set(on, forKey: BongoInputController.showEmojiKey)
     NotificationCenter.default.post(name: .bongoEmojiSettingChanged, object: nil)
@@ -194,6 +199,24 @@ print("== live mode switch mid-word drops the word")
 a.type("sonar"); setMode("smart")
 checkTrue("dropped", a.client.marked.isEmpty && a.take().isEmpty)
 a.type("sonar "); check("new mode active", a.take(), "সোনার ")
+
+print("== national / bijoy layout switching")
+setLayout("national")
+a.type("j")
+check("national: j -> ক", a.client.marked, "ক")
+a.controller.commitComposition(a.client)
+check("national commit j", a.take(), "ক")
+
+// pre-base kar: 'd' (ি) + 'j' (ক) -> 'কি'
+a.type("dj")
+check("national: pre-base kar d+j -> কি", a.client.marked, "কি")
+a.controller.commitComposition(a.client)
+check("national commit dj", a.take(), "কি")
+
+// switch back to avro
+setLayout("avro_phonetic")
+a.type("ami ")
+check("avro active again", a.take(), "আমি ")
 
 UserDefaults.standard.removePersistentDomain(forName: ProcessInfo.processInfo.processName)
 print(failures == 0 ? "\nALL PASSED" : "\n\(failures) FAILED")
