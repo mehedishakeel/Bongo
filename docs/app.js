@@ -688,8 +688,8 @@ function initDownloadHub() {
    ======================================================== */
 function initDirectDownload() {
     const GITHUB_REPO = 'mehedishakeel/Bongo';
-    const CACHE_KEY = 'bongo_latest_assets_v1_0_3';
-    const CACHE_TIME_KEY = 'bongo_latest_assets_time_v1_0_3';
+    const CACHE_KEY = 'bongo_latest_assets_v1_1_0';
+    const CACHE_TIME_KEY = 'bongo_latest_assets_time_v1_1_0';
     const ONE_HOUR = 60 * 60 * 1000;
 
     function applyAssetUrls(assets) {
@@ -718,6 +718,8 @@ function initDirectDownload() {
                 document.querySelectorAll('.download-windows-exe').forEach(el => el.setAttribute('href', url));
             } else if (name.endsWith('.msi')) {
                 document.querySelectorAll('.download-windows-msi').forEach(el => el.setAttribute('href', url));
+            } else if (name.endsWith('.zip')) {
+                document.querySelectorAll('.download-windows-zip').forEach(el => el.setAttribute('href', url));
             } else if (name.endsWith('.apk')) {
                 document.querySelectorAll('.download-android-apk').forEach(el => el.setAttribute('href', url));
             }
