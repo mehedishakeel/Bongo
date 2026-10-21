@@ -100,6 +100,7 @@ build_single_arch() {
         -lavrobangla_engine \
         -framework Cocoa \
         -framework InputMethodKit \
+        -framework WebKit \
         -target "$SWIFT_TARGET" \
         -o "$OUT_DIR/$APP_NAME"
 
