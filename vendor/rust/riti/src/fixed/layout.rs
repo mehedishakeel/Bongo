@@ -950,4 +950,39 @@ mod tests {
             .get_char_for_key(VC_KP_0, LayoutModifiers::AltGr, fixed_numpad)
             .is_some());
     }
+
+    #[test]
+    fn test_national_layout() {
+        let layout = serde_json::from_str::<Value>(include_str!("../../data/National.json"))
+            .ok()
+            .and_then(|v| v.get("layout").cloned())
+            .and_then(Layout::parse)
+            .expect("Failed to parse National.json");
+        let fixed_numpad = true;
+
+        // Consonants
+        assert_eq!(layout.get_char_for_key(VC_J, LayoutModifiers::Normal, fixed_numpad), Some("ক".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_J_SHIFT, LayoutModifiers::Normal, fixed_numpad), Some("খ".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_H, LayoutModifiers::Normal, fixed_numpad), Some("ব".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_H_SHIFT, LayoutModifiers::Normal, fixed_numpad), Some("ভ".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_K, LayoutModifiers::Normal, fixed_numpad), Some("ত".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_K_SHIFT, LayoutModifiers::Normal, fixed_numpad), Some("থ".to_string()));
+
+        // Vowel signs & independent
+        assert_eq!(layout.get_char_for_key(VC_F, LayoutModifiers::Normal, fixed_numpad), Some("া".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_F_SHIFT, LayoutModifiers::Normal, fixed_numpad), Some("অ".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_D, LayoutModifiers::Normal, fixed_numpad), Some("ি".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_D_SHIFT, LayoutModifiers::Normal, fixed_numpad), Some("ী".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_S, LayoutModifiers::Normal, fixed_numpad), Some("ু".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_S_SHIFT, LayoutModifiers::Normal, fixed_numpad), Some("ূ".to_string()));
+
+        // Link key & Danda
+        assert_eq!(layout.get_char_for_key(VC_G, LayoutModifiers::Normal, fixed_numpad), Some("্".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_G_SHIFT, LayoutModifiers::Normal, fixed_numpad), Some("।".to_string()));
+
+        // Digits & Taka sign
+        assert_eq!(layout.get_char_for_key(VC_1, LayoutModifiers::Normal, fixed_numpad), Some("১".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_4, LayoutModifiers::Normal, fixed_numpad), Some("৪".to_string()));
+        assert_eq!(layout.get_char_for_key(VC_DOLLAR, LayoutModifiers::Normal, fixed_numpad), Some("৳".to_string()));
+    }
 }
