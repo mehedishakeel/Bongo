@@ -23,6 +23,7 @@ pub struct Config {
     fixed_kar_order: bool,
     // Output in ANSI encoding
     ansi: bool,
+    include_emoji: bool,
     smart_quote: bool,
 }
 
@@ -213,6 +214,16 @@ impl Config {
         self.ansi = ansi;
     }
 
+    /// Checks if emoji suggestions are enabled.
+    pub fn get_include_emoji(&self) -> bool {
+        self.include_emoji
+    }
+
+    /// Set whether emoji suggestions are enabled.
+    pub fn set_include_emoji(&mut self, include: bool) {
+        self.include_emoji = include;
+    }
+
     /// Get the config's smart quote configuration.
     #[must_use]
     pub fn get_smart_quote(&self) -> bool {
@@ -232,9 +243,7 @@ pub fn get_user_data_dir() -> PathBuf {
         .map(|path| path + "/openbangla-keyboard")
         .or_else(|| {
             // Windows
-            var("localappdata")
-                .ok()
-                .map(|path| path + "\\OpenBangla")
+            var("localappdata").ok().map(|path| path + "\\OpenBangla")
         })
         .unwrap()
         .into()
@@ -282,6 +291,7 @@ impl Default for Config {
             fixed_kar_order: false,
             phonetic_suggestion: false,
             ansi: false,
+            include_emoji: true,
             smart_quote: true,
         }
     }

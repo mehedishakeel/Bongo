@@ -2,8 +2,11 @@
 __pycache__/
 *.py[cod]
 .cache/
+/build/
 platforms/**/build/
 platforms/**/target/
+vendor/rust/riti/target/
+vendor/rust/riti/Cargo.lock
 platforms/*/release/*
 !platforms/*/release/.gitkeep
 .gradle/

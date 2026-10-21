@@ -25,7 +25,7 @@ jobs:
           bash -n platforms/linux/scripts/install.sh
           bash -n platforms/linux/scripts/build-deb.sh
           bash -n platforms/linux/scripts/build-rpm.sh
-          python3 -m py_compile platforms/linux/ui/bongo_settings.py platforms/linux/ibus/bongo_ibus_engine.py
+          python3 -m py_compile platforms/linux/ui/bongo_settings.py platforms/linux/ibus/bongo_ibus_engine.py platforms/linux/scripts/configure-fcitx5.py
           python3 -m py_compile platforms/windows/ui/bongo_settings.py platforms/windows/service/bongo_service.py platforms/windows/scripts/package_windows.py
 
   linux:
@@ -37,7 +37,22 @@ jobs:
       - name: Build Linux Engine
         run: |
           (cd platforms/linux/engine && cargo build --release)
+      - name: Install fcitx5 build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfcitx5core-dev extra-cmake-modules cmake ninja-build fcitx5
+      - name: Build and test fcitx5 addon
+        env:
+          BONGO_ENGINE_LIB: ${{ github.workspace }}/platforms/linux/engine/target/release/libbongo_engine.so
+        run: |
+          cmake -S platforms/linux/fcitx5 -B build/fcitx5 -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON
+          cmake --build build/fcitx5
+          ctest --test-dir build/fcitx5 --output-on-failure
       - name: Test Linux Packaging
+        env:
+          BONGO_FCITX5: "1"
         run: |
           bash platforms/linux/scripts/build-deb.sh
 

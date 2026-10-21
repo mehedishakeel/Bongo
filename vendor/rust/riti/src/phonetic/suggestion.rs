@@ -124,7 +124,7 @@ impl PhoneticSuggestion {
         self.suggestion_with_dict(&string, data);
 
         // Emoji addition with corresponding emoticon (if ANSI mode is not enabled).
-        if !config.get_ansi_encoding() {
+        if !config.get_ansi_encoding() && config.get_include_emoji() {
             if let Some(emoji) = data.get_emoji_by_emoticon(term) {
                 // Add the emoticon
                 self.suggestions.push(Rank::emoji(emoji.to_owned()));

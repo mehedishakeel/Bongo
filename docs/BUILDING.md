@@ -42,7 +42,8 @@ Artifacts are saved into `platforms/macos/release/`.
 ### Requirements
 - Linux development headers:
   ```bash
-  sudo apt install -y build-essential curl python3 libibus-1.0-dev libgtk-4-dev libadwaita-1-dev dpkg-dev
+  sudo apt install -y build-essential curl python3 cmake ninja-build \
+    libibus-1.0-dev libfcitx5core-dev libgtk-4-dev libadwaita-1-dev dpkg-dev
   ```
 - Rust stable: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
 
@@ -51,13 +52,24 @@ Artifacts are saved into `platforms/macos/release/`.
 # Compile core Rust engine:
 (cd platforms/linux/engine && cargo build --release)
 
+# Build and test the fcitx5 addon:
+export BONGO_ENGINE_LIB="$PWD/platforms/linux/engine/target/release/libbongo_engine.so"
+cmake -S platforms/linux/fcitx5 -B build/fcitx5 -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+cmake --build build/fcitx5
+ctest --test-dir build/fcitx5 --output-on-failure
+
 # Build Debian / Ubuntu .deb package:
-./platforms/linux/scripts/build-deb.sh
+BONGO_FCITX5=1 ./platforms/linux/scripts/build-deb.sh
 
 # Build Fedora / RHEL .rpm package:
-./platforms/linux/scripts/build-rpm.sh
+BONGO_FCITX5=1 ./platforms/linux/scripts/build-rpm.sh
 ```
 Artifacts are saved into `platforms/linux/release/`.
+
+The package builders include both frontends and recommend IBus and fcitx5
+instead of requiring either one. Set `BONGO_FCITX5=0` only when building a
+package without the fcitx5 addon.
 
 ---
 

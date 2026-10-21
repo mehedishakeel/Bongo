@@ -17,9 +17,11 @@ On macOS, Bongo follows Apple's official `InputMethodKit` architecture:
 
 ## 3. Linux Platform Architecture
 
-On Linux, Bongo integrates directly into the desktop input framework via **IBus**:
-- **IBus Component (`bongo.xml`)**: Registers Bongo with the desktop session as an official Bengali input engine.
-- **IBus Engine Daemon (`bongo_ibus_engine.py`)**: Interacts with the IBus D-Bus service, processes key events through the Rust core, and updates candidate views.
+On Linux, Bongo integrates directly into the desktop input framework through two
+native frontends that share the same Rust engine:
+- **Shared Rust Engine (`libbongo_engine.so`)**: The same Avro phonetic parser and offline lexicon used by every platform, exposed through a stable C ABI.
+- **IBus Component (`bongo.xml`)** and **IBus Engine Daemon (`bongo_ibus_engine.py`)**: Register Bongo with GNOME and other IBus-based desktops, process key events through the Rust core, and update candidate views.
+- **fcitx5 Addon (`platforms/linux/fcitx5`)**: A C++20 `fcitx::InputMethodEngine` for KDE Plasma, Hyprland, Omarchy, and other fcitx5-based desktops. It loads the Rust engine at runtime, keeps one engine per input context, and uses fcitx5's native preedit and candidate panel.
 - **Settings Application (`bongo-settings`)**: Modern GTK4 / Libadwaita application for typography, mode configuration, and layout cheatsheet.
 
 ## 4. Windows Platform Architecture

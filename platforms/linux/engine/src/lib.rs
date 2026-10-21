@@ -6,9 +6,9 @@ extern crate riti;
 use std::ffi::CString;
 use std::os::raw::c_char;
 
-pub use riti::keycodes;
 use riti::config::Config;
 use riti::context::RitiContext;
+pub use riti::keycodes;
 use riti::suggestion::Suggestion;
 
 #[repr(u32)]
@@ -29,10 +29,54 @@ pub enum KeyboardLayout {
 pub struct BongoLinuxEngine {
     main_ctx: RitiContext,
     shadow_ctx: Option<RitiContext>,
+    main_config: Config,
+    shadow_config: Config,
     mode: TypingMode,
     layout: KeyboardLayout,
     show_emoji: bool,
     current_phonetic: Option<String>,
+}
+
+fn configs_for(mode: TypingMode, layout: KeyboardLayout, show_emoji: bool) -> (Config, Config) {
+    let mut main_config = Config::default();
+    match layout {
+        KeyboardLayout::National => {
+            main_config.set_layout_file_path("national");
+            main_config.set_fixed_automatic_vowel(true);
+            main_config.set_fixed_old_kar_order(true);
+            main_config.set_fixed_traditional_kar(true);
+            main_config.set_fixed_old_reph(true);
+            main_config.set_fixed_automatic_chandra(true);
+            main_config.set_fixed_numpad(true);
+            main_config.set_fixed_suggestion(false);
+        }
+        KeyboardLayout::AvroPhonetic => {
+            main_config.set_layout_file_path("avro_phonetic");
+            main_config.set_phonetic_suggestion(mode != TypingMode::PhoneticOnly);
+            main_config.set_include_emoji(show_emoji);
+        }
+    }
+
+    let mut shadow_config = Config::default();
+    match layout {
+        KeyboardLayout::National => {
+            shadow_config.set_layout_file_path("national");
+            shadow_config.set_fixed_automatic_vowel(true);
+            shadow_config.set_fixed_old_kar_order(true);
+            shadow_config.set_fixed_traditional_kar(true);
+            shadow_config.set_fixed_old_reph(true);
+            shadow_config.set_fixed_automatic_chandra(true);
+            shadow_config.set_fixed_numpad(true);
+            shadow_config.set_fixed_suggestion(false);
+        }
+        KeyboardLayout::AvroPhonetic => {
+            shadow_config.set_layout_file_path("avro_phonetic");
+            shadow_config.set_phonetic_suggestion(false);
+            shadow_config.set_include_emoji(false);
+        }
+    }
+
+    (main_config, shadow_config)
 }
 
 /// Convert a Unicode character codepoint to a riti keycode.
@@ -140,23 +184,21 @@ pub extern "C" fn avro_keycode_for_char(ch: u32) -> u16 {
 /// Creates a new BongoLinuxEngine instance with defaults.
 #[no_mangle]
 pub extern "C" fn bongo_engine_new() -> *mut BongoLinuxEngine {
-    let mut config = Config::default();
-    config.set_layout_file_path("avro_phonetic");
-    config.set_phonetic_suggestion(true);
-
-    let main_ctx = RitiContext::new_with_config(&config);
-    
-    let mut shadow_config = Config::default();
-    shadow_config.set_layout_file_path("avro_phonetic");
-    shadow_config.set_phonetic_suggestion(false);
+    let mode = TypingMode::PhoneticFirst;
+    let layout = KeyboardLayout::AvroPhonetic;
+    let show_emoji = true;
+    let (main_config, shadow_config) = configs_for(mode, layout, show_emoji);
+    let main_ctx = RitiContext::new_with_config(&main_config);
     let shadow_ctx = Some(RitiContext::new_with_config(&shadow_config));
 
     let engine = BongoLinuxEngine {
         main_ctx,
         shadow_ctx,
-        mode: TypingMode::PhoneticFirst,
-        layout: KeyboardLayout::AvroPhonetic,
-        show_emoji: true,
+        main_config,
+        shadow_config,
+        mode,
+        layout,
+        show_emoji,
         current_phonetic: None,
     };
 
@@ -167,7 +209,9 @@ pub extern "C" fn bongo_engine_new() -> *mut BongoLinuxEngine {
 #[no_mangle]
 pub extern "C" fn bongo_engine_free(engine: *mut BongoLinuxEngine) {
     if !engine.is_null() {
-        unsafe { drop(Box::from_raw(engine)); }
+        unsafe {
+            drop(Box::from_raw(engine));
+        }
     }
 }
 
@@ -185,29 +229,18 @@ pub extern "C" fn bongo_engine_set_layout(engine: *mut BongoLinuxEngine, layout:
     }
     eng.layout = new_layout;
 
-    let mut config = Config::default();
-    match eng.layout {
-        KeyboardLayout::National => {
-            config.set_layout_file_path("national");
-            config.set_fixed_automatic_vowel(true);
-            config.set_fixed_old_kar_order(true);
-            config.set_fixed_traditional_kar(true);
-            config.set_fixed_old_reph(true);
-            config.set_fixed_automatic_chandra(true);
-            config.set_fixed_numpad(true);
-            config.set_fixed_suggestion(false);
-        }
-        KeyboardLayout::AvroPhonetic => {
-            config.set_layout_file_path("avro_phonetic");
-            config.set_phonetic_suggestion(true);
-        }
-    }
-    eng.main_ctx.update_engine(&config);
+    let (main_config, shadow_config) = configs_for(eng.mode, eng.layout, eng.show_emoji);
+    eng.main_config = main_config;
+    eng.shadow_config = shadow_config;
+    eng.main_ctx.update_engine(&eng.main_config);
     if let Some(ref mut shadow) = eng.shadow_ctx {
-        let mut shadow_config = config.clone();
-        shadow_config.set_phonetic_suggestion(false);
-        shadow.update_engine(&shadow_config);
+        shadow.update_engine(&eng.shadow_config);
     }
+    eng.main_ctx.finish_input_session();
+    if let Some(ref mut shadow) = eng.shadow_ctx {
+        shadow.finish_input_session();
+    }
+    eng.current_phonetic = None;
 }
 
 /// Gets the active keyboard layout: 0 = Avro Phonetic, 1 = National (Bijoy).
@@ -221,27 +254,61 @@ pub extern "C" fn bongo_engine_get_layout(engine: *mut BongoLinuxEngine) -> u32 
 /// Sets typing mode: 0 = PhoneticFirst, 1 = Smart, 2 = PhoneticOnly.
 #[no_mangle]
 pub extern "C" fn bongo_engine_set_mode(engine: *mut BongoLinuxEngine, mode: u32) {
-    if engine.is_null() { return; }
+    if engine.is_null() {
+        return;
+    }
     let eng = unsafe { &mut *engine };
-    eng.mode = match mode {
+    let new_mode = match mode {
         1 => TypingMode::Smart,
         2 => TypingMode::PhoneticOnly,
         _ => TypingMode::PhoneticFirst,
     };
+    if eng.mode == new_mode {
+        return;
+    }
+
+    eng.mode = new_mode;
+    let (main_config, shadow_config) = configs_for(eng.mode, eng.layout, eng.show_emoji);
+    eng.main_config = main_config;
+    eng.shadow_config = shadow_config;
+    eng.main_ctx.update_engine(&eng.main_config);
+    if let Some(ref mut shadow) = eng.shadow_ctx {
+        shadow.update_engine(&eng.shadow_config);
+    }
+    eng.main_ctx.finish_input_session();
+    if let Some(ref mut shadow) = eng.shadow_ctx {
+        shadow.finish_input_session();
+    }
+    eng.current_phonetic = None;
 }
 
 /// Toggles emoji suggestions.
 #[no_mangle]
 pub extern "C" fn bongo_engine_set_emoji(engine: *mut BongoLinuxEngine, enabled: bool) {
-    if engine.is_null() { return; }
+    if engine.is_null() {
+        return;
+    }
     let eng = unsafe { &mut *engine };
+    if eng.show_emoji == enabled {
+        return;
+    }
+
     eng.show_emoji = enabled;
+    let (main_config, shadow_config) = configs_for(eng.mode, eng.layout, eng.show_emoji);
+    eng.main_config = main_config;
+    eng.shadow_config = shadow_config;
+    eng.main_ctx.update_engine(&eng.main_config);
+    if let Some(ref mut shadow) = eng.shadow_ctx {
+        shadow.update_engine(&eng.shadow_config);
+    }
 }
 
 /// Checks if there is an active composing session.
 #[no_mangle]
 pub extern "C" fn bongo_engine_has_session(engine: *mut BongoLinuxEngine) -> bool {
-    if engine.is_null() { return false; }
+    if engine.is_null() {
+        return false;
+    }
     let eng = unsafe { &*engine };
     eng.main_ctx.ongoing_input_session()
 }
@@ -267,14 +334,18 @@ pub extern "C" fn bongo_engine_feed_char(
     modifier: u8,
     selection: u8,
 ) -> *mut Suggestion {
-    if engine.is_null() { return std::ptr::null_mut(); }
+    if engine.is_null() {
+        return std::ptr::null_mut();
+    }
     let eng = unsafe { &mut *engine };
     let keycode = avro_keycode_for_char(ch);
     if keycode == 0 {
         return std::ptr::null_mut();
     }
 
-    let suggestion = eng.main_ctx.get_suggestion_for_key(keycode, modifier, selection);
+    let suggestion = eng
+        .main_ctx
+        .get_suggestion_for_key(keycode, modifier, selection);
 
     if let Some(ref mut shadow) = eng.shadow_ctx {
         let shadow_sugg = shadow.get_suggestion_for_key(keycode, modifier, 0);
@@ -290,7 +361,9 @@ pub extern "C" fn bongo_engine_backspace(
     engine: *mut BongoLinuxEngine,
     whole_word: bool,
 ) -> *mut Suggestion {
-    if engine.is_null() { return std::ptr::null_mut(); }
+    if engine.is_null() {
+        return std::ptr::null_mut();
+    }
     let eng = unsafe { &mut *engine };
     let suggestion = eng.main_ctx.backspace_event(whole_word);
 
@@ -305,7 +378,9 @@ pub extern "C" fn bongo_engine_backspace(
 /// Commits candidate at given index and finishes session.
 #[no_mangle]
 pub extern "C" fn bongo_engine_commit(engine: *mut BongoLinuxEngine, index: usize) {
-    if engine.is_null() { return; }
+    if engine.is_null() {
+        return;
+    }
     let eng = unsafe { &mut *engine };
     if eng.mode == TypingMode::Smart {
         eng.main_ctx.candidate_committed(index);
@@ -320,7 +395,9 @@ pub extern "C" fn bongo_engine_commit(engine: *mut BongoLinuxEngine, index: usiz
 /// Resets / cancels the active session without committing.
 #[no_mangle]
 pub extern "C" fn bongo_engine_reset(engine: *mut BongoLinuxEngine) {
-    if engine.is_null() { return; }
+    if engine.is_null() {
+        return;
+    }
     let eng = unsafe { &mut *engine };
     eng.main_ctx.finish_input_session();
     if let Some(ref mut shadow) = eng.shadow_ctx {
@@ -333,11 +410,19 @@ pub extern "C" fn bongo_engine_reset(engine: *mut BongoLinuxEngine) {
 
 #[no_mangle]
 pub extern "C" fn bongo_suggestion_count(suggestion: *const Suggestion) -> usize {
-    if suggestion.is_null() { return 0; }
+    if suggestion.is_null() {
+        return 0;
+    }
     let s = unsafe { &*suggestion };
     match s {
         Suggestion::Full { suggestions, .. } => suggestions.len(),
-        Suggestion::Single { suggestion, .. } => if suggestion.is_empty() { 0 } else { 1 },
+        Suggestion::Single { suggestion, .. } => {
+            if suggestion.is_empty() {
+                0
+            } else {
+                1
+            }
+        }
     }
 }
 
@@ -347,7 +432,9 @@ pub extern "C" fn bongo_suggestion_get_candidate(
     suggestion: *const Suggestion,
     index: usize,
 ) -> *mut c_char {
-    if suggestion.is_null() { return std::ptr::null_mut(); }
+    if suggestion.is_null() {
+        return std::ptr::null_mut();
+    }
     let s = unsafe { &*suggestion };
     let cand_str: Option<&str> = match s {
         Suggestion::Full { suggestions, .. } => suggestions.get(index).map(|x| x.as_str()),
@@ -370,7 +457,9 @@ pub extern "C" fn bongo_suggestion_get_candidate(
 /// Gets top candidate or lonely text.
 #[no_mangle]
 pub extern "C" fn bongo_suggestion_get_preview(suggestion: *const Suggestion) -> *mut c_char {
-    if suggestion.is_null() { return std::ptr::null_mut(); }
+    if suggestion.is_null() {
+        return std::ptr::null_mut();
+    }
     let s = unsafe { &*suggestion };
     let cand_str: Option<&str> = match s {
         Suggestion::Full { suggestions, .. } => suggestions.first().map(|x| x.as_str()),
@@ -393,14 +482,18 @@ pub extern "C" fn bongo_suggestion_get_preview(suggestion: *const Suggestion) ->
 #[no_mangle]
 pub extern "C" fn bongo_suggestion_free(suggestion: *mut Suggestion) {
     if !suggestion.is_null() {
-        unsafe { drop(Box::from_raw(suggestion)); }
+        unsafe {
+            drop(Box::from_raw(suggestion));
+        }
     }
 }
 
 #[no_mangle]
 pub extern "C" fn bongo_string_free(s: *mut c_char) {
     if !s.is_null() {
-        unsafe { drop(CString::from_raw(s)); }
+        unsafe {
+            drop(CString::from_raw(s));
+        }
     }
 }
 
@@ -408,6 +501,74 @@ pub extern "C" fn bongo_string_free(s: *mut c_char) {
 mod tests {
     use super::*;
     use std::ffi::CStr;
+
+    fn options(engine: *mut BongoLinuxEngine, keys: &[char]) -> Vec<String> {
+        let mut suggestion: *mut Suggestion = std::ptr::null_mut();
+        for ch in keys {
+            if !suggestion.is_null() {
+                bongo_suggestion_free(suggestion);
+            }
+            suggestion = bongo_engine_feed_char(engine, *ch as u32, 0, 0);
+        }
+
+        let mut result = Vec::new();
+        if !suggestion.is_null() {
+            for index in 0..bongo_suggestion_count(suggestion) {
+                let ptr = bongo_suggestion_get_candidate(suggestion, index);
+                if !ptr.is_null() {
+                    let text = unsafe { CStr::from_ptr(ptr) }
+                        .to_string_lossy()
+                        .into_owned();
+                    result.push(text);
+                    bongo_string_free(ptr);
+                }
+            }
+            bongo_suggestion_free(suggestion);
+        }
+        result
+    }
+
+    #[test]
+    fn phonetic_only_returns_a_single_direct_transliteration() {
+        let engine = bongo_engine_new();
+        bongo_engine_set_mode(engine, 2);
+        let candidates = options(engine, &['a', 'm', 'i']);
+        assert_eq!(candidates, vec!["আমি"]);
+        bongo_engine_free(engine);
+    }
+
+    #[test]
+    fn phonetic_first_returns_dictionary_candidates() {
+        let engine = bongo_engine_new();
+        bongo_engine_set_mode(engine, 0);
+        let candidates = options(engine, &['a', 'm', 'i']);
+        assert!(candidates.len() > 1, "candidates: {candidates:?}");
+        bongo_engine_free(engine);
+    }
+
+    #[test]
+    fn emoji_setting_controls_emoji_candidates() {
+        let engine = bongo_engine_new();
+
+        bongo_engine_set_emoji(engine, true);
+        let with_emoji = options(engine, &[':', ')']);
+        assert!(
+            with_emoji.iter().any(|candidate| candidate.contains('😃')),
+            "candidates: {with_emoji:?}"
+        );
+
+        bongo_engine_reset(engine);
+        bongo_engine_set_emoji(engine, false);
+        let without_emoji = options(engine, &[':', ')']);
+        assert!(
+            !without_emoji
+                .iter()
+                .any(|candidate| candidate.contains('😃')),
+            "candidates: {without_emoji:?}"
+        );
+
+        bongo_engine_free(engine);
+    }
 
     #[test]
     fn test_linux_engine_layout_switching() {

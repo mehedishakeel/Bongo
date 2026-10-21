@@ -143,7 +143,7 @@ impl FixedMethod {
         // Add suggestions from the dictionary while changing the Kar joinings if Traditional Kar Joining is set.
         let mut words = suggest(&clean_string(word));
         words.sort_unstable();
-        
+
         if config.get_fixed_traditional_kar() {
             self.suggestions.extend(words.into_iter().map(|w| {
                 // Check if the word has any of the ligature making Kars.
@@ -159,11 +159,15 @@ impl FixedMethod {
                 } else {
                     w.clone()
                 };
-    
+
                 Rank::new_suggestion(new, word)
             }));
         } else {
-            self.suggestions.extend(words.into_iter().map(|s| Rank::new_suggestion(s.clone(), word)));
+            self.suggestions.extend(
+                words
+                    .into_iter()
+                    .map(|s| Rank::new_suggestion(s.clone(), word)),
+            );
         }
 
         // Remove the duplicates if present.
@@ -177,7 +181,7 @@ impl FixedMethod {
             }
         }
 
-        if !config.get_ansi_encoding() {
+        if !config.get_ansi_encoding() && config.get_include_emoji() {
             // Emoji addition with Emoticons.
             if let Some(emoji) = data.get_emoji_by_emoticon(&self.typed) {
                 self.suggestions.push(Rank::emoji(emoji.to_owned()));
@@ -563,7 +567,7 @@ fn is_left_standing_kar(c: char) -> bool {
 #[allow(unused_imports)]
 mod tests {
     use pretty_assertions::assert_eq;
-    
+
     use super::FixedMethod;
     use crate::config::get_fixed_method_defaults;
     use crate::fixed::chars::*;
@@ -637,14 +641,40 @@ mod tests {
         method.get_suggestion(VC_QUOTE, 0, 0, &data, &config);
         method.get_suggestion(VC_K, 0, 0, &data, &config);
         method.get_suggestion(VC_QUOTE, 0, 0, &data, &config);
-        assert_eq!(method.suggestions, ["“ক”","“কই”","“কও”","“কচ”","“কট”", "“কড”", "“কণ”", "“কত”", "\"k\""]);
+        assert_eq!(
+            method.suggestions,
+            [
+                "“ক”",
+                "“কই”",
+                "“কও”",
+                "“কচ”",
+                "“কট”",
+                "“কড”",
+                "“কণ”",
+                "“কত”",
+                "\"k\""
+            ]
+        );
         method.finish_input_session();
 
         config.set_smart_quote(false);
         method.get_suggestion(VC_QUOTE, 0, 0, &data, &config);
         method.get_suggestion(VC_K, 0, 0, &data, &config);
         method.get_suggestion(VC_QUOTE, 0, 0, &data, &config);
-        assert_eq!(method.suggestions, ["\"ক\"","\"কই\"", "\"কও\"","\"কচ\"","\"কট\"","\"কড\"","\"কণ\"","\"কত\"", "\"k\""]);
+        assert_eq!(
+            method.suggestions,
+            [
+                "\"ক\"",
+                "\"কই\"",
+                "\"কও\"",
+                "\"কচ\"",
+                "\"কট\"",
+                "\"কড\"",
+                "\"কণ\"",
+                "\"কত\"",
+                "\"k\""
+            ]
+        );
     }
 
     // The latest Rust version has incompatibility with the sorting order of the suggestions.
