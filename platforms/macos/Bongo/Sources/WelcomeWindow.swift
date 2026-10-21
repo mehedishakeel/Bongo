@@ -665,7 +665,7 @@ class LayoutWebView: NSView {
                 -webkit-font-smoothing: antialiased;
             }
             .search-box {
-                margin-bottom: 20px;
+                margin-bottom: 14px;
             }
             .search-box input {
                 width: 100%;
@@ -680,6 +680,32 @@ class LayoutWebView: NSView {
             }
             .search-box input:focus {
                 border-color: var(--accent);
+            }
+            .layout-selector {
+                display: flex;
+                background: var(--card-bg);
+                border: 1px solid var(--card-border);
+                padding: 3px;
+                border-radius: 10px;
+                margin-bottom: 16px;
+                gap: 4px;
+            }
+            .layout-tab {
+                flex: 1;
+                padding: 8px 14px;
+                font-size: 13px;
+                font-weight: 600;
+                border: none;
+                border-radius: 7px;
+                background: transparent;
+                color: var(--text-secondary);
+                cursor: pointer;
+                transition: all 0.15s ease;
+            }
+            .layout-tab.active {
+                background: var(--page-bg);
+                color: var(--text);
+                box-shadow: 0 1px 4px rgba(0,0,0,0.08);
             }
             .section-title {
                 color: var(--text-secondary);
@@ -732,21 +758,35 @@ class LayoutWebView: NSView {
         <script>
         function filterKeys() {
             var q = document.getElementById('search').value.toLowerCase().trim();
-            var rows = document.querySelectorAll('table tr');
+            var activeView = document.getElementById('view-avro').style.display !== 'none' ? 'view-avro' : 'view-national';
+            var rows = document.querySelectorAll('#' + activeView + ' table tr');
             rows.forEach(function(row) {
                 if (!q) { row.style.display = ''; return; }
                 var text = row.innerText.toLowerCase();
                 row.style.display = text.indexOf(q) !== -1 ? '' : 'none';
             });
         }
+        function switchLayout(mode) {
+            document.getElementById('tab-avro').classList.toggle('active', mode === 'avro');
+            document.getElementById('tab-national').classList.toggle('active', mode === 'national');
+            document.getElementById('view-avro').style.display = (mode === 'avro') ? 'block' : 'none';
+            document.getElementById('view-national').style.display = (mode === 'national') ? 'block' : 'none';
+            filterKeys();
+        }
         </script>
         </head>
         <body>
+
+        <div class="layout-selector">
+            <button type="button" id="tab-avro" class="layout-tab active" onclick="switchLayout('avro')">Avro Phonetic Layout</button>
+            <button type="button" id="tab-national" class="layout-tab" onclick="switchLayout('national')">National / Bijoy (জাতীয়)</button>
+        </div>
 
         <div class="search-box">
             <input type="text" id="search" onkeyup="filterKeys()" placeholder="Quick filter keys (e.g. k, sh, a, Z)...">
         </div>
 
+        <div id="view-avro">
         <div class="section-title">Consonants · ব্যঞ্জনবর্ণ</div>
         <table>
         <tr>
@@ -876,6 +916,131 @@ class LayoutWebView: NSView {
             <td class="bn">\u{09EF}</td><td class="key"><span class="key-badge">9</span></td>
         </tr>
         </table>
+        </div> <!-- end #view-avro -->
+
+        <div id="view-national" style="display: none;">
+        <div class="section-title">Consonants · ব্যঞ্জনবর্ণ (BDS 1738:2004)</div>
+        <table>
+        <tr>
+            <td class="bn">\u{0995}</td><td class="key"><span class="key-badge">j</span></td><td class="sep"></td>
+            <td class="bn">\u{099F}</td><td class="key"><span class="key-badge">t</span></td><td class="sep"></td>
+            <td class="bn">\u{09AA}</td><td class="key"><span class="key-badge">r</span></td><td class="sep"></td>
+            <td class="bn">\u{09B8}</td><td class="key"><span class="key-badge">s</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{0996}</td><td class="key"><span class="key-badge">J (Shift+j)</span></td><td class="sep"></td>
+            <td class="bn">\u{09A0}</td><td class="key"><span class="key-badge">T (Shift+t)</span></td><td class="sep"></td>
+            <td class="bn">\u{09AB}</td><td class="key"><span class="key-badge">R (Shift+r)</span></td><td class="sep"></td>
+            <td class="bn">\u{09B9}</td><td class="key"><span class="key-badge">i</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{0997}</td><td class="key"><span class="key-badge">o</span></td><td class="sep"></td>
+            <td class="bn">\u{09A1}</td><td class="key"><span class="key-badge">b</span></td><td class="sep"></td>
+            <td class="bn">\u{09AC}</td><td class="key"><span class="key-badge">h</span></td><td class="sep"></td>
+            <td class="bn">\u{09DC}</td><td class="key"><span class="key-badge">P (Shift+p)</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{0998}</td><td class="key"><span class="key-badge">O (Shift+o)</span></td><td class="sep"></td>
+            <td class="bn">\u{09A2}</td><td class="key"><span class="key-badge">B (Shift+b)</span></td><td class="sep"></td>
+            <td class="bn">\u{09AD}</td><td class="key"><span class="key-badge">H (Shift+h)</span></td><td class="sep"></td>
+            <td class="bn">\u{09DD}</td><td class="key"><span class="key-badge">V (Shift+v)</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{0999}</td><td class="key"><span class="key-badge">q</span></td><td class="sep"></td>
+            <td class="bn">\u{09A3}</td><td class="key"><span class="key-badge">p</span></td><td class="sep"></td>
+            <td class="bn">\u{09AE}</td><td class="key"><span class="key-badge">m</span></td><td class="sep"></td>
+            <td class="bn">\u{09DF}</td><td class="key"><span class="key-badge">W (Shift+w)</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{099A}</td><td class="key"><span class="key-badge">y</span></td><td class="sep"></td>
+            <td class="bn">\u{09A4}</td><td class="key"><span class="key-badge">k</span></td><td class="sep"></td>
+            <td class="bn">\u{09AF}</td><td class="key"><span class="key-badge">w</span></td><td class="sep"></td>
+            <td class="bn">\u{09CE}</td><td class="key"><span class="key-badge">` (Grave)</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{099B}</td><td class="key"><span class="key-badge">Y (Shift+y)</span></td><td class="sep"></td>
+            <td class="bn">\u{09A5}</td><td class="key"><span class="key-badge">K (Shift+k)</span></td><td class="sep"></td>
+            <td class="bn">\u{09B0}</td><td class="key"><span class="key-badge">v</span></td><td class="sep"></td>
+            <td class="bn">\u{0982}</td><td class="key"><span class="key-badge">Q (Shift+q)</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{099C}</td><td class="key"><span class="key-badge">u</span></td><td class="sep"></td>
+            <td class="bn">\u{09A6}</td><td class="key"><span class="key-badge">l</span></td><td class="sep"></td>
+            <td class="bn">\u{09B2}</td><td class="key"><span class="key-badge">n</span></td><td class="sep"></td>
+            <td class="bn">\u{0983}</td><td class="key"><span class="key-badge">X (Shift+x)</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{099D}</td><td class="key"><span class="key-badge">U (Shift+u)</span></td><td class="sep"></td>
+            <td class="bn">\u{09A7}</td><td class="key"><span class="key-badge">L (Shift+l)</span></td><td class="sep"></td>
+            <td class="bn">\u{09B6}</td><td class="key"><span class="key-badge">M (Shift+m)</span></td><td class="sep"></td>
+            <td class="bn">\u{0981}</td><td class="key"><span class="key-badge">x</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{099E}</td><td class="key"><span class="key-badge">e</span></td><td class="sep"></td>
+            <td class="bn">\u{09A8}</td><td class="key"><span class="key-badge">b</span></td><td class="sep"></td>
+            <td class="bn">\u{09B7}</td><td class="key"><span class="key-badge">N (Shift+n)</span></td><td class="sep"></td>
+            <td class="bn"></td><td class="key"></td>
+        </tr>
+        </table>
+
+        <div class="section-title">Vowels &amp; Kars · স্বরবর্ণ ও কার</div>
+        <table>
+        <tr>
+            <td class="bn">\u{0985} (অ)</td><td class="key"><span class="key-badge">F (Shift+f)</span></td><td class="sep"></td>
+            <td class="bn">\u{0986} (আ) / \u{09BE} (া)</td><td class="key"><span class="key-badge">g+f / f</span></td><td class="sep"></td>
+            <td class="bn">\u{0987} (ই) / \u{09BF} (ি)</td><td class="key"><span class="key-badge">g+d / d</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{0988} (ঈ) / \u{09C0} (ী)</td><td class="key"><span class="key-badge">g+D / D (Shift+d)</span></td><td class="sep"></td>
+            <td class="bn">\u{0989} (উ) / \u{09C1} (ু)</td><td class="key"><span class="key-badge">g+s / s</span></td><td class="sep"></td>
+            <td class="bn">\u{098A} (ঊ) / \u{09C2} (ূ)</td><td class="key"><span class="key-badge">g+S / S (Shift+s)</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{098B} (ঋ) / \u{09C3} (ৃ)</td><td class="key"><span class="key-badge">A (Shift+a) / a</span></td><td class="sep"></td>
+            <td class="bn">\u{098F} (এ) / \u{09C7} (ে)</td><td class="key"><span class="key-badge">g+c / c</span></td><td class="sep"></td>
+            <td class="bn">\u{0990} (ঐ) / \u{09C8} (ৈ)</td><td class="key"><span class="key-badge">g+C / C (Shift+c)</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{0993} (ও) / \u{09CB} (ো)</td><td class="key"><span class="key-badge">g+1 or / / c+f</span></td><td class="sep"></td>
+            <td class="bn">\u{0994} (ঔ) / \u{09CC} (ৌ)</td><td class="key"><span class="key-badge">g+X / X (Shift+x)</span></td><td class="sep"></td>
+            <td class="bn"></td><td class="key"></td>
+        </tr>
+        </table>
+
+        <div class="section-title">Conjuncts &amp; Special Rules · যুক্তবর্ণ ও নিয়ম</div>
+        <table>
+        <tr>
+            <td class="bn">\u{09CD} হসন্ত (Link Key)</td><td class="key"><span class="key-badge">g</span> (যেমন: j+g+k \u{2192} \u{0995}\u{09CD}\u{09A4})</td><td class="sep"></td>
+            <td class="bn">\u{09CD}\u{09B0} র-ফলা</td><td class="key"><span class="key-badge">z</span> (যেমন: j+z \u{2192} \u{0995}\u{09CD}\u{09B0})</td>
+        </tr>
+        <tr>
+            <td class="bn">\u{09CD}\u{09AF} য-ফলা</td><td class="key"><span class="key-badge">Z (Shift+z)</span></td><td class="sep"></td>
+            <td class="bn">\u{09B0}\u{09CD} রেফ</td><td class="key"><span class="key-badge">A (Shift+a)</span> (যেমন: A+j \u{2192} \u{09B0}\u{09CD}\u{0995})</td>
+        </tr>
+        <tr>
+            <td class="bn">কার আগে টাইপ (Pre-base)</td><td class="key"><span class="key-badge">d + j \u{2192} \u{0995}\u{09BF} (কি)</span></td><td class="sep"></td>
+            <td class="bn">দাঁড়ি / টাকা</td><td class="key"><span class="key-badge">G (Shift+g) \u{2192} \u{0964} | $ \u{2192} \u{09F3}</span></td>
+        </tr>
+        </table>
+
+        <div class="section-title">Numbers · সংখ্যা</div>
+        <table>
+        <tr>
+            <td class="bn">\u{09E6}</td><td class="key"><span class="key-badge">0</span></td><td class="sep"></td>
+            <td class="bn">\u{09E7}</td><td class="key"><span class="key-badge">1</span></td><td class="sep"></td>
+            <td class="bn">\u{09E8}</td><td class="key"><span class="key-badge">2</span></td><td class="sep"></td>
+            <td class="bn">\u{09E9}</td><td class="key"><span class="key-badge">3</span></td><td class="sep"></td>
+            <td class="bn">\u{09EA}</td><td class="key"><span class="key-badge">4</span></td>
+        </tr>
+        <tr>
+            <td class="bn">\u{09EB}</td><td class="key"><span class="key-badge">5</span></td><td class="sep"></td>
+            <td class="bn">\u{09EC}</td><td class="key"><span class="key-badge">6</span></td><td class="sep"></td>
+            <td class="bn">\u{09ED}</td><td class="key"><span class="key-badge">7</span></td><td class="sep"></td>
+            <td class="bn">\u{09EE}</td><td class="key"><span class="key-badge">8</span></td><td class="sep"></td>
+            <td class="bn">\u{09EF}</td><td class="key"><span class="key-badge">9</span></td>
+        </tr>
+        </table>
+        </div> <!-- end #view-national -->
 
         </body>
         </html>
