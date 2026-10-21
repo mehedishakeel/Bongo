@@ -132,9 +132,47 @@ jobs:
             platforms/windows/release/*.zip
             platforms/windows/release/*.sha256
 
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build Android APK
+        run: |
+          cd platforms/android
+          chmod +x ./gradlew
+          ./gradlew assembleRelease
+          mkdir -p release
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG_NAME#v}"
+          if [ -z "$VERSION" ] || [ "$VERSION" = "$GITHUB_REF" ]; then
+            VERSION="1.1.0"
+          fi
+          cp app/build/outputs/apk/release/app-release.apk "release/Bongo-${VERSION}-android.apk"
+          cd release
+          shasum -a 256 "Bongo-${VERSION}-android.apk" > "Bongo-${VERSION}-android.apk.sha256"
+          echo "Generated checksum for Bongo-${VERSION}-android.apk:"
+          cat "Bongo-${VERSION}-android.apk.sha256"
+
+      - name: Upload Android Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bongo-android-apk
+          path: |
+            platforms/android/release/*.apk
+            platforms/android/release/*.sha256
+
   publish:
     name: Publish Release
-    needs: [build-dmg, build-linux, build-windows]
+    needs: [build-dmg, build-linux, build-windows, build-android]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -146,16 +184,35 @@ jobs:
           path: release-artifacts
           merge-multiple: true
 
+      - name: Determine Release Metadata
+        id: release_meta
+        run: |
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          NOTE_FILE="docs/releases/${TAG_NAME}.md"
+          if [ -f "$NOTE_FILE" ]; then
+            echo "body_path=$NOTE_FILE" >> $GITHUB_OUTPUT
+          else
+            echo "body_path=" >> $GITHUB_OUTPUT
+          fi
+          if [ "$TAG_NAME" = "v1.1.0" ]; then
+            echo "title=Bongo v1.1.0 — National (Bijoy) Layout & Native Fcitx5 Frontend" >> $GITHUB_OUTPUT
+          else
+            echo "title=Bongo $TAG_NAME" >> $GITHUB_OUTPUT
+          fi
+
       - name: Publish to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
+          name: ${{ steps.release_meta.outputs.title }}
+          body_path: ${{ steps.release_meta.outputs.body_path }}
           files: |
             release-artifacts/*.dmg
             release-artifacts/*.deb
             release-artifacts/*.exe
             release-artifacts/*.msi
             release-artifacts/*.zip
+            release-artifacts/*.apk
             release-artifacts/*.sha256
           generate_release_notes: true
           draft: ${{ github.event.inputs.draft == 'true' }}
