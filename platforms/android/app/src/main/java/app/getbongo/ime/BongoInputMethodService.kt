@@ -61,6 +61,7 @@ class BongoInputMethodService : InputMethodService() {
         super.onCreate()
         bongoEngine = BongoEngine()
         userPrefs = UserPreferences(this)
+        bongoEngine.setLayout(userPrefs.keyboardLayout)
         userPrefs.registerListener(prefChangeListener)
     }
 
@@ -662,6 +663,10 @@ class BongoInputMethodService : InputMethodService() {
     }
 
     private fun handlePreferenceChange(key: String?) {
+        if (key == UserPreferences.KEY_KEYBOARD_LAYOUT) {
+            bongoEngine.setLayout(userPrefs.keyboardLayout)
+        }
+
         val palette = ThemePalette.getPalette(userPrefs.theme)
         rootView?.setBackgroundColor(palette.surfaceColor)
         dividerView?.setBackgroundColor(palette.dividerColor)

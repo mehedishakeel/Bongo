@@ -177,6 +177,49 @@ class SettingsActivity : Activity() {
         container.addView(appearanceCard)
         container.addView(createSpacer(dp(22)))
 
+        // --- Keyboard Layout Card ---
+        container.addView(createSectionHeader("KEYBOARD LAYOUT"))
+        val layoutCard = createGroupCard()
+
+        layoutCard.addView(createSettingTitle("Default Layout", "Select active Bengali typing method"))
+
+        val layoutRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(16), 0, dp(16), dp(16))
+        }
+
+        val layoutOptions = listOf("Avro Phonetic" to 0, "National / Bijoy" to 1)
+        val layoutButtons = mutableListOf<Button>()
+
+        layoutOptions.forEach { (name, id) ->
+            val isSelected = userPrefs.keyboardLayout == id
+            val btn = Button(this).apply {
+                text = name
+                isAllCaps = false
+                textSize = 13f
+                typeface = if (isSelected) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+                setTextColor(if (isSelected) Color.WHITE else Color.parseColor("#98989e"))
+                background = createPillBackground(isSelected)
+                layoutParams = LinearLayout.LayoutParams(0, dp(38), 1f).apply {
+                    setMargins(dp(3), 0, dp(3), 0)
+                }
+                setOnClickListener {
+                    userPrefs.keyboardLayout = id
+                    layoutButtons.forEachIndexed { idx, b ->
+                        val sel = layoutOptions[idx].second == id
+                        b.setTextColor(if (sel) Color.WHITE else Color.parseColor("#98989e"))
+                        b.typeface = if (sel) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+                        b.background = createPillBackground(sel)
+                    }
+                }
+            }
+            layoutButtons.add(btn)
+            layoutRow.addView(btn)
+        }
+        layoutCard.addView(layoutRow)
+        container.addView(layoutCard)
+        container.addView(createSpacer(dp(22)))
+
         // --- Typing & Gestures Card ---
         container.addView(createSectionHeader("TYPING & GESTURES"))
         val gesturesCard = createGroupCard()

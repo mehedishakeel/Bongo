@@ -885,6 +885,90 @@ class LayoutWebView: NSView {
 
 // MARK: - Settings Tab
 
+final class LayoutCard: NSView {
+    override var isFlipped: Bool { true }
+    let layout: BongoInputController.KeyboardLayout
+    var onSelect: (() -> Void)?
+    var isSelected: Bool = false { didSet { updateSelection() } }
+
+    private let radio = NSImageView()
+    private let titleLabel = NSTextField(labelWithString: "")
+    private let descLabel = NSTextField(wrappingLabelWithString: "")
+
+    init(layout: BongoInputController.KeyboardLayout, title: String, description: String, recommended: Bool) {
+        self.layout = layout
+        super.init(frame: .zero)
+        wantsLayer = true
+        layer?.cornerRadius = 10
+        layer?.cornerCurve = .continuous
+        layer?.borderWidth = 1
+        translatesAutoresizingMaskIntoConstraints = false
+
+        radio.translatesAutoresizingMaskIntoConstraints = false
+        radio.imageScaling = .scaleProportionallyUpOrDown
+
+        titleLabel.stringValue = title
+        titleLabel.font = NSFont.systemFont(ofSize: 13.5, weight: .semibold)
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        descLabel.stringValue = description
+        descLabel.font = NSFont.systemFont(ofSize: 12)
+        descLabel.textColor = .secondaryLabelColor
+        descLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        let titleRow = NSStackView(views: [titleLabel])
+        titleRow.orientation = .horizontal
+        titleRow.spacing = 8
+        titleRow.alignment = .centerY
+        if recommended { titleRow.addArrangedSubview(PillBadge(text: "Recommended")) }
+        titleRow.translatesAutoresizingMaskIntoConstraints = false
+
+        addSubview(radio)
+        addSubview(titleRow)
+        addSubview(descLabel)
+
+        NSLayoutConstraint.activate([
+            radio.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            radio.topAnchor.constraint(equalTo: topAnchor, constant: 16),
+            radio.widthAnchor.constraint(equalToConstant: 16),
+            radio.heightAnchor.constraint(equalToConstant: 16),
+
+            titleRow.leadingAnchor.constraint(equalTo: radio.trailingAnchor, constant: 12),
+            titleRow.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+            titleRow.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -16),
+
+            descLabel.leadingAnchor.constraint(equalTo: titleRow.leadingAnchor),
+            descLabel.topAnchor.constraint(equalTo: titleRow.bottomAnchor, constant: 4),
+            descLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            descLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12),
+        ])
+
+        updateSelection()
+        addGestureRecognizer(NSClickGestureRecognizer(target: self, action: #selector(clicked)))
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    @objc private func clicked() {
+        onSelect?()
+    }
+
+    private func updateSelection() {
+        layer?.borderColor = isSelected
+            ? NSColor.controlAccentColor.cgColor
+            : NSColor.separatorColor.cgColor
+        layer?.backgroundColor = isSelected
+            ? NSColor.controlAccentColor.withAlphaComponent(0.06).cgColor
+            : NSColor.controlBackgroundColor.cgColor
+
+        let name = isSelected ? "largecircle.fill.circle" : "circle"
+        let config = NSImage.SymbolConfiguration(pointSize: 15, weight: .regular)
+        radio.image = NSImage(systemSymbolName: name, accessibilityDescription: nil)?
+            .withSymbolConfiguration(config)
+        radio.contentTintColor = isSelected ? .controlAccentColor : .tertiaryLabelColor
+    }
+}
+
 final class ModeCard: NSView {
     override var isFlipped: Bool { true }
     let mode: BongoInputController.TypingMode
@@ -977,6 +1061,7 @@ final class ModeCard: NSView {
 
 class SettingsView: NSView {
     override var isFlipped: Bool { true }
+    private var layoutCards: [LayoutCard] = []
     private var cards: [ModeCard] = []
     private let emojiSwitch = NSSwitch()
     private let emojiTitle = NSTextField(labelWithString: "Show emoji in suggestions")
@@ -1000,6 +1085,38 @@ class SettingsView: NSView {
             stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: WelcomeUI.pageInset),
             stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -WelcomeUI.pageInset),
         ])
+
+        // Keyboard Layout Section
+        let layoutHeader = WelcomeUI.sectionHeader("Keyboard layout")
+        stack.addArrangedSubview(layoutHeader)
+
+        let currentLayout = BongoInputController.currentKeyboardLayout()
+        let layouts: [(BongoInputController.KeyboardLayout, String, String, Bool)] = [
+            (.avroPhonetic, "Avro Phonetic",
+             "Modern phonetic input: type as you speak in English letters (e.g. ami -> আমি, bangla -> বাংলা).", true),
+            (.national, "National / Bijoy (জাতীয়)",
+             "Standard Bangladesh BDS 1738:2004 layout: fixed keymap (e.g. j -> ক, d+j -> কি, g -> ্).", false),
+        ]
+
+        let layoutCardStack = NSStackView()
+        layoutCardStack.orientation = .vertical
+        layoutCardStack.alignment = .leading
+        layoutCardStack.spacing = 8
+        layoutCardStack.translatesAutoresizingMaskIntoConstraints = false
+
+        for (l, title, desc, recommended) in layouts {
+            let card = LayoutCard(layout: l, title: title, description: desc, recommended: recommended)
+            card.isSelected = (l == currentLayout)
+            card.onSelect = { [weak self, weak card] in
+                guard let self, let card else { return }
+                self.selectLayout(card.layout)
+            }
+            layoutCardStack.addArrangedSubview(card)
+            card.widthAnchor.constraint(equalTo: layoutCardStack.widthAnchor).isActive = true
+            layoutCards.append(card)
+        }
+        stack.addArrangedSubview(layoutCardStack)
+        layoutCardStack.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
 
         // Typing Mode Section
         let modeHeader = WelcomeUI.sectionHeader("Typing mode")
@@ -1070,6 +1187,14 @@ class SettingsView: NSView {
         let sysCard = CardContainer(content: sysRow)
         stack.addArrangedSubview(sysCard)
         sysCard.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+    }
+
+    private func selectLayout(_ layout: BongoInputController.KeyboardLayout) {
+        UserDefaults.standard.set(layout.rawValue, forKey: BongoInputController.keyboardLayoutKey)
+        NotificationCenter.default.post(name: .bongoKeyboardLayoutChanged, object: nil)
+        for card in layoutCards {
+            card.isSelected = (card.layout == layout)
+        }
     }
 
     private func selectMode(_ mode: BongoInputController.TypingMode) {

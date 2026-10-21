@@ -19,10 +19,18 @@ pub enum TypingMode {
     PhoneticOnly = 2,
 }
 
+#[repr(u32)]
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum KeyboardLayout {
+    AvroPhonetic = 0,
+    National = 1,
+}
+
 pub struct BongoWindowsEngine {
     main_ctx: RitiContext,
     shadow_ctx: Option<RitiContext>,
     mode: TypingMode,
+    layout: KeyboardLayout,
     show_emoji: bool,
     current_phonetic: Option<String>,
 }
@@ -147,6 +155,7 @@ pub extern "C" fn bongo_engine_new() -> *mut BongoWindowsEngine {
         main_ctx,
         shadow_ctx,
         mode: TypingMode::PhoneticFirst,
+        layout: KeyboardLayout::AvroPhonetic,
         show_emoji: true,
         current_phonetic: None,
     };
@@ -160,6 +169,53 @@ pub extern "C" fn bongo_engine_free(engine: *mut BongoWindowsEngine) {
     if !engine.is_null() {
         unsafe { drop(Box::from_raw(engine)); }
     }
+}
+
+/// Sets the active keyboard layout: 0 = Avro Phonetic, 1 = National (Bijoy).
+#[no_mangle]
+pub extern "C" fn bongo_engine_set_layout(engine: *mut BongoWindowsEngine, layout: u32) {
+    if engine.is_null() { return; }
+    let eng = unsafe { &mut *engine };
+    let new_layout = match layout {
+        1 => KeyboardLayout::National,
+        _ => KeyboardLayout::AvroPhonetic,
+    };
+    if eng.layout == new_layout {
+        return;
+    }
+    eng.layout = new_layout;
+
+    let mut config = Config::default();
+    match eng.layout {
+        KeyboardLayout::National => {
+            config.set_layout_file_path("national");
+            config.set_fixed_automatic_vowel(true);
+            config.set_fixed_old_kar_order(true);
+            config.set_fixed_traditional_kar(true);
+            config.set_fixed_old_reph(true);
+            config.set_fixed_automatic_chandra(true);
+            config.set_fixed_numpad(true);
+            config.set_fixed_suggestion(false);
+        }
+        KeyboardLayout::AvroPhonetic => {
+            config.set_layout_file_path("avro_phonetic");
+            config.set_phonetic_suggestion(true);
+        }
+    }
+    eng.main_ctx.update_engine(&config);
+    if let Some(ref mut shadow) = eng.shadow_ctx {
+        let mut shadow_config = config.clone();
+        shadow_config.set_phonetic_suggestion(false);
+        shadow.update_engine(&shadow_config);
+    }
+}
+
+/// Gets the active keyboard layout: 0 = Avro Phonetic, 1 = National (Bijoy).
+#[no_mangle]
+pub extern "C" fn bongo_engine_get_layout(engine: *mut BongoWindowsEngine) -> u32 {
+    if engine.is_null() { return 0; }
+    let eng = unsafe { &*engine };
+    eng.layout as u32
 }
 
 /// Sets typing mode: 0 = PhoneticFirst, 1 = Smart, 2 = PhoneticOnly.
@@ -345,5 +401,38 @@ pub extern "C" fn bongo_suggestion_free(suggestion: *mut Suggestion) {
 pub extern "C" fn bongo_string_free(s: *mut c_char) {
     if !s.is_null() {
         unsafe { drop(CString::from_raw(s)); }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::ffi::CStr;
+
+    #[test]
+    fn test_windows_engine_layout_switching() {
+        let engine = bongo_engine_new();
+        assert!(!engine.is_null());
+
+        // Default layout is Avro (0)
+        assert_eq!(bongo_engine_get_layout(engine), 0);
+
+        // Switch to National (1)
+        bongo_engine_set_layout(engine, 1);
+        assert_eq!(bongo_engine_get_layout(engine), 1);
+
+        // Feed 'j' -> should produce 'ক'
+        let sugg = bongo_engine_feed_char(engine, 'j' as u32, 0, 0);
+        assert!(!sugg.is_null());
+        let preview_ptr = bongo_suggestion_get_preview(sugg);
+        assert!(!preview_ptr.is_null());
+        let preview = unsafe { CStr::from_ptr(preview_ptr).to_str().unwrap() };
+        assert_eq!(preview, "ক");
+        bongo_string_free(preview_ptr);
+        bongo_suggestion_free(sugg);
+
+        bongo_engine_commit(engine, 0);
+
+        bongo_engine_free(engine);
     }
 }

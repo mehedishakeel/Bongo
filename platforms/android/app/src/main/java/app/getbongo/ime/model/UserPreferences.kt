@@ -14,6 +14,10 @@ class UserPreferences(context: Context) {
         get() = prefs.getInt(KEY_TYPING_MODE, 0)
         set(value) = prefs.edit().putInt(KEY_TYPING_MODE, value).apply()
 
+    var keyboardLayout: Int
+        get() = prefs.getInt(KEY_KEYBOARD_LAYOUT, 0)
+        set(value) = prefs.edit().putInt(KEY_KEYBOARD_LAYOUT, value).apply()
+
     var suggestEmoji: Boolean
         get() = prefs.getBoolean(KEY_SUGGEST_EMOJI, true)
         set(value) = prefs.edit().putBoolean(KEY_SUGGEST_EMOJI, value).apply()
@@ -72,6 +76,7 @@ class UserPreferences(context: Context) {
 
     companion object {
         const val PREFS_NAME = "bongo_preferences"
+        const val KEY_KEYBOARD_LAYOUT = "keyboard_layout"
         const val KEY_TYPING_MODE = "typing_mode"
         const val KEY_SUGGEST_EMOJI = "suggest_emoji"
         const val KEY_HAPTIC = "haptic_feedback"

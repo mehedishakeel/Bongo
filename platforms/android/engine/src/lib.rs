@@ -20,10 +20,18 @@ pub enum TypingMode {
     PhoneticOnly = 2,
 }
 
+#[repr(u32)]
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum KeyboardLayout {
+    AvroPhonetic = 0,
+    National = 1,
+}
+
 pub struct BongoAndroidEngine {
     main_ctx: RitiContext,
     shadow_ctx: Option<RitiContext>,
     mode: TypingMode,
+    layout: KeyboardLayout,
     show_emoji: bool,
     current_phonetic: Option<String>,
 }
@@ -148,6 +156,7 @@ pub extern "C" fn bongo_engine_new() -> *mut BongoAndroidEngine {
         main_ctx,
         shadow_ctx,
         mode: TypingMode::PhoneticFirst,
+        layout: KeyboardLayout::AvroPhonetic,
         show_emoji: true,
         current_phonetic: None,
     };
@@ -161,6 +170,53 @@ pub extern "C" fn bongo_engine_free(engine: *mut BongoAndroidEngine) {
     if !engine.is_null() {
         unsafe { drop(Box::from_raw(engine)); }
     }
+}
+
+/// Sets the active keyboard layout: 0 = Avro Phonetic, 1 = National (Bijoy).
+#[no_mangle]
+pub extern "C" fn bongo_engine_set_layout(engine: *mut BongoAndroidEngine, layout: u32) {
+    if engine.is_null() { return; }
+    let eng = unsafe { &mut *engine };
+    let new_layout = match layout {
+        1 => KeyboardLayout::National,
+        _ => KeyboardLayout::AvroPhonetic,
+    };
+    if eng.layout == new_layout {
+        return;
+    }
+    eng.layout = new_layout;
+
+    let mut config = Config::default();
+    match eng.layout {
+        KeyboardLayout::National => {
+            config.set_layout_file_path("national");
+            config.set_fixed_automatic_vowel(true);
+            config.set_fixed_old_kar_order(true);
+            config.set_fixed_traditional_kar(true);
+            config.set_fixed_old_reph(true);
+            config.set_fixed_automatic_chandra(true);
+            config.set_fixed_numpad(true);
+            config.set_fixed_suggestion(false);
+        }
+        KeyboardLayout::AvroPhonetic => {
+            config.set_layout_file_path("avro_phonetic");
+            config.set_phonetic_suggestion(true);
+        }
+    }
+    eng.main_ctx.update_engine(&config);
+    if let Some(ref mut shadow) = eng.shadow_ctx {
+        let mut shadow_config = config.clone();
+        shadow_config.set_phonetic_suggestion(false);
+        shadow.update_engine(&shadow_config);
+    }
+}
+
+/// Gets the active keyboard layout: 0 = Avro Phonetic, 1 = National (Bijoy).
+#[no_mangle]
+pub extern "C" fn bongo_engine_get_layout(engine: *mut BongoAndroidEngine) -> u32 {
+    if engine.is_null() { return 0; }
+    let eng = unsafe { &*engine };
+    eng.layout as u32
 }
 
 /// Sets typing mode: 0 = PhoneticFirst, 1 = Smart, 2 = PhoneticOnly.
@@ -490,5 +546,30 @@ pub unsafe extern "system" fn Java_app_getbongo_ime_engine_BongoNative_suggestio
 ) {
     if sugg_ptr != 0 {
         bongo_suggestion_free(sugg_ptr as *mut Suggestion);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "system" fn Java_app_getbongo_ime_engine_BongoNative_setLayout(
+    _env: JNIEnv,
+    _class: JClass,
+    ptr: i64,
+    layout: i32,
+) {
+    if ptr != 0 {
+        bongo_engine_set_layout(ptr as *mut BongoAndroidEngine, layout as u32);
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "system" fn Java_app_getbongo_ime_engine_BongoNative_getLayout(
+    _env: JNIEnv,
+    _class: JClass,
+    ptr: i64,
+) -> i32 {
+    if ptr != 0 {
+        bongo_engine_get_layout(ptr as *mut BongoAndroidEngine) as i32
+    } else {
+        0
     }
 }

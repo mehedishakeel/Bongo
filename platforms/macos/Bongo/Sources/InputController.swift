@@ -21,8 +21,16 @@ class BongoInputController: IMKInputController {
         case phoneticOnly
     }
 
+    enum KeyboardLayout: String {
+        case avroPhonetic = "avroPhonetic"
+        case national = "national"
+    }
+
     /// UserDefaults key holding the raw value of the current `TypingMode`.
     static let typingModeKey = "BongoTypingMode"
+
+    /// UserDefaults key holding the raw value of the current `KeyboardLayout`.
+    static let keyboardLayoutKey = "BongoKeyboardLayout"
 
     /// Legacy bool key (pre-multi-mode). Read only for one-time migration into
     /// `typingModeKey`: true → `.phoneticOnly`, false → `.smart`.
@@ -31,6 +39,15 @@ class BongoInputController: IMKInputController {
     /// UserDefaults bool key: show emoji candidates in the suggestion list.
     /// Absent means on.
     static let showEmojiKey = "BongoShowEmoji"
+
+    static func currentKeyboardLayout() -> KeyboardLayout {
+        let defaults = UserDefaults.standard
+        if let raw = defaults.string(forKey: keyboardLayoutKey),
+           let layout = KeyboardLayout(rawValue: raw) {
+            return layout
+        }
+        return .avroPhonetic
+    }
 
     /// Resolve the current typing mode, migrating from the legacy bool when the
     /// new key hasn't been written yet. Default (and recommended) is `.phoneticFirst`.
@@ -703,6 +720,20 @@ class BongoInputController: IMKInputController {
         menu.addItem(titleItem)
         menu.addItem(NSMenuItem.separator())
 
+        let currentLayout = Self.currentKeyboardLayout()
+
+        let avroItem = NSMenuItem(title: "Avro Phonetic (অভ্র ফনেটিক)", action: #selector(menuSelectAvroLayout), keyEquivalent: "")
+        avroItem.target = self
+        avroItem.state = (currentLayout == .avroPhonetic) ? .on : .off
+        menu.addItem(avroItem)
+
+        let nationalItem = NSMenuItem(title: "National / Bijoy (জাতীয় / বিজয়)", action: #selector(menuSelectNationalLayout), keyEquivalent: "")
+        nationalItem.target = self
+        nationalItem.state = (currentLayout == .national) ? .on : .off
+        menu.addItem(nationalItem)
+
+        menu.addItem(NSMenuItem.separator())
+
         let currentMode = Self.currentTypingMode()
 
         let phoneticFirst = NSMenuItem(title: "Phonetic First (ফনেটিক)", action: #selector(menuSelectPhoneticFirst), keyEquivalent: "")
@@ -748,6 +779,16 @@ class BongoInputController: IMKInputController {
         menu.addItem(updateItem)
 
         return menu
+    }
+
+    @objc private func menuSelectAvroLayout() {
+        UserDefaults.standard.set(KeyboardLayout.avroPhonetic.rawValue, forKey: Self.keyboardLayoutKey)
+        NotificationCenter.default.post(name: .bongoKeyboardLayoutChanged, object: nil)
+    }
+
+    @objc private func menuSelectNationalLayout() {
+        UserDefaults.standard.set(KeyboardLayout.national.rawValue, forKey: Self.keyboardLayoutKey)
+        NotificationCenter.default.post(name: .bongoKeyboardLayoutChanged, object: nil)
     }
 
     @objc private func menuSelectPhoneticFirst() {

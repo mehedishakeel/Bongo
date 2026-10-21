@@ -161,4 +161,34 @@ mod tests {
         let suggestion = context.get_suggestion_for_key(VC_H, 0, 0);
         assert_eq!(suggestion.get_suggestions(), ["হ"]);
     }
+
+    #[test]
+    fn test_national_layout_context() {
+        let mut config = Config::default();
+        assert!(config.set_layout_file_path("national"));
+        config.set_fixed_automatic_vowel(true);
+        config.set_fixed_old_kar_order(true);
+        config.set_fixed_traditional_kar(true);
+
+        let context = RitiContext::new_with_config(&config);
+
+        // Simple character: 'j' -> ক
+        use crate::keycodes::{VC_D, VC_G, VC_J, VC_K};
+        let sugg = context.get_suggestion_for_key(VC_J, 0, 0);
+        assert_eq!(sugg.get_pre_edit_text(0), "ক");
+        context.finish_input_session();
+
+        // Conjunct: ক + ্ + ত -> ক্ত
+        context.get_suggestion_for_key(VC_J, 0, 0);
+        context.get_suggestion_for_key(VC_G, 0, 0);
+        let sugg = context.get_suggestion_for_key(VC_K, 0, 0);
+        assert_eq!(sugg.get_pre_edit_text(0), "ক্ত");
+        context.finish_input_session();
+
+        // Pre-base Kar ordering: 'd' (ি) then 'j' (ক) -> কি
+        context.get_suggestion_for_key(VC_D, 0, 0);
+        let sugg = context.get_suggestion_for_key(VC_J, 0, 0);
+        assert_eq!(sugg.get_pre_edit_text(0), "কি");
+        context.finish_input_session();
+    }
 }

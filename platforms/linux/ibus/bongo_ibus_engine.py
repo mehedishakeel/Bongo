@@ -231,6 +231,10 @@ class BongoNativeBinding:
         self.lib.bongo_engine_new.restype = ctypes.c_void_p
         self.lib.bongo_engine_free.argtypes = [ctypes.c_void_p]
 
+        self.lib.bongo_engine_set_layout.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+        self.lib.bongo_engine_get_layout.argtypes = [ctypes.c_void_p]
+        self.lib.bongo_engine_get_layout.restype = ctypes.c_uint32
+
         self.lib.bongo_engine_set_mode.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
         self.lib.bongo_engine_set_emoji.argtypes = [ctypes.c_void_p, ctypes.c_bool]
         self.lib.bongo_engine_has_session.argtypes = [ctypes.c_void_p]
@@ -262,6 +266,7 @@ def load_settings():
     config_dir = Path.home() / ".config" / "bongo"
     config_file = config_dir / "settings.json"
     defaults = {
+        "keyboard_layout": 0,   # 0: Avro Phonetic, 1: National (Bijoy)
         "typing_mode": 0,       # 0: PhoneticFirst, 1: Smart, 2: PhoneticOnly
         "suggest_emoji": True,
         "candidate_font": "Noto Sans Bengali",
@@ -407,8 +412,10 @@ class BongoEngine(BaseEngine):
     def apply_settings(self):
         if not self.engine_ptr:
             return
+        layout = self.settings.get("keyboard_layout", 0)
         mode = self.settings.get("typing_mode", 0)
         emoji = self.settings.get("suggest_emoji", True)
+        self.native.lib.bongo_engine_set_layout(self.engine_ptr, layout)
         self.native.lib.bongo_engine_set_mode(self.engine_ptr, mode)
         self.native.lib.bongo_engine_set_emoji(self.engine_ptr, emoji)
 

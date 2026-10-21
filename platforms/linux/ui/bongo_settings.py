@@ -46,6 +46,7 @@ CONFIG_DIR = Path.home() / ".config" / "bongo"
 CONFIG_FILE = CONFIG_DIR / "settings.json"
 
 DEFAULT_SETTINGS = {
+    "keyboard_layout": 0,     # 0: Avro Phonetic, 1: National (Bijoy)
     "typing_mode": 0,         # 0: PhoneticFirst, 1: Smart, 2: PhoneticOnly
     "suggest_emoji": True,
     "candidate_font": "Noto Sans Bengali",
@@ -816,6 +817,24 @@ class BongoSettingsApp:
     def create_settings_view(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
 
+        # Layout Section
+        self.append_widget(box, self.make_section_label("Keyboard layout"))
+
+        self.layout_cards = []
+        layouts = [
+            (0, "Avro Phonetic",
+             "Modern phonetic input: type as you speak in English letters (e.g. ami -> আমি, bangla -> বাংলা).", True),
+            (1, "National / Bijoy (জাতীয়)",
+             "Standard Bangladesh BDS 1738:2004 layout: fixed keymap (e.g. j -> ক, d+j -> কি, g -> ্).", False)
+        ]
+
+        current_layout = self.settings.get("keyboard_layout", 0)
+
+        for layout_id, title, desc, recommended in layouts:
+            card = self.make_layout_card(layout_id, title, desc, recommended, selected=(layout_id == current_layout))
+            self.layout_cards.append((card, layout_id))
+            self.append_widget(box, card)
+
         # Mode Section
         self.append_widget(box, self.make_section_label("Typing mode"))
 
@@ -875,6 +894,81 @@ class BongoSettingsApp:
         self.append_widget(box, sys_card)
 
         return box
+
+    def make_layout_card(self, layout_id, title, desc, recommended, selected=False):
+        card = self.make_card()
+        if selected:
+            if gtk_version == '4.0':
+                card.add_css_class("bongo-card-active")
+            else:
+                card.get_style_context().add_class("bongo-card-active")
+
+        c_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+
+        check_label = Gtk.Label()
+        check_label.set_markup("<b>●</b>" if selected else "○")
+        card._check_label = check_label
+
+        info_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        info_box.set_hexpand(True)
+
+        header_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        t_label = Gtk.Label()
+        t_label.set_markup(f"<b>{title}</b>")
+        t_label.set_xalign(0)
+        self.append_widget(header_row, t_label)
+
+        if recommended:
+            rec_badge = Gtk.Label(label="Recommended")
+            if gtk_version == '4.0':
+                rec_badge.add_css_class("bongo-badge-recommended")
+            else:
+                rec_badge.get_style_context().add_class("bongo-badge-recommended")
+            self.append_widget(header_row, rec_badge)
+
+        d_label = Gtk.Label(label=desc)
+        d_label.set_wrap(True)
+        d_label.set_xalign(0)
+        if gtk_version != '4.0':
+            d_label.get_style_context().add_class("dim-label")
+
+        self.append_widget(info_box, header_row)
+        self.append_widget(info_box, d_label)
+
+        self.append_widget(c_box, check_label)
+        self.append_widget(c_box, info_box)
+        self.set_card_content(card, c_box)
+
+        gesture = None
+        if gtk_version == '4.0':
+            gesture = Gtk.GestureClick()
+            gesture.connect("released", lambda *args: self.select_layout(layout_id))
+            card.add_controller(gesture)
+        else:
+            card.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+            card.connect("button-press-event", lambda *args: self.select_layout(layout_id))
+
+        return card
+
+    def select_layout(self, layout_id):
+        self.settings["keyboard_layout"] = layout_id
+        save_settings(self.settings)
+
+        for card, lid in self.layout_cards:
+            is_cur = (lid == layout_id)
+            if gtk_version == '4.0':
+                if is_cur:
+                    card.add_css_class("bongo-card-active")
+                else:
+                    card.remove_css_class("bongo-card-active")
+            else:
+                ctx = card.get_style_context()
+                if is_cur:
+                    ctx.add_class("bongo-card-active")
+                else:
+                    ctx.remove_class("bongo-card-active")
+            if hasattr(card, '_check_label'):
+                card._check_label.set_markup("<b>●</b>" if is_cur else "○")
 
     def make_mode_card(self, mode_id, title, desc, recommended, selected=False):
         card = self.make_card()

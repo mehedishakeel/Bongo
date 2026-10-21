@@ -29,6 +29,8 @@ object BongoNative {
     external fun engineSetMode(ptr: Long, mode: Int)
     external fun engineSetEmoji(ptr: Long, enabled: Boolean)
     external fun engineHasSession(ptr: Long): Boolean
+    external fun setLayout(ptr: Long, layout: Int)
+    external fun getLayout(ptr: Long): Int
     external fun engineFeedChar(ptr: Long, ch: Int, modifier: Byte, selection: Byte): Long
     external fun engineBackspace(ptr: Long, wholeWord: Boolean): Long
     external fun engineCommit(ptr: Long, index: Long)

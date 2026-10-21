@@ -16,6 +16,7 @@ final class BongoEngine {
     static let shared = BongoEngine()
 
     private(set) var typingMode: BongoInputController.TypingMode = .phoneticFirst
+    private(set) var keyboardLayout: BongoInputController.KeyboardLayout = .avroPhonetic
     private(set) var showEmoji = true
     private(set) weak var owner: BongoInputController?
 
@@ -33,6 +34,8 @@ final class BongoEngine {
     private init() {
         build()
         let center = NotificationCenter.default
+        center.addObserver(self, selector: #selector(keyboardLayoutChanged),
+                           name: .bongoKeyboardLayoutChanged, object: nil)
         center.addObserver(self, selector: #selector(typingModeChanged),
                            name: .bongoTypingModeChanged, object: nil)
         center.addObserver(self, selector: #selector(emojiSettingChanged),
@@ -136,6 +139,7 @@ final class BongoEngine {
 
     private func build() {
         typingMode = BongoInputController.currentTypingMode()
+        keyboardLayout = BongoInputController.currentKeyboardLayout()
         showEmoji = BongoInputController.currentShowEmoji()
 
         let userDir = Self.userDataDir()
@@ -146,11 +150,11 @@ final class BongoEngine {
 
         // Phonetic-only disables dictionary lookup, autocorrect, and emoji - riti
         // returns a single "lonely" transliteration that is committed inline.
-        mainConfig = Self.makeConfig(userDir: userDir, phoneticSuggestion: typingMode != .phoneticOnly)
+        mainConfig = Self.makeConfig(userDir: userDir, phoneticSuggestion: typingMode != .phoneticOnly, layout: keyboardLayout)
         mainCtx = riti_context_new_with_config(mainConfig)
 
-        if typingMode == .phoneticFirst {
-            phoneticConfig = Self.makeConfig(userDir: userDir, phoneticSuggestion: false)
+        if typingMode == .phoneticFirst && keyboardLayout == .avroPhonetic {
+            phoneticConfig = Self.makeConfig(userDir: userDir, phoneticSuggestion: false, layout: keyboardLayout)
             phoneticCtx = riti_context_new_with_config(phoneticConfig)
         }
     }
@@ -165,16 +169,27 @@ final class BongoEngine {
 
     /// riti compiles its dictionary, autocorrect, suffix, and emoji data into the
     /// binary, so no database dir is needed - only the user dir.
-    private static func makeConfig(userDir: String, phoneticSuggestion: Bool) -> OpaquePointer? {
+    private static func makeConfig(userDir: String, phoneticSuggestion: Bool, layout: BongoInputController.KeyboardLayout) -> OpaquePointer? {
         let config = riti_config_new()
-        "avro_phonetic".withCString { ptr in
+        let layoutName = (layout == .national) ? "national" : "avro_phonetic"
+        layoutName.withCString { ptr in
             _ = riti_config_set_layout_file(config, ptr)
         }
         userDir.withCString { ptr in
             _ = riti_config_set_user_dir(config, ptr)
         }
-        riti_config_set_phonetic_suggestion(config, phoneticSuggestion)
-        riti_config_set_suggestion_include_english(config, true)
+        if layout == .national {
+            riti_config_set_fixed_auto_vowel(config, true)
+            riti_config_set_fixed_old_kar_order(config, true)
+            riti_config_set_fixed_traditional_kar(config, true)
+            riti_config_set_fixed_old_reph(config, true)
+            riti_config_set_fixed_auto_chandra(config, true)
+            riti_config_set_fixed_numpad(config, true)
+            riti_config_set_fixed_suggestion(config, false)
+        } else {
+            riti_config_set_phonetic_suggestion(config, phoneticSuggestion)
+            riti_config_set_suggestion_include_english(config, true)
+        }
         return config
     }
 
@@ -208,6 +223,13 @@ final class BongoEngine {
     }
 
     // MARK: Settings changes
+
+    /// Keyboard layout changed (Avro Phonetic <-> National/Bijoy): rebuild engine.
+    @objc private func keyboardLayoutChanged() {
+        owner?.engineWillRebuild()
+        teardown()
+        build()
+    }
 
     /// Typing mode changed: drop any in-flight word and rebuild the context(s).
     @objc private func typingModeChanged() {
@@ -289,6 +311,7 @@ final class PhoneticFirstPicks {
 }
 
 extension Notification.Name {
+    static let bongoKeyboardLayoutChanged = Notification.Name("BongoKeyboardLayoutChanged")
     static let bongoTypingModeChanged = Notification.Name("BongoTypingModeChanged")
     static let bongoEmojiSettingChanged = Notification.Name("BongoEmojiSettingChanged")
     static let bongoFontSettingChanged = Notification.Name("BongoFontSettingChanged")

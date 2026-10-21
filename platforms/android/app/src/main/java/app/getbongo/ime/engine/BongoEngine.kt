@@ -32,6 +32,16 @@ class BongoEngine {
         }
     }
 
+    fun setLayout(layout: Int) {
+        if (nativePtr != 0L) {
+            try {
+                BongoNative.setLayout(nativePtr, layout)
+            } catch (e: Exception) {
+                Log.w(TAG, "Error in native setLayout: ${e.message}")
+            }
+        }
+    }
+
     fun hasSession(): Boolean {
         if (nativePtr != 0L) {
             return BongoNative.engineHasSession(nativePtr)

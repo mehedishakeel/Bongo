@@ -29,6 +29,7 @@ CONFIG_DIR = get_config_dir()
 CONFIG_FILE = CONFIG_DIR / "settings.json"
 
 DEFAULT_SETTINGS = {
+    "keyboard_layout": 0,     # 0: Avro Phonetic, 1: National (Bijoy)
     "typing_mode": 0,         # 0: PhoneticFirst, 1: Smart, 2: PhoneticOnly
     "suggest_emoji": True,
     "candidate_font": "Noto Sans Bengali",
@@ -923,6 +924,23 @@ class BongoSettingsApp:
     def create_settings_view(self, parent):
         container = tk.Frame(parent, bg=BG_DARK)
 
+        # Section: KEYBOARD LAYOUT
+        self.make_section_label(container, "Keyboard layout")
+
+        self.layout_cards = []
+        layouts = [
+            (0, "Avro Phonetic",
+             "Modern phonetic input: type as you speak in English letters (e.g. ami -> আমি, bangla -> বাংলা).", True),
+            (1, "National / Bijoy (জাতীয়)",
+             "Standard Bangladesh BDS 1738:2004 layout: fixed keymap (e.g. j -> ক, d+j -> কি, g -> ্).", False)
+        ]
+
+        current_layout = self.settings.get("keyboard_layout", 0)
+
+        for layout_id, title, desc, recommended in layouts:
+            card = self.make_layout_card(container, layout_id, title, desc, recommended, selected=(layout_id == current_layout))
+            self.layout_cards.append((card, layout_id))
+
         # Section: TYPING MODE
         self.make_section_label(container, "Typing mode")
 
@@ -1126,6 +1144,101 @@ class BongoSettingsApp:
             w.bind("<Button-1>", on_click)
 
         return card
+
+    def make_layout_card(self, parent, layout_id, title, desc, recommended, selected=False):
+        border_col = BG_CARD_ACTIVE_BORDER if selected else BG_CARD_BORDER
+        card = tk.Frame(
+            parent,
+            bg=BG_CARD,
+            highlightbackground=border_col,
+            highlightcolor=border_col,
+            highlightthickness=1,
+            padx=16,
+            pady=14,
+            cursor="hand2"
+        )
+        card.pack(fill=tk.X, pady=(0, 10))
+
+        row = tk.Frame(card, bg=BG_CARD, cursor="hand2")
+        row.pack(fill=tk.X)
+
+        radio_sym = "●" if selected else "○"
+        radio_lbl = tk.Label(
+            row,
+            text=radio_sym,
+            font=("Segoe UI", 12),
+            fg=ACCENT_LIGHT if selected else TEXT_MUTED,
+            bg=BG_CARD,
+            cursor="hand2"
+        )
+        radio_lbl.pack(side=tk.LEFT, padx=(0, 10))
+        card._radio_lbl = radio_lbl
+
+        content = tk.Frame(row, bg=BG_CARD, cursor="hand2")
+        content.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        header_row = tk.Frame(content, bg=BG_CARD, cursor="hand2")
+        header_row.pack(anchor="w", pady=(0, 4))
+
+        t_lbl = tk.Label(
+            header_row,
+            text=title,
+            font=("Segoe UI", 11, "bold"),
+            fg=TEXT_PRIMARY,
+            bg=BG_CARD,
+            cursor="hand2"
+        )
+        t_lbl.pack(side=tk.LEFT)
+
+        if recommended:
+            rec_badge = tk.Label(
+                header_row,
+                text="RECOMMENDED",
+                font=("Segoe UI", 8, "bold"),
+                fg=ACCENT_LIGHT,
+                bg=ACCENT_BG,
+                padx=6,
+                pady=2,
+                cursor="hand2"
+            )
+            rec_badge.pack(side=tk.LEFT, padx=(10, 0))
+
+        d_lbl = tk.Label(
+            content,
+            text=desc,
+            font=("Segoe UI", 9),
+            fg=TEXT_SECONDARY,
+            bg=BG_CARD,
+            wraplength=520,
+            justify=tk.LEFT,
+            anchor="w",
+            cursor="hand2"
+        )
+        d_lbl.pack(anchor="w", fill=tk.X)
+
+        def on_click(e):
+            self.select_layout(layout_id)
+
+        for w in (card, row, radio_lbl, content, header_row, t_lbl, d_lbl):
+            w.bind("<Button-1>", on_click)
+
+        return card
+
+    def select_layout(self, layout_id):
+        self.settings["keyboard_layout"] = layout_id
+        save_settings(self.settings)
+
+        for card, lid in self.layout_cards:
+            is_cur = (lid == layout_id)
+            border_col = BG_CARD_ACTIVE_BORDER if is_cur else BG_CARD_BORDER
+            card.configure(
+                highlightbackground=border_col,
+                highlightcolor=border_col
+            )
+            card._radio_lbl.configure(
+                text="●" if is_cur else "○",
+                fg=ACCENT_LIGHT if is_cur else TEXT_MUTED
+            )
 
     def select_mode(self, mode_id):
         self.settings["typing_mode"] = mode_id
