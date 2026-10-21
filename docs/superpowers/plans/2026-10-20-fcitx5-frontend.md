@@ -819,6 +819,23 @@ two groups, not four desktop-specific paths.
       released 1.0.1 deb has no fcitx5 addon; enable fcitx5 there when the
       release deb ships the addon.
 
+## Task 12: CI portability fixes found by the first CI run
+
+- [x] Linux: Ubuntu 24.04 ships fcitx5 5.1.7, whose `Fcitx5Macros.cmake`
+      lacks `add_fcitx5_addon` (added in a later release). `CMakeLists.txt`
+      now defines an equivalent MODULE-library helper when the command is
+      missing.
+- [x] Reproduced CI's exact configure error locally against the real Ubuntu
+      5.1.7 dev/runtime debs extracted to a prefix; after the fallback,
+      configure + build + CTest (3/3) pass against those packages.
+- [x] macOS: the Task 1 patches to `vendor/rust/riti` invalidated
+      `.cargo-checksum.json`; the macOS engine resolves its git riti
+      dependency through `vendor/rust`, so `cargo build --locked` rejected
+      the four edited files. Updated the checksums and added a repository
+      test that recomputes every vendored crate checksum.
+- [x] Verified: `cargo build --locked` in `platforms/macos/engine` succeeds
+      (was exit 101), native CTest 4/4, 29 Python tests pass.
+
 ## Deferred: settings UI look-and-feel on Omarchy/Hyprland
 
 User feedback: the GTK settings window "feels nothing to do with Hyprland".

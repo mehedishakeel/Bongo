@@ -134,6 +134,20 @@ class Fcitx5DistributionTests(unittest.TestCase):
         self.assertIn("org.fcitx.Fcitx5.desktop", install)
         self.assertIn("Exec=fcitx5 -d", install)
 
+    def test_cmake_supports_fcitx5_older_than_addon_macro(self):
+        """Ubuntu 24.04 ships fcitx5 5.1.7, which lacks add_fcitx5_addon.
+
+        The addon must still configure there, so CMakeLists provides an
+        equivalent MODULE-library helper when the fcitx5 macro is missing.
+        """
+        cmake = (FCITX5 / "CMakeLists.txt").read_text()
+        self.assertIn("if(NOT COMMAND add_fcitx5_addon)", cmake)
+        self.assertIn("add_library(${target_name} MODULE ${ARGN})", cmake)
+        self.assertIn(
+            "set_target_properties(${target_name} PROPERTIES FCITX_ADDON TRUE)",
+            cmake,
+        )
+
     def test_packages_recommend_fcitx5(self):
         deb = (ROOT / "platforms" / "linux" / "scripts" / "build-deb.sh").read_text()
         self.assertIn("Recommends:", deb)

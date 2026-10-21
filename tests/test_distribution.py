@@ -3,6 +3,7 @@ import plistlib
 from pathlib import Path
 import unittest
 import json
+import hashlib
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -458,6 +459,28 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(AUTOCORRECT_LOANWORDS["hospital"], "হাসপাতাল")
         self.assertEqual(AUTOCORRECT_LOANWORDS["police"], "পুলিশ")
         self.assertEqual(AUTOCORRECT_LOANWORDS["google"], "গুগল")
+
+    def test_vendored_crate_checksums_match(self):
+        """Cargo verifies vendored directory sources; edits must update checksums.
+
+        The macOS engine resolves its git riti dependency through
+        vendor/rust via .cargo/config.toml, and `cargo build --locked`
+        rejects files whose sha256 no longer matches .cargo-checksum.json.
+        """
+        vendor = ROOT / "vendor" / "rust"
+        failures = []
+        for checksum_file in sorted(vendor.glob("*/.cargo-checksum.json")):
+            crate = checksum_file.parent
+            entries = json.loads(checksum_file.read_text()).get("files", {})
+            for rel, expected in entries.items():
+                path = crate / rel
+                if not path.is_file():
+                    failures.append(f"{crate.name}/{rel}: missing")
+                    continue
+                actual = hashlib.sha256(path.read_bytes()).hexdigest()
+                if actual != expected:
+                    failures.append(f"{crate.name}/{rel}: checksum mismatch")
+        self.assertEqual([], failures, "\n".join(failures))
 
 if __name__ == '__main__':
     unittest.main()

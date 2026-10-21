@@ -8,6 +8,16 @@ set(REQUIRED_FCITX_VERSION 5.1.0)
 find_package(Fcitx5Core ${REQUIRED_FCITX_VERSION} REQUIRED)
 find_package(Fcitx5Config REQUIRED)
 
+# fcitx5 5.1.7 (Ubuntu 24.04) ships Fcitx5Macros.cmake without the
+# add_fcitx5_addon helper; it was added in a later release. Provide the same
+# helper so the addon still builds against older distro packages.
+if(NOT COMMAND add_fcitx5_addon)
+    function(add_fcitx5_addon target_name)
+        add_library(${target_name} MODULE ${ARGN})
+        set_target_properties(${target_name} PROPERTIES FCITX_ADDON TRUE)
+    endfunction()
+endif()
+
 include(GNUInstallDirs)
 include(CTest)
 
