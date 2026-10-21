@@ -11,7 +11,7 @@ find_package(Fcitx5Config REQUIRED)
 include(GNUInstallDirs)
 include(CTest)
 
-add_fcitx5_addon(bongo
+add_library(bongo MODULE
     src/bongo.cpp
     src/bongo_state.cpp
     src/bongo_settings.cpp
