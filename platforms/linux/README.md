@@ -64,7 +64,7 @@ sudo apt install -y ibus libibus-1.0-dev gir1.2-ibus-1.0
 ```bash
 sudo dnf install -y cargo rust cmake ninja-build \
   fcitx5-devel fcitx5 fcitx5-configtool \
-  python3 python3-gobject gtk4
+  python3 python3-gobject gobject-introspection gtk4
 # For the IBus frontend on GNOME:
 sudo dnf install -y ibus ibus-devel
 ```
@@ -88,7 +88,10 @@ the package recommends it rather than forcing it.
 
 ### Option 1: Universal Tarball (any distribution)
 
-Download `Bongo-1.0.1-linux-x86_64.tar.gz` from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then install the prebuilt payload:
+Download `Bongo-1.0.1-linux-x86_64.tar.gz` (64-bit PC) or
+`Bongo-1.0.1-linux-aarch64.tar.gz` (ARM64) from the
+[Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then
+install the prebuilt payload:
 
 ```bash
 tar -xzf Bongo-1.0.1-linux-x86_64.tar.gz
@@ -97,7 +100,14 @@ sudo bash install.sh --prebuilt
 ```
 
 The archive needs glibc 2.39+ (Ubuntu 24.04+, Debian 13+, Fedora 40+, Arch) and
-Python 3 with GTK 4 for the settings app.
+Python 3 with GTK 4 for the settings app. It carries an `ARCH` marker and the
+installer refuses a mismatched or unverified archive.
+
+To uninstall a tarball install:
+
+```bash
+sudo bash install.sh --uninstall
+```
 
 ### Option 2: Debian / Ubuntu Package
 
@@ -107,7 +117,8 @@ Download `bongo_1.0.1_amd64.deb` (or `bongo_1.0.1_arm64.deb`) from the [Releases
 sudo apt install ./bongo_1.0.1_amd64.deb
 ```
 
-The package ships both frontends. On GNOME, add **Bengali (Bongo)** under
+The package ships both frontends and uses the same glibc 2.39+ floor as the
+tarball (Ubuntu 24.04+, Debian 13+). On GNOME, add **Bengali (Bongo)** under
 IBus. On KDE, Hyprland, or Omarchy, add **Bongo** in `fcitx5-configtool`.
 
 ### Option 3: Build & Install from Source

@@ -82,17 +82,21 @@ See [docs/MACOS-INSTALL.md](docs/MACOS-INSTALL.md) or [platforms/macos/README.md
 ### Linux (Ubuntu, Debian, Fedora, Arch, Omarchy)
 
 #### Option 1: Universal tarball (any distribution)
-1. **Download**: Get `Bongo-1.0.1-linux-x86_64.tar.gz` from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
+1. **Download**: Get `Bongo-1.0.1-linux-x86_64.tar.gz` (64-bit PC) or `Bongo-1.0.1-linux-aarch64.tar.gz` (ARM64) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
 2. **Install**:
    ```bash
    tar -xzf Bongo-1.0.1-linux-x86_64.tar.gz
    cd Bongo-1.0.1-linux-x86_64
    sudo bash install.sh --prebuilt
    ```
-   The tarball needs glibc 2.39+ (Ubuntu 24.04+, Debian 13+, Fedora 40+, Arch) and Python 3 + GTK 4 for the settings app.
+   The tarball needs glibc 2.39+ (Ubuntu 24.04+, Debian 13+, Fedora 40+, Arch) and Python 3 + GTK 4 for the settings app. The installer verifies every file against `MANIFEST.sha256` and installs the matching architecture only.
 3. **Activate**: The installer detects your desktop and enables Bongo automatically:
    - **GNOME / IBus**: added to your GNOME input sources; toggle with <kbd>Super + Space</kbd>.
    - **KDE / Hyprland / Omarchy / fcitx5**: added to the fcitx5 profile; switch with <kbd>Ctrl + Space</kbd>.
+4. **Uninstall** (from the extracted folder):
+   ```bash
+   sudo bash install.sh --uninstall
+   ```
 
 #### Option 2: Debian / Ubuntu package
 1. **Download**: Get `bongo_1.0.1_amd64.deb` (standard 64-bit PC) or `bongo_1.0.1_arm64.deb` (ARM64) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
@@ -100,6 +104,7 @@ See [docs/MACOS-INSTALL.md](docs/MACOS-INSTALL.md) or [platforms/macos/README.md
    ```bash
    sudo apt install ./bongo_1.0.1_amd64.deb
    ```
+   These packages use the same glibc 2.39+ floor (Ubuntu 24.04+, Debian 13+).
 3. **Activate**: Add **Bengali (Bongo)** under **Settings -> Keyboard -> Input Sources** (GNOME), or run `fcitx5-configtool` and add **Bongo** (KDE / Hyprland / Omarchy).
 
 #### Option 3: Build from source

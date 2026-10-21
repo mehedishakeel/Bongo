@@ -23,7 +23,10 @@ packages include both frontends rather than forcing either one.
 
 ## Option 1: Universal tarball (any distribution)
 
-Download `Bongo-1.0.1-linux-x86_64.tar.gz` from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then extract and install:
+Download `Bongo-1.0.1-linux-x86_64.tar.gz` for a 64-bit PC or
+`Bongo-1.0.1-linux-aarch64.tar.gz` for ARM64 from the
+[Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then
+extract and install:
 
 ```bash
 tar -xzf Bongo-1.0.1-linux-x86_64.tar.gz
@@ -33,7 +36,15 @@ sudo bash install.sh --prebuilt
 
 The tarball contains prebuilt binaries, so no compiler or network access is
 needed. It requires glibc 2.39+ (Ubuntu 24.04+, Debian 13+, Fedora 40+, Arch)
-and Python 3 with GTK 4 for the settings app.
+and Python 3 with GTK 4 for the settings app. The installer verifies every
+file against `MANIFEST.sha256` and refuses to install an archive for a
+different CPU architecture.
+
+To remove a tarball install, run this from the extracted folder:
+
+```bash
+sudo bash install.sh --uninstall
+```
 
 ---
 
@@ -46,7 +57,8 @@ sudo apt install ./bongo_1.0.1_amd64.deb
 ```
 
 The package installs the engine and settings app, and includes the fcitx5 addon
-when it was built with fcitx5 development headers.
+when it was built with fcitx5 development headers. It uses the same glibc
+2.39+ floor as the tarball (Ubuntu 24.04+, Debian 13+).
 
 ---
 
@@ -74,7 +86,7 @@ sudo apt install -y libfcitx5core-dev fcitx5 fcitx5-configtool
 
 ```bash
 sudo dnf install -y cargo rust cmake ninja-build \
-  python3 python3-gobject gtk4
+  python3 python3-gobject gobject-introspection gtk4
 
 # For GNOME / IBus:
 sudo dnf install -y ibus ibus-devel
