@@ -2,8 +2,8 @@ cask "bongo" do
   arch arm: "arm64", intel: "intel-x86_64"
 
   version "1.1.0"
-  sha256 arm:   "1232a06564b02e9a6bae51df6524aa37a6010d1694bc927e3fdc9d795974d545",
-         intel: "ab6929a587524b1b6e1e0724e3b5491e3152a79be24faf017b6c64338c9eff6e"
+  sha256 arm:   "9f930f383724da7e3b65d10cc99dcb09fd83ffda4e918f7f3e4689605abbf2e3",
+         intel: "eda5a6d675970cec946f7af25f7be65a99518516e94b3fc39d036c49c9e9211a"
 
   url "https://github.com/mehedishakeel/Bongo/releases/download/v#{version}/Bongo-#{version}-macos-#{arch}.dmg"
   name "Bongo"
