@@ -6,22 +6,49 @@ ships two frontends over the same Rust engine:
 - **IBus** for GNOME and other IBus-based desktops.
 - **fcitx5** for KDE Plasma, Hyprland, Omarchy, and other fcitx5-based desktops.
 
-You only need the input framework your desktop already uses. The `.deb` and
-`.rpm` packages recommend both frontends rather than forcing either one.
+You only need the input framework your desktop already uses. The prebuilt
+packages include both frontends rather than forcing either one.
 
 ---
 
 ## Supported Linux Distributions
 
-- **Ubuntu**: 22.04 LTS, 24.04 LTS, and newer
-- **Debian**: Debian 12 (Bookworm) and newer
-- **Fedora**: Fedora 38, 39, 40, and newer
+- **Ubuntu**: 24.04 LTS and newer (22.04 via source)
+- **Debian**: 13 (Trixie) and newer (12 via source)
+- **Fedora**: 40 and newer
 - **Arch Linux / Manjaro / Omarchy**
-- **Pop!_OS / Linux Mint**
+- **Pop!_OS / Linux Mint** (versions based on Ubuntu 24.04 or newer)
 
 ---
 
-## Option 1: Install from a Package
+## Option 1: Universal Tarball (any distribution)
+
+Download `Bongo-1.1.0-linux-x86_64.tar.gz` for a 64-bit PC or
+`Bongo-1.1.0-linux-aarch64.tar.gz` for ARM64 from the
+[Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then
+extract and install:
+
+```bash
+tar -xzf Bongo-1.1.0-linux-x86_64.tar.gz
+cd Bongo-1.1.0-linux-x86_64
+sudo bash install.sh --prebuilt
+```
+
+The tarball contains prebuilt binaries, so no compiler or network access is
+needed. It requires glibc 2.39+ (Ubuntu 24.04+, Debian 13+, Fedora 40+, Arch)
+and Python 3 with GTK 4 for the settings app. The installer verifies every
+file against `MANIFEST.sha256` and refuses to install an archive for a
+different CPU architecture.
+
+To remove a tarball install, run this from the extracted folder:
+
+```bash
+sudo bash install.sh --uninstall
+```
+
+---
+
+## Option 2: Debian / Ubuntu package
 
 Download `bongo_1.1.0_amd64.deb` (or `bongo_1.1.0_arm64.deb`) from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then install via terminal:
 
@@ -29,18 +56,13 @@ Download `bongo_1.1.0_amd64.deb` (or `bongo_1.1.0_arm64.deb`) from the [Releases
 sudo apt install ./bongo_1.1.0_amd64.deb
 ```
 
-Fedora:
-
-```bash
-sudo dnf install ./bongo-1.1.0-1.x86_64.rpm
-```
-
 The package installs the engine and settings app, and includes the fcitx5 addon
-when it was built with fcitx5 development headers.
+when it was built with fcitx5 development headers. It uses the same glibc
+2.39+ floor as the tarball (Ubuntu 24.04+, Debian 13+).
 
 ---
 
-## Option 2: Install from Source
+## Option 3: Install from Source
 
 ### Prerequisites
 
@@ -64,7 +86,7 @@ sudo apt install -y libfcitx5core-dev fcitx5 fcitx5-configtool
 
 ```bash
 sudo dnf install -y cargo rust cmake ninja-build \
-  python3 python3-gobject gtk4
+  python3 python3-gobject gobject-introspection gtk4
 
 # For GNOME / IBus:
 sudo dnf install -y ibus ibus-devel
@@ -88,12 +110,12 @@ sudo pacman -S ibus
 git clone https://github.com/mehedishakeel/Bongo.git
 cd Bongo
 
-# Build both frontends when the dependencies are present:
-sudo BONGO_FCITX5=1 ./platforms/linux/scripts/install.sh
+# Builds both frontends when their dependencies are present:
+sudo ./platforms/linux/scripts/install.sh
 ```
 
-Without `BONGO_FCITX5=1`, the installer builds the fcitx5 addon automatically
-when fcitx5 and its headers are present. Use `BONGO_FCITX5=0` to skip it.
+The installer builds the fcitx5 addon automatically when fcitx5 and its
+development headers are present. Use `BONGO_FCITX5=0` to skip it.
 
 The fcitx5 addon is installed system-wide because fcitx5 does not reliably
 discover user-local addons. A non-root install into `~/.local` installs the
