@@ -23,6 +23,7 @@ jobs:
           python3 -m unittest discover -s tests -v
           bash -n platforms/macos/scripts/create-dmg.sh
           bash -n platforms/linux/scripts/install.sh
+          bash -n docs/install.sh
           bash -n platforms/linux/scripts/build-deb.sh
           bash -n platforms/linux/scripts/build-tarball.sh
           bash -n platforms/linux/scripts/build-rpm.sh

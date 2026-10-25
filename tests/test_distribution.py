@@ -75,6 +75,12 @@ class DistributionTests(unittest.TestCase):
         self.assertTrue((ROOT / 'platforms/linux/scripts/install.sh').is_file())
         self.assertTrue((ROOT / 'platforms/linux/scripts/build-deb.sh').is_file())
         self.assertTrue((ROOT / 'platforms/linux/scripts/build-rpm.sh').is_file())
+        self.assertTrue((ROOT / 'docs/install.sh').is_file())
+        self.assertEqual(
+            (ROOT / 'docs/install.sh').read_bytes(),
+            (ROOT / 'platforms/linux/scripts/install.sh').read_bytes(),
+            "docs/install.sh must stay in sync with platforms/linux/scripts/install.sh so https://getbongo.app/install.sh serves the latest installer",
+        )
 
     def test_windows_registration(self):
         # Windows UI parity checks (exact same 4 tabs)

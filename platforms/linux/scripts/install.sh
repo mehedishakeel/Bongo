@@ -337,19 +337,67 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
             echo ""
             exit 0
         else
-            echo "--> Prebuilt .deb package unavailable. Proceeding to source build..."
+            echo "--> Prebuilt .deb package unavailable. Proceeding to universal tarball or source..."
         fi
     fi
 
-    # Prepare package managers on other distributions
+    # Ensure runtime dependencies are installed if package manager is present
     if command -v dnf >/dev/null 2>&1; then
         echo "--> Detected Fedora / RHEL system (${ARCH})"
-        echo "--> Ensuring build dependencies are installed via dnf..."
-        ${SUDO} dnf install -y cargo rust ibus ibus-devel python3 python3-gobject gobject-introspection gtk4 tar git || true
+        echo "--> Ensuring runtime dependencies are installed via dnf..."
+        ${SUDO} dnf install -y ibus python3 python3-gobject gobject-introspection gtk4 tar || true
     elif command -v pacman >/dev/null 2>&1; then
         echo "--> Detected Arch Linux system (${ARCH})"
+        echo "--> Ensuring runtime dependencies are installed via pacman..."
+        ${SUDO} pacman -S --needed --noconfirm ibus python-gobject gtk4 tar || true
+    fi
+
+    # For non-Debian distributions or if deb was skipped, try the prebuilt universal tarball
+    TARBALL_ARCH=""
+    case "${ARCH}" in
+        x86_64|amd64) TARBALL_ARCH="x86_64" ;;
+        aarch64|arm64) TARBALL_ARCH="aarch64" ;;
+    esac
+
+    if [[ -n "${TARBALL_ARCH}" ]]; then
+        echo "--> Checking for prebuilt universal release (${TARBALL_ARCH})..."
+        TARBALL_NAME="Bongo-1.1.0-linux-${TARBALL_ARCH}.tar.gz"
+        TARBALL_URL="https://github.com/mehedishakeel/Bongo/releases/latest/download/${TARBALL_NAME}"
+        FALLBACK_TARBALL_URL="https://github.com/mehedishakeel/Bongo/releases/download/v1.1.0/${TARBALL_NAME}"
+        TMP_DIR="$(mktemp -d /tmp/bongo-tar-XXXXXX)"
+        TMP_TAR="${TMP_DIR}/${TARBALL_NAME}"
+
+        DOWNLOADED=false
+        if curl -sSL -f -o "${TMP_TAR}" "${TARBALL_URL}"; then
+            DOWNLOADED=true
+        elif curl -sSL -f -o "${TMP_TAR}" "${FALLBACK_TARBALL_URL}"; then
+            DOWNLOADED=true
+        fi
+
+        if [[ "${DOWNLOADED}" == "true" && -s "${TMP_TAR}" ]]; then
+            echo "--> Extracting ${TARBALL_NAME}..."
+            if tar -xzf "${TMP_TAR}" -C "${TMP_DIR}"; then
+                EXTRACTED_DIR="${TMP_DIR}/Bongo-1.1.0-linux-${TARBALL_ARCH}"
+                if [[ -d "${EXTRACTED_DIR}" && -f "${EXTRACTED_DIR}/install.sh" ]]; then
+                    echo "--> Installing via prebuilt bundle..."
+                    if (cd "${EXTRACTED_DIR}" && ${SUDO} bash install.sh --prebuilt); then
+                        rm -rf "${TMP_DIR}"
+                        exit 0
+                    fi
+                fi
+            fi
+            echo "--> Prebuilt bundle installation failed. Proceeding to source build..."
+        fi
+        rm -rf "${TMP_DIR}"
+    fi
+
+    # Prepare package managers on other distributions for source build
+    if command -v dnf >/dev/null 2>&1; then
+        echo "--> Ensuring build dependencies are installed via dnf..."
+        ${SUDO} dnf install -y cargo rust ibus-devel git || true
+    elif command -v pacman >/dev/null 2>&1; then
         echo "--> Ensuring build dependencies are installed via pacman..."
-        ${SUDO} pacman -S --needed --noconfirm rust cargo ibus python-gobject gtk4 tar git || true
+        ${SUDO} pacman -S --needed --noconfirm rust cargo git || true
     fi
 
     # On non-Debian distributions or fallback: clone/extract source and run installer

@@ -609,7 +609,7 @@ function initDownloadHub() {
     // Copy Linux terminal command button
     if (copyBtn && copyText) {
         copyBtn.addEventListener('click', async () => {
-            const cmd = 'curl -sSL https://raw.githubusercontent.com/mehedishakeel/Bongo/main/platforms/linux/scripts/install.sh | bash';
+            const cmd = 'curl -fsSL https://getbongo.app/install.sh | bash';
             try {
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     await navigator.clipboard.writeText(cmd);
