@@ -5,7 +5,7 @@
 window.BONGO_TRANSLATIONS = {
     en: {
         // Meta
-        "page.title": "Bongo · বঙ্গ: Native Bangla Keyboard for macOS & Linux",
+        "page.title": "Bongo Keyboard (বঙ্গ) · Modern Avro Keyboard Alternative for Mac, Windows, Linux & Android",
 
         // Nav
         "nav.features": "Features",
@@ -44,10 +44,10 @@ window.BONGO_TRANSLATIONS = {
         "utilities.words": "words",
 
         // Hero
-        "hero.tag_desktop": "Native for macOS, Modern Linux & Windows",
-        "hero.tag_mobile": "macOS, Linux & Windows Native",
-        "hero.title": "A New Era of Bangla Avro Typing",
-        "hero.subtitle": "Type naturally in Bengali across macOS, Linux, and Windows using familiar Avro phonetic rules. Zero lag, zero telemetry, instant suggestions, and pure Rust performance.",
+        "hero.tag_desktop": "Native for macOS, Windows, Linux & Android",
+        "hero.tag_mobile": "macOS, Windows, Linux & Android Native",
+        "hero.title": "Bongo Keyboard · A New Era of Bangla Avro Typing",
+        "hero.subtitle": "The modern Avro Keyboard alternative for Mac, Windows, Linux, and Android by Mehedi Shakeel. Type naturally in Bengali using familiar Avro phonetic rules with pure Rust speed, zero lag, and 100% offline privacy.",
         "hero.cta_main": "Download for macOS",
         "hero.cta_sub": "Free · macOS 13+ · Apple Silicon & Intel",
         "hero.cta_linux": "Download for Linux",
@@ -140,8 +140,8 @@ window.BONGO_TRANSLATIONS = {
 
         // Features
         "features.eyebrow": "Built for Speed & Privacy",
-        "features.title": "Engineered for Native Desktop Performance",
-        "features.desc": "Pure Rust engine, zero telemetry, and dedicated native binaries for macOS (Apple Silicon & Intel) and Linux (amd64 & arm64).",
+        "features.title": "Engineered for Native Desktop & Mobile Performance",
+        "features.desc": "Pure Rust engine, zero telemetry, and dedicated native binaries for macOS, Windows 10/11, Linux, and Android.",
         "feature.1_title": "Pure Native Architecture",
         "feature.1_desc": "Compiled natively for both Apple Silicon (arm64) and Intel (x86_64) on macOS, plus amd64 and arm64 on Linux. Zero emulation baggage and minimal memory footprint.",
         "feature.2_title": "Intuitive Avro Phonetic Rules",
@@ -217,10 +217,10 @@ window.BONGO_TRANSLATIONS = {
         "faq.eyebrow": "Answers",
         "faq.title": "Frequently Asked Questions",
         "faq.desc": "Clear information regarding multi-platform support, security, compatibility, and day-to-day use.",
-        "faq.q1": "Which operating systems and devices does Bongo support?",
-        "faq.a1": "Bongo is natively available across all four major platforms: <strong>macOS</strong> (Apple Silicon M1–M4 and Intel x86_64 via native InputMethodKit & Universal 2 DMG), <strong>Windows</strong> (Windows 10 & 11 with live floating Candidate HUD, .exe and .msi installers), <strong>Linux</strong> (Ubuntu, Debian, Mint, Fedora, Arch via native IBus engine), and <strong>Android</strong> (Android 8.0 through 15+ standalone signed APK with Ridmik layout & voice typing).",
-        "faq.q2": "How does phonetic typing work in Bongo?",
-        "faq.a2": "Bongo uses intuitive <strong>Avro Phonetic typing</strong>: write Bengali sounds phonetically using standard English letters (e.g. typing <code>ami</code> produces <code>আমি</code>, <code>bangla</code> produces <code>বাংলা</code>, <code>dhonnobad</code> produces <code>ধন্যবাদ</code>). Powered by an embedded Rust phonetic engine with a 150,000+ word dictionary, compound word fixes, and instant autocorrect.",
+        "faq.q1": "Which operating systems does Bongo Keyboard support?",
+        "faq.a1": "Bongo Keyboard is natively available across all four major platforms: <strong>Bongo Keyboard for Mac</strong> (Apple Silicon M1–M4 and Intel x86_64 via native InputMethodKit & Universal 2 DMG), <strong>Bongo Keyboard for Windows</strong> (Windows 10 & 11 with live floating Candidate HUD, .exe and .msi installers), <strong>Bongo Keyboard for Linux</strong> (Ubuntu, Debian, Mint, Fedora, Arch via native IBus and fcitx5 engines), and <strong>Bongo Keyboard for Android</strong> (Android 8.0 through 15+ standalone signed APK with Ridmik layout & voice typing).",
+        "faq.q2": "Is Bongo Keyboard a modern Avro Keyboard alternative?",
+        "faq.a2": "Yes, absolutely! Bongo Keyboard is the leading modern <strong>Avro Keyboard alternative</strong>. It uses the exact same intuitive Avro phonetic transliteration rules you already know (e.g. typing <code>ami</code> produces <code>আমি</code>, <code>bangla</code> produces <code>বাংলা</code>, <code>dhonnobad</code> produces <code>ধন্যবাদ</code>). Powered by an embedded Rust phonetic engine with a 150,000+ word dictionary, compound word fixes, and instant autocorrect.",
         "faq.q3": "How does Bongo work on Windows, and does it show suggestion candidates?",
         "faq.a3": "Yes! On Windows, Bongo runs as a low-level background service featuring a live floating <strong>Candidate HUD</strong> window right below your typing cursor in any application (Word, Chrome, Notepad, IDEs). You can cycle suggestions with <kbd>Down Arrow</kbd> or <kbd>Tab</kbd>, return with <kbd>Up Arrow</kbd>, select directly with <kbd>1</kbd>–<kbd>9</kbd>, or click candidates with your mouse without losing application focus. Press <kbd>F12</kbd> or <kbd>Ctrl + Space</kbd> to toggle Bangla mode anytime.",
         "faq.q4": "What features does Bongo offer on Android?",
@@ -233,6 +233,8 @@ window.BONGO_TRANSLATIONS = {
         "faq.a7": "Yes! On macOS, Windows, and Linux, Bongo includes a native Settings application where you can customize candidate font family (such as Noto Sans Bengali, Kalpurush, SolaimanLipi), adjust font size, change default switch shortcuts, and customize UI themes.",
         "faq.q8": "Is Bongo completely free and open source?",
         "faq.a8": "Yes. Bongo is 100% free with no ads, tracking, subscriptions, or paywalls. The complete project is open source under the Mozilla Public License 2.0 (MPL-2.0) on <a href=\"https://github.com/mehedishakeel/Bongo\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
+        "faq.q9": "Who developed and maintains Bongo Keyboard?",
+        "faq.a9": "Bongo Keyboard was created and is actively maintained by <strong>Mehedi Shakeel</strong> (<a href=\"https://github.com/mehedishakeel\" target=\"_blank\" rel=\"noopener\">@mehedishakeel</a>), cybersecurity educator and open-source software developer, as a community-driven, 100% free tool for Bengali speakers worldwide.",
 
         // Footer
         "footer.desc": "Native Bengali Keyboard for macOS, Windows, Linux, and Android. Fast, private, and beautifully integrated.",
@@ -252,7 +254,7 @@ window.BONGO_TRANSLATIONS = {
 
     bn: {
         // Meta
-        "page.title": "বঙ্গ · Bongo: ম্যাকওএস ও লিনাক্সের জন্য নেটিভ বাংলা কিবোর্ড",
+        "page.title": "বঙ্গ কিবোর্ড · Bongo Keyboard: ম্যাক, উইন্ডোজ, লিনাক্স ও অ্যান্ড্রয়েডের জন্য আধুনিক অভ্র কিবোর্ড অল্টারনেটিভ",
 
         // Nav
         "nav.features": "বৈশিষ্ট্যসমূহ",
@@ -291,10 +293,10 @@ window.BONGO_TRANSLATIONS = {
         "utilities.words": "শব্দ",
 
         // Hero
-        "hero.tag_desktop": "ম্যাকওএস, আধুনিক লিনাক্স ও উইন্ডোজ নেটিভ",
-        "hero.tag_mobile": "ম্যাকওএস, লিনাক্স ও উইন্ডোজ নেটিভ",
-        "hero.title": "বাংলা অভ্র টাইপিংয়ের নতুন যুগ।",
-        "hero.subtitle": "সাফারি, নোটস, ওয়ার্ড, স্ল্যাক বা টার্মিনালে পরিচিত অভ্র ফোনেটিক নিয়মে স্বাচ্ছন্দ্যে বাংলা লিখুন। কোনো ল্যাগ নেই, ট্র্যাকিং নেই, বিশুদ্ধ রাস্ট ইঞ্জিনের তাৎক্ষণিক গতি।",
+        "hero.tag_desktop": "ম্যাকওএস, উইন্ডোজ, লিনাক্স ও অ্যান্ড্রয়েড নেটিভ",
+        "hero.tag_mobile": "ম্যাকওএস, উইন্ডোজ, লিনাক্স ও অ্যান্ড্রয়েড নেটিভ",
+        "hero.title": "বঙ্গ কিবোর্ড · বাংলা অভ্র টাইপিংয়ের নতুন যুগ।",
+        "hero.subtitle": "মেহেদী শাকিলের তৈরি ম্যাক, উইন্ডোজ, লিনাক্স এবং অ্যান্ড্রয়েডের জন্য আধুনিক অভ্র কিবোর্ড অল্টারনেটিভ। পরিচিত অভ্র ফোনেটিক নিয়মে স্বাচ্ছন্দ্যে বাংলা লিখুন বিশুদ্ধ রাস্ট ইঞ্জিনের তাৎক্ষণিক গতি ও ১০০% অফলাইন সুরক্ষায়।",
         "hero.cta_main": "ম্যাকের জন্য ডাউনলোড করুন",
         "hero.cta_sub": "সম্পূর্ণ ফ্রি · macOS 13+ · অ্যাপল সিলিকন ও ইন্টেল",
         "hero.cta_linux": "লিনাক্সের জন্য ডাউনলোড করুন",
@@ -464,10 +466,10 @@ window.BONGO_TRANSLATIONS = {
         "faq.eyebrow": "প্রশ্নোত্তর",
         "faq.title": "সাধারণ কিছু প্রশ্নের উত্তর",
         "faq.desc": "মাল্টি-প্ল্যাটফর্ম সাপোর্ট, নিরাপত্তা, কম্প্যাটিবিলিটি ও ব্যবহারবিধি নিয়ে যেকোনো তথ্যের জন্য নিচের উত্তরগুলো দেখুন।",
-        "faq.q1": "বঙ্গ কোন কোন অপারেটিং সিস্টেম এবং ডিভাইসে সাপোর্ট করে?",
-        "faq.a1": "বঙ্গ এখন চারটি প্রধান প্ল্যাটফর্মেই সম্পূর্ণ নেটিভভাবে উপলব্ধ:<br>• <strong>macOS</strong>: অ্যাপল সিলিকন (M1–M4) এবং ইন্টেল (x86_64) ম্যাকের জন্য নেটিভ InputMethodKit ও ইউনিভার্সাল ২ DMG প্যাকেজ।<br>• <strong>Windows</strong>: উইন্ডোজ ১০ ও ১১-এর জন্য লাইভ ক্যান্ডিডেট সাজেশনের HUD উইন্ডোসহ .exe ও .msi ইনস্টলার।<br>• <strong>Linux</strong>: উবুন্টু, ডেবিয়ান, লিনাক্স মিন্ট, ফেডোরা, আর্চের জন্য IBus ইঞ্জিন ও GTK4 সেটিংস।<br>• <strong>Android</strong>: অ্যান্ড্রয়েড ৮.০ থেকে ১৫+-এর জন্য রিদমিক-লেআউট সম্বলিত অফলাইন কিবোর্ড ও ভয়েস টাইপিং সুবিধা।",
-        "faq.q2": "ম্যাকের সাধারণ বাংলা কিবোর্ডের সাথে বঙ্গের পার্থক্য কী এবং ফোনেটিক টাইপিং কীভাবে কাজ করে?",
-        "faq.a2": "সাধারণ বাংলা কিবোর্ডে প্রতিটি অক্ষরের অবস্থান মুখস্থ করতে হয়। আর বঙ্গে রয়েছে <strong>অভ্র ফোনেটিক টাইপিং</strong>: ইংরেজি বর্ণ দিয়ে উচ্চারণ অনুযায়ী লিখলেই তা খাঁটি বাংলায় রূপান্তরিত হয় (যেমন: <code>ami</code> → <code>আমি</code>, <code>bangla</code> → <code>বাংলা</code>, <code>dhonnobad</code> → <code>ধন্যবাদ</code>)। এতে রয়েছে দেড় লাখ শব্দের ডিকশনারি, যুক্তবর্ণ সমাধান এবং লাইভ অটো-কারেক্ট সুবিধা।",
+        "faq.q1": "বঙ্গ কিবোর্ড (Bongo Keyboard) কোন কোন অপারেটিং সিস্টেম এবং ডিভাইসে সাপোর্ট করে?",
+        "faq.a1": "বঙ্গ কিবোর্ড চারটি প্রধান প্ল্যাটফর্মেই সম্পূর্ণ নেটিভভাবে কাজ করে:<br>• <strong>ম্যাকের জন্য বঙ্গ কিবোর্ড</strong> (Bongo Keyboard for Mac): অ্যাপল সিলিকন (M1–M4) এবং ইন্টেল (x86_64) ম্যাকের জন্য নেটিভ InputMethodKit ও ইউনিভার্সাল ২ DMG প্যাকেজ।<br>• <strong>উইন্ডোজের জন্য বঙ্গ কিবোর্ড</strong> (Bongo Keyboard for Windows): উইন্ডোজ ১০ ও ১১-এর জন্য লাইভ ক্যান্ডিডেট সাজেশনের HUD উইন্ডোসহ .exe ও .msi ইনস্টলার।<br>• <strong>লিনাক্সের জন্য বঙ্গ কিবোর্ড</strong> (Bongo Keyboard for Linux): উবুন্টু, ডেবিয়ান, লিনাক্স মিন্ট, ফেডোরা, আর্চের জন্য IBus ইঞ্জিন ও fcitx5 সাপোর্ট।<br>• <strong>অ্যান্ড্রয়েডের জন্য বঙ্গ কিবোর্ড</strong> (Bongo Keyboard for Android): অ্যান্ড্রয়েড ৮.০ থেকে ১৫+-এর জন্য রিদমিক-লেআউট সম্বলিত অফলাইন কিবোর্ড ও ভয়েস টাইপিং সুবিধা।",
+        "faq.q2": "বঙ্গ কিবোর্ড কি আধুনিক অভ্র কিবোর্ড অল্টারনেটিভ (Avro Keyboard Alternative)?",
+        "faq.a2": "হ্যাঁ, অবশ্যই! বঙ্গ কিবোর্ড হলো বর্তমান সময়ের সেরা ও আধুনিক অভ্র কিবোর্ড অল্টারনেটিভ। সাধারণ বাংলা কিবোর্ডে প্রতিটি অক্ষরের অবস্থান মুখস্থ করতে হয়, কিন্তু বঙ্গে রয়েছে <strong>অভ্র ফোনেটিক টাইপিং</strong>: ইংরেজি বর্ণ দিয়ে উচ্চারণ অনুযায়ী লিখলেই তা খাঁটি বাংলায় রূপান্তরিত হয় (যেমন: <code>ami</code> → <code>আমি</code>, <code>bangla</code> → <code>বাংলা</code>, <code>dhonnobad</code> → <code>ধন্যবাদ</code>)। এতে রয়েছে দেড় লাখ শব্দের ডিকশনারি, যুক্তবর্ণ সমাধান এবং লাইভ অটো-কারেক্ট সুবিধা।",
         "faq.q3": "উইন্ডোজে বঙ্গ কীভাবে কাজ করে এবং টাইপ করার সময় সাজেশন দেখা যায় কি?",
         "faq.a3": "হ্যাঁ! উইন্ডোজে টাইপ করার সময় আপনার কার্সরের ঠিক নিচে একটি লাইভ ফ্লোটিং ক্যান্ডিডেট HUD উইন্ডো ভেসে ওঠে। <kbd>Down Arrow</kbd> বা <kbd>Tab</kbd> দিয়ে পরবর্তী সাজেশন ব্রাউজ করা যায়, <kbd>Up Arrow</kbd> দিয়ে পেছনে যাওয়া যায়, <kbd>1</kbd>–<kbd>9</kbd> নম্বর চেপে অথবা মাউস ক্লিক করে সরাসরি সাজেশন নির্বাচন করা যায়। যেকোনো সময় <kbd>F12</kbd> বা <kbd>Ctrl + Space</kbd> চেপে বাংলা ও ইংরেজির মধ্যে সুইচ করা যায়।",
         "faq.q4": "অ্যান্ড্রয়েডে বঙ্গে কী কী সুবিধা রয়েছে?",
@@ -480,6 +482,8 @@ window.BONGO_TRANSLATIONS = {
         "faq.a7": "হ্যাঁ! macOS, Windows ও Linux-এ বঙ্গের ডেডিকেটেড Settings অ্যাপ্লিকেশন রয়েছে। সেখান থেকে আপনার সিস্টেমে ইনস্টল থাকা যেকোনো বাংলা ফন্ট (যেমন: Noto Sans Bengali, Kalpurush, SolaimanLipi ইত্যাদি) নির্বাচন করতে পারবেন এবং ফন্টের আকার নিজের মতো পরিবর্তন করতে পারবেন।",
         "faq.q8": "বঙ্গ কি সম্পূর্ণ ফ্রি এবং ওপেন সোর্স?",
         "faq.a8": "হ্যাঁ, বঙ্গ ১০০% ফ্রি: কোনো সাবস্ক্রিপশন, বিজ্ঞাপন বা পেইড ফিচার নেই। সম্পূর্ণ সোর্স কোড MPL-2.0 ওপেন সোর্স লাইসেন্সের আওতায় <a href=\"https://github.com/mehedishakeel/Bongo\" target=\"_blank\" rel=\"noopener\">GitHub</a>-এ উন্মুক্ত।",
+        "faq.q9": "বঙ্গ কিবোর্ডের ডেভেলপার কে?",
+        "faq.a9": "বঙ্গ কিবোর্ড তৈরি এবং সার্বিক পরিচালনা করছেন সাইবার নিরাপত্তা বিশেষজ্ঞ ও সফটওয়্যার ডেভেলপার <strong>মেহেদী শাকিল</strong> (<a href=\"https://github.com/mehedishakeel\" target=\"_blank\" rel=\"noopener\">@mehedishakeel</a>)। বিশ্বজুড়ে বাংলা ভাষাভাষীদের জন্য এটি সম্পূর্ণ উন্মুক্ত ও ফ্রি সফটওয়্যার (MPL-2.0)।",
 
         // Footer
         "footer.desc": "ম্যাকওএস, উইন্ডোজ, লিনাক্স ও অ্যান্ড্রয়েডের জন্য দ্রুত, সাবলীল ও শতভাগ নিরাপদ নেটিভ বাংলা কিবোর্ড।",
