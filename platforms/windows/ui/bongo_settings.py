@@ -48,9 +48,11 @@ BG_HOVER = "#27272a"
 ACCENT_COLOR = "#6366f1"
 ACCENT_LIGHT = "#818cf8"
 ACCENT_BG = "#232338"
+ACCENT = ACCENT_COLOR
 TEXT_PRIMARY = "#ffffff"
 TEXT_SECONDARY = "#a1a1aa"
 TEXT_MUTED = "#71717a"
+TEXT_WHITE = TEXT_PRIMARY
 KEY_CHIP_BG = "#2a2a30"
 KEY_CHIP_BORDER = "#3f3f46"
 
@@ -969,12 +971,12 @@ class BongoSettingsApp:
     def switch_layout_mode(self, mode):
         self.cheatsheet_mode = mode
         if mode == "avro":
-            self.btn_avro_cheatsheet.configure(bg=ACCENT, fg=TEXT_WHITE)
+            self.btn_avro_cheatsheet.configure(bg=ACCENT_COLOR, fg=TEXT_PRIMARY)
             self.btn_national_cheatsheet.configure(bg=BG_CARD, fg=TEXT_SECONDARY)
             self.national_layout_frame.pack_forget()
             self.avro_layout_frame.pack(fill=tk.BOTH, expand=True)
         else:
-            self.btn_national_cheatsheet.configure(bg=ACCENT, fg=TEXT_WHITE)
+            self.btn_national_cheatsheet.configure(bg=ACCENT_COLOR, fg=TEXT_PRIMARY)
             self.btn_avro_cheatsheet.configure(bg=BG_CARD, fg=TEXT_SECONDARY)
             self.avro_layout_frame.pack_forget()
             self.national_layout_frame.pack(fill=tk.BOTH, expand=True)
