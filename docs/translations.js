@@ -5,7 +5,7 @@
 window.BONGO_TRANSLATIONS = {
     en: {
         // Meta
-        "page.title": "Bongo Keyboard (বঙ্গ) · Modern Avro Keyboard Alternative for Mac, Windows, Linux & Android",
+        "page.title": "Bongo Keyboard (বঙ্গ) · Modern Avro Keyboard Alternative",
 
         // Nav
         "nav.features": "Features",
@@ -254,7 +254,7 @@ window.BONGO_TRANSLATIONS = {
 
     bn: {
         // Meta
-        "page.title": "বঙ্গ কিবোর্ড · Bongo Keyboard: ম্যাক, উইন্ডোজ, লিনাক্স ও অ্যান্ড্রয়েডের জন্য আধুনিক অভ্র কিবোর্ড অল্টারনেটিভ",
+        "page.title": "বঙ্গ কিবোর্ড (Bongo) · আধুনিক অভ্র কিবোর্ড অল্টারনেটিভ",
 
         // Nav
         "nav.features": "বৈশিষ্ট্যসমূহ",
