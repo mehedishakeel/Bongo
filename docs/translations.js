@@ -46,7 +46,7 @@ window.BONGO_TRANSLATIONS = {
         // Hero
         "hero.tag_desktop": "Native for macOS, Windows, Linux & Android",
         "hero.tag_mobile": "macOS, Windows, Linux & Android Native",
-        "hero.title": "Bongo Keyboard · A New Era of Bangla Avro Typing",
+        "hero.title": "<span class=\"hero-headline-brand\">Bongo Keyboard</span><span class=\"hero-headline-sub\">A New Era of Bangla Avro Typing</span>",
         "hero.subtitle": "The modern Avro Keyboard alternative for Mac, Windows, Linux, and Android by Mehedi Shakeel. Type naturally in Bengali using familiar Avro phonetic rules with pure Rust speed, zero lag, and 100% offline privacy.",
         "hero.cta_main": "Download for macOS",
         "hero.cta_sub": "Free · macOS 13+ · Apple Silicon & Intel",
@@ -295,7 +295,7 @@ window.BONGO_TRANSLATIONS = {
         // Hero
         "hero.tag_desktop": "ম্যাকওএস, উইন্ডোজ, লিনাক্স ও অ্যান্ড্রয়েড নেটিভ",
         "hero.tag_mobile": "ম্যাকওএস, উইন্ডোজ, লিনাক্স ও অ্যান্ড্রয়েড নেটিভ",
-        "hero.title": "বঙ্গ কিবোর্ড · বাংলা অভ্র টাইপিংয়ের নতুন যুগ।",
+        "hero.title": "<span class=\"hero-headline-brand\">বঙ্গ কিবোর্ড</span><span class=\"hero-headline-sub\">বাংলা অভ্র টাইপিংয়ের নতুন যুগ</span>",
         "hero.subtitle": "মেহেদী শাকিলের তৈরি ম্যাক, উইন্ডোজ, লিনাক্স এবং অ্যান্ড্রয়েডের জন্য আধুনিক অভ্র কিবোর্ড অল্টারনেটিভ। পরিচিত অভ্র ফোনেটিক নিয়মে স্বাচ্ছন্দ্যে বাংলা লিখুন বিশুদ্ধ রাস্ট ইঞ্জিনের তাৎক্ষণিক গতি ও ১০০% অফলাইন সুরক্ষায়।",
         "hero.cta_main": "ম্যাকের জন্য ডাউনলোড করুন",
         "hero.cta_sub": "সম্পূর্ণ ফ্রি · macOS 13+ · অ্যাপল সিলিকন ও ইন্টেল",
