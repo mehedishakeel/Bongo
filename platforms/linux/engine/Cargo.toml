@@ -11,3 +11,11 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 
 [dependencies]
 riti = { path = "../../../vendor/rust/riti" }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+

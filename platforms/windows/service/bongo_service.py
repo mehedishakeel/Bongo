@@ -14,6 +14,7 @@ import json
 import re
 import ctypes
 from ctypes import wintypes
+from functools import lru_cache
 from pathlib import Path
 
 # Add platforms/common to path for linguistic converter module
@@ -229,6 +230,7 @@ class AvroPhoneticEngine:
         self.patterns = AVRO_PATTERNS_DATA
         self.dictionary = AVRO_DICTIONARY_DATA
 
+    @lru_cache(maxsize=4096)
     def convert_word(self, raw: str) -> str:
         if not raw:
             return ''
@@ -256,15 +258,16 @@ class AvroPhoneticEngine:
                 i += 1
         return out
 
-    def get_candidates(self, word: str) -> list:
+    @lru_cache(maxsize=4096)
+    def _get_candidates_cached(self, word: str) -> tuple:
         cleaned = (word or '').strip()
         if not cleaned:
-            return []
+            return ()
 
         # 1. OmicronLab Punctuation Padding Isolator
         punct_prefix, stem, punct_suffix = separate_padding(cleaned)
         if not stem:
-            return [cleaned]
+            return (cleaned,)
 
         # 2. Case Normalizer
         cased_stem = fix_string_case(stem)
@@ -301,7 +304,10 @@ class AvroPhoneticEngine:
         add(stem)
 
         # Re-attach isolated punctuation padding
-        return [f"{punct_prefix}{c}{punct_suffix}" for c in cands[:5]]
+        return tuple(f"{punct_prefix}{c}{punct_suffix}" for c in cands[:5])
+
+    def get_candidates(self, word: str) -> list:
+        return list(self._get_candidates_cached(word))
 
 BENGALI_DIGITS = {
     "0": "০", "1": "১", "2": "২", "3": "৩", "4": "৪",

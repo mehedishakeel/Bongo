@@ -33,6 +33,9 @@ jobs:
           rustup target add aarch64-apple-darwin
           rustup target add x86_64-apple-darwin
 
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
       - name: Build macOS DMGs (Apple Silicon, Intel, Universal)
         run: |
           ./platforms/macos/scripts/create-dmg.sh all
@@ -75,6 +78,9 @@ jobs:
 
       - name: Install Rust toolchain
         run: rustup default stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
 
       - name: Install IBus, Fcitx5 & Packaging Dependencies
         run: |
@@ -135,6 +141,9 @@ jobs:
       - name: Install Rust toolchain
         run: rustup default stable
 
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
       - name: Setup Packaging Tools
         shell: pwsh
         run: |
@@ -167,6 +176,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
 
       - name: Build Android APK
         run: |

@@ -287,6 +287,12 @@ kbd {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
+.nav-brand picture,
+.graphic-chip picture,
+.footer-logo picture {
+    display: contents;
+}
+
 .brand-bn {
     font-family: var(--font-bn);
     font-weight: 600;
@@ -2023,6 +2029,10 @@ kbd {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.mac-preview-frame picture {
+    display: contents;
 }
 
 .preview-img {
