@@ -100,7 +100,7 @@ jobs:
             pacman -Syu --noconfirm --needed python python-gobject gtk4 fcitx5 ca-certificates
           fi
       - name: Download Linux tarball
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: bongo-linux-tarball
           path: /tmp/bongo-tarball
