@@ -46,6 +46,8 @@ class BongoKeyboardView @JvmOverloads constructor(
     private val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
     private val repeatHandler = Handler(Looper.getMainLooper())
+    private val popupDismissHandler = Handler(Looper.getMainLooper())
+    private val spaceDismissHandler = Handler(Looper.getMainLooper())
 
     var isShifted = false
         private set
@@ -65,7 +67,17 @@ class BongoKeyboardView @JvmOverloads constructor(
 
     var onKeyClickListener: ((KeyAction) -> Unit)? = null
 
+    // View recycling and in-place reference caching for zero-latency updates
+    private val letterKeyViews = mutableMapOf<String, TextView>()
+    private val letterKeyHintViews = mutableMapOf<String, TextView>()
+    private var shiftKeyView: TextView? = null
+    private var spaceKeyView: TextView? = null
+    private var periodKeyView: TextView? = null
+    private var commaKeyView: TextView? = null
+    private var actionKeyView: TextView? = null
+
     // Key Popup Magnifier
+    private var activePopupAnchor: View? = null
     private val popupTextView = TextView(context).apply {
         gravity = Gravity.CENTER
         setTextSize(TypedValue.COMPLEX_UNIT_SP, 26f)
@@ -77,6 +89,13 @@ class BongoKeyboardView @JvmOverloads constructor(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             elevation = dp(8).toFloat()
         }
+    }
+    private val popupDismissRunnable = Runnable {
+        try {
+            if (popupWindow.isShowing) {
+                popupWindow.dismiss()
+            }
+        } catch (_: Exception) {}
     }
 
     // Spacebar Floating Popup Preview Card
@@ -92,6 +111,13 @@ class BongoKeyboardView @JvmOverloads constructor(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             elevation = dp(8).toFloat()
         }
+    }
+    private val spaceDismissRunnable = Runnable {
+        try {
+            if (spacePopupWindow.isShowing) {
+                spacePopupWindow.dismiss()
+            }
+        } catch (_: Exception) {}
     }
 
     sealed class KeyAction {
@@ -146,14 +172,53 @@ class BongoKeyboardView @JvmOverloads constructor(
     fun setBanglaMode(active: Boolean) {
         if (isBangla != active) {
             isBangla = active
+            if (!isSymbols && !isOptionsVisible && spaceKeyView != null) {
+                updateLanguageViews()
+            } else {
+                buildKeyboard()
+            }
+        }
+    }
+
+    private fun updateLanguageViews() {
+        if (isSymbols) {
             buildKeyboard()
+            return
+        }
+        spaceKeyView?.text = if (isBangla) "◀   Bongo   ▶" else "◀   English   ▶"
+        periodKeyView?.text = if (isBangla) "।" else "."
+
+        if (!userPrefs.showNumberRow && userPrefs.longPressSymbols) {
+            val numHints = if (userPrefs.bengaliDigits && isBangla) ROW1_HINTS_BN else ROW1_HINTS_EN
+            for ((key, hintTv) in letterKeyHintViews) {
+                if (key.length == 1) {
+                    val hint = numHints[key[0]]
+                    if (hint != null) {
+                        hintTv.text = hint.toString()
+                    }
+                }
+            }
         }
     }
 
     fun setShift(shifted: Boolean) {
         if (isShifted != shifted) {
             isShifted = shifted
-            buildKeyboard()
+            if (!isSymbols && !isOptionsVisible && letterKeyViews.isNotEmpty()) {
+                updateShiftViews()
+            } else {
+                buildKeyboard()
+            }
+        }
+    }
+
+    private fun updateShiftViews() {
+        for ((key, tv) in letterKeyViews) {
+            tv.text = if (isShifted) key.uppercase() else key.lowercase()
+        }
+        shiftKeyView?.apply {
+            text = if (isShifted) "⇪" else "⇧"
+            setTextColor(if (isShifted) palette.stripPrimaryBorder else palette.keyTextColor)
         }
     }
 
@@ -162,10 +227,16 @@ class BongoKeyboardView @JvmOverloads constructor(
     }
 
     fun setActionInfo(label: String, isUri: Boolean) {
-        if (actionLabel != label || isUriInput != isUri) {
+        val changed = actionLabel != label || isUriInput != isUri
+        if (changed) {
             actionLabel = label
             isUriInput = isUri
-            buildKeyboard()
+            if (!isSymbols && !isOptionsVisible && actionKeyView != null) {
+                actionKeyView?.text = if (label == "Search") "🔍" else label
+                commaKeyView?.text = if (isUri) "/" else ","
+            } else {
+                buildKeyboard()
+            }
         }
     }
 
@@ -173,10 +244,10 @@ class BongoKeyboardView @JvmOverloads constructor(
         if (userPrefs.hapticFeedback) {
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    vibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
+                    vibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
                 } else {
                     @Suppress("DEPRECATION")
-                    vibrator?.vibrate(18)
+                    vibrator?.vibrate(8)
                 }
             } catch (_: Exception) {}
         }
@@ -193,6 +264,8 @@ class BongoKeyboardView @JvmOverloads constructor(
     private fun showKeyPopup(anchor: View, text: String) {
         if (!userPrefs.keyPopupPreview || !anchor.isAttachedToWindow || anchor.windowToken == null) return
         try {
+            popupDismissHandler.removeCallbacks(popupDismissRunnable)
+            activePopupAnchor = anchor
             popupTextView.text = text
             popupTextView.setTextColor(palette.keyTextColor)
             popupTextView.background = GradientDrawable().apply {
@@ -214,10 +287,12 @@ class BongoKeyboardView @JvmOverloads constructor(
         } catch (_: Exception) {}
     }
 
-    private fun hideKeyPopup() {
+    private fun hideKeyPopup(anchor: View? = null) {
         try {
-            if (popupWindow.isShowing) {
-                popupWindow.dismiss()
+            if (anchor == null || activePopupAnchor == anchor) {
+                activePopupAnchor = null
+                popupDismissHandler.removeCallbacks(popupDismissRunnable)
+                popupDismissHandler.postDelayed(popupDismissRunnable, 60L)
             }
         } catch (_: Exception) {}
     }
@@ -225,6 +300,7 @@ class BongoKeyboardView @JvmOverloads constructor(
     private fun showSpacePopup(anchor: View, text: String) {
         if (!anchor.isAttachedToWindow || anchor.windowToken == null) return
         try {
+            spaceDismissHandler.removeCallbacks(spaceDismissRunnable)
             spacePopupTextView.text = text
             spacePopupTextView.background = GradientDrawable().apply {
                 cornerRadius = dp(8).toFloat()
@@ -247,9 +323,8 @@ class BongoKeyboardView @JvmOverloads constructor(
 
     private fun hideSpacePopup() {
         try {
-            if (spacePopupWindow.isShowing) {
-                spacePopupWindow.dismiss()
-            }
+            spaceDismissHandler.removeCallbacks(spaceDismissRunnable)
+            spaceDismissHandler.postDelayed(spaceDismissRunnable, 60L)
         } catch (_: Exception) {}
     }
 
@@ -369,8 +444,24 @@ class BongoKeyboardView @JvmOverloads constructor(
     }
 
     fun buildKeyboard() {
-        hideKeyPopup()
-        hideSpacePopup()
+        popupDismissHandler.removeCallbacks(popupDismissRunnable)
+        spaceDismissHandler.removeCallbacks(spaceDismissRunnable)
+        if (popupWindow.isShowing) {
+            popupWindow.dismiss()
+        }
+        if (spacePopupWindow.isShowing) {
+            spacePopupWindow.dismiss()
+        }
+        activePopupAnchor = null
+
+        letterKeyViews.clear()
+        letterKeyHintViews.clear()
+        shiftKeyView = null
+        spaceKeyView = null
+        periodKeyView = null
+        commaKeyView = null
+        actionKeyView = null
+
         removeAllViews()
 
         if (isOptionsVisible) {
@@ -568,6 +659,20 @@ class BongoKeyboardView @JvmOverloads constructor(
         }
         container.addView(tv)
 
+        // Cache view references for instant zero-allocation updates
+        if (!isNumberRow && !isSymbols) {
+            if (key.length == 1 && key[0] in 'a'..'z') {
+                letterKeyViews[key] = tv
+            }
+            when (key) {
+                "SHIFT" -> shiftKeyView = tv
+                "SPACE" -> spaceKeyView = tv
+                ".", "।" -> periodKeyView = tv
+                ",", "/" -> commaKeyView = tv
+                "ACTION", "RETURN" -> actionKeyView = tv
+            }
+        }
+
         // Show superscript symbol hint on keys
         val hintChar = getHintForKey(key, isNumberRow)
         if (hintChar != null) {
@@ -582,6 +687,9 @@ class BongoKeyboardView @JvmOverloads constructor(
                     FrameLayout.LayoutParams.WRAP_CONTENT,
                     Gravity.TOP or Gravity.END
                 )
+            }
+            if (!isNumberRow && !isSymbols && key.length == 1 && key[0] in 'a'..'z') {
+                letterKeyHintViews[key] = hintTv
             }
             container.addView(hintTv)
         }
@@ -630,12 +738,14 @@ class BongoKeyboardView @JvmOverloads constructor(
 
         view.setOnTouchListener { v, event ->
             try {
-                when (event.action) {
+                when (event.actionMasked) {
                     MotionEvent.ACTION_DOWN -> {
                         startX = event.x
                         hasSwiped = false
                         isLongPressed = false
                         v.isPressed = true
+                        performHaptic()
+                        playKeySound()
                         showSpacePopup(v, if (isBangla) "Bongo" else "English")
                         longPressHandler.postDelayed(longPressRunnable, 450L)
                         true
@@ -651,7 +761,7 @@ class BongoKeyboardView @JvmOverloads constructor(
                             performHaptic()
                             playKeySound()
                             val newLabel = if (isBangla) "Bongo" else "English"
-                            buildKeyboard()
+                            updateLanguageViews()
                             showSpacePopup(v, newLabel)
                             onKeyClickListener?.invoke(KeyAction.ToggleLanguage)
                         }
@@ -662,8 +772,6 @@ class BongoKeyboardView @JvmOverloads constructor(
                         v.isPressed = false
                         hideSpacePopup()
                         if (!hasSwiped && !isLongPressed) {
-                            performHaptic()
-                            playKeySound()
                             onKeyClickListener?.invoke(KeyAction.Space)
                         }
                         hasSwiped = false
@@ -694,48 +802,78 @@ class BongoKeyboardView @JvmOverloads constructor(
         isNumberRow: Boolean
     ) {
         val isLetterOrNum = !isSpecialKey(key) && key.length == 1
+        var hasLongPressed = false
+        var isInsideKey = false
+        val longPressHandler = Handler(Looper.getMainLooper())
 
-        container.setOnTouchListener { v, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    if (isLetterOrNum) {
-                        showKeyPopup(v, displayLabel)
+        val longPressRunnable = Runnable {
+            if (isInsideKey && !hasLongPressed) {
+                hasLongPressed = true
+                container.isPressed = false
+                hideKeyPopup(container)
+                performHaptic()
+                playKeySound()
+                when {
+                    hintChar != null -> {
+                        onKeyClickListener?.invoke(KeyAction.CharacterKey(hintChar))
                     }
-                    false
+                    key == "," -> {
+                        onKeyClickListener?.invoke(KeyAction.OpenSettings)
+                    }
+                    key == "." || key == "।" -> {
+                        onKeyClickListener?.invoke(KeyAction.CharacterKey('?'))
+                    }
+                    key == "ACTION" || key == "RETURN" -> {
+                        onKeyClickListener?.invoke(KeyAction.OpenSettings)
+                    }
                 }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    hideKeyPopup()
-                    false
-                }
-                else -> false
             }
         }
 
-        container.setOnClickListener {
-            performHaptic()
-            playKeySound()
-            handleKeyClick(key)
-        }
-
-        container.setOnLongClickListener {
-            hideKeyPopup()
-            performHaptic()
-            playKeySound()
-            when {
-                hintChar != null -> {
-                    onKeyClickListener?.invoke(KeyAction.CharacterKey(hintChar))
+        container.setOnTouchListener { v, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    hasLongPressed = false
+                    isInsideKey = true
+                    v.isPressed = true
+                    performHaptic()
+                    playKeySound()
+                    if (isLetterOrNum) {
+                        val currentLabel = if (isShifted) key.uppercase() else key
+                        showKeyPopup(v, currentLabel)
+                    }
+                    longPressHandler.postDelayed(longPressRunnable, 380L)
                     true
                 }
-                key == "," -> {
-                    onKeyClickListener?.invoke(KeyAction.OpenSettings)
+                MotionEvent.ACTION_MOVE -> {
+                    val slop = dp(14)
+                    if (event.x < -slop || event.x > v.width + slop || event.y < -slop || event.y > v.height + slop) {
+                        if (isInsideKey) {
+                            isInsideKey = false
+                            v.isPressed = false
+                            longPressHandler.removeCallbacks(longPressRunnable)
+                            hideKeyPopup(v)
+                        }
+                    }
                     true
                 }
-                key == "." || key == "।" -> {
-                    onKeyClickListener?.invoke(KeyAction.CharacterKey('?'))
+                MotionEvent.ACTION_UP -> {
+                    longPressHandler.removeCallbacks(longPressRunnable)
+                    v.isPressed = false
+                    hideKeyPopup(v)
+                    if (isInsideKey && !hasLongPressed) {
+                        handleKeyClick(key)
+                    }
+                    isInsideKey = false
+                    hasLongPressed = false
                     true
                 }
-                key == "ACTION" || key == "RETURN" -> {
-                    onKeyClickListener?.invoke(KeyAction.OpenSettings)
+                MotionEvent.ACTION_CANCEL -> {
+                    longPressHandler.removeCallbacks(longPressRunnable)
+                    v.isPressed = false
+                    hideKeyPopup(v)
+                    isInsideKey = false
+                    hasLongPressed = false
                     true
                 }
                 else -> false
@@ -763,9 +901,10 @@ class BongoKeyboardView @JvmOverloads constructor(
             }
         }
 
-        view.setOnTouchListener { _, event ->
-            when (event.action) {
+        view.setOnTouchListener { v, event ->
+            when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
+                    v.isPressed = true
                     startX = event.x
                     isSwipingWord = false
                     wordsDeletedCount = 0
@@ -799,6 +938,7 @@ class BongoKeyboardView @JvmOverloads constructor(
                     true
                 }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    v.isPressed = false
                     isRepeating = false
                     repeatHandler.removeCallbacks(repeatRunnable)
                     true
@@ -889,7 +1029,11 @@ class BongoKeyboardView @JvmOverloads constructor(
                 onKeyClickListener?.invoke(KeyAction.ToggleSymbols)
             }
             else -> {
-                val ch = if (isShifted) key.uppercase().first() else key.first()
+                val ch = when (key) {
+                    ".", "।" -> if (isBangla) '।' else '.'
+                    ",", "/" -> if (isUriInput) '/' else ','
+                    else -> if (isShifted) key.uppercase().first() else key.first()
+                }
                 onKeyClickListener?.invoke(KeyAction.CharacterKey(ch))
                 if (isShifted) {
                     setShift(false)
@@ -899,8 +1043,14 @@ class BongoKeyboardView @JvmOverloads constructor(
     }
 
     override fun onDetachedFromWindow() {
-        hideKeyPopup()
-        hideSpacePopup()
+        popupDismissHandler.removeCallbacksAndMessages(null)
+        spaceDismissHandler.removeCallbacksAndMessages(null)
+        if (popupWindow.isShowing) {
+            popupWindow.dismiss()
+        }
+        if (spacePopupWindow.isShowing) {
+            spacePopupWindow.dismiss()
+        }
         repeatHandler.removeCallbacksAndMessages(null)
         super.onDetachedFromWindow()
     }

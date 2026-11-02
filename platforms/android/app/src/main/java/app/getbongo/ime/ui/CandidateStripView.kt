@@ -54,6 +54,7 @@ class CandidateStripView @JvmOverloads constructor(
     private var palette: ThemePalette = ThemePalette.getPalette("midnight")
     private var isCtrlActive = false
     private var ctrlTextView: TextView? = null
+    private var isShowingCandidates = false
 
     init {
         isHorizontalScrollBarEnabled = false
@@ -83,39 +84,57 @@ class CandidateStripView @JvmOverloads constructor(
             return
         }
 
-        container.removeAllViews()
-        ctrlTextView = null
+        if (!isShowingCandidates) {
+            container.removeAllViews()
+            ctrlTextView = null
+            voicePromptView = null
+            isShowingCandidates = true
+        }
 
         candidates.forEachIndexed { index, candidate ->
-            val tv = TextView(context).apply {
-                text = candidate
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, if (index == 0) 17f else 15f)
-                typeface = if (index == 0) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
-                setTextColor(if (index == 0) palette.stripPrimaryText else palette.stripSecondaryText)
-                setPadding(dp(14), dp(6), dp(14), dp(6))
-                gravity = Gravity.CENTER
-                isClickable = true
-                isFocusable = true
-                background = createCandidateBackground(index == 0)
-
-                val lp = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    setMargins(dp(3), 0, dp(3), 0)
-                }
-                layoutParams = lp
-
-                setOnClickListener {
-                    onCandidateSelected?.invoke(index, candidate)
+            val isPrimary = index == 0
+            val tv: TextView = if (index < container.childCount) {
+                container.getChildAt(index) as TextView
+            } else {
+                TextView(context).apply {
+                    setPadding(dp(14), dp(6), dp(14), dp(6))
+                    gravity = Gravity.CENTER
+                    isClickable = true
+                    isFocusable = true
+                    val lp = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        setMargins(dp(3), 0, dp(3), 0)
+                    }
+                    layoutParams = lp
+                    container.addView(this)
                 }
             }
-            container.addView(tv)
+
+            tv.visibility = View.VISIBLE
+            tv.text = candidate
+            tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (isPrimary) 17f else 15f)
+            tv.typeface = if (isPrimary) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+            tv.setTextColor(if (isPrimary) palette.stripPrimaryText else palette.stripSecondaryText)
+            tv.background = createCandidateBackground(isPrimary)
+            tv.setOnClickListener {
+                onCandidateSelected?.invoke(index, candidate)
+            }
         }
-        smoothScrollTo(0, 0)
+
+        // Hide excess views from previous longer candidates list
+        if (container.childCount > candidates.size) {
+            for (i in candidates.size until container.childCount) {
+                container.getChildAt(i).visibility = View.GONE
+            }
+        }
+
+        scrollTo(0, 0)
     }
 
     fun showClipboardPreview(clipText: String, onPaste: (String) -> Unit) {
+        isShowingCandidates = false
         container.removeAllViews()
         ctrlTextView = null
 
@@ -161,6 +180,7 @@ class CandidateStripView @JvmOverloads constructor(
     private var voicePromptView: TextView? = null
 
     fun showVoiceListening(prompt: String = "Speak now...", onStop: () -> Unit) {
+        isShowingCandidates = false
         container.removeAllViews()
         ctrlTextView = null
 
@@ -209,6 +229,7 @@ class CandidateStripView @JvmOverloads constructor(
     }
 
     fun showShortcuts() {
+        isShowingCandidates = false
         container.removeAllViews()
         ctrlTextView = null
         voicePromptView = null
