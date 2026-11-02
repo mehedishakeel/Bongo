@@ -137,6 +137,17 @@ class DistributionTests(unittest.TestCase):
             if not isinstance(e, ImportError) and 'no display name' not in str(e).lower() and 'cannot connect to x server' not in str(e).lower():
                 self.assertNotIsInstance(e, NameError)
 
+    def test_borno_layout_configuration(self):
+        """Verify Borno / SafeWorks layout data file and multi-layout support."""
+        borno_json_path = ROOT / 'vendor/rust/riti/data/Borno.json'
+        self.assertTrue(borno_json_path.is_file(), 'vendor/rust/riti/data/Borno.json must exist')
+        with open(borno_json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        self.assertIn('layout', data)
+        self.assertEqual(data['layout']['Key_k_Normal'], 'ক')
+        self.assertEqual(data['layout']['Key_K_Normal'], 'খ')
+        self.assertEqual(data['layout']['Key_h_Normal'], '্')
+
     def test_platform_architecture_integrity(self):
         # Ensure supported platform directories exist and legacy platforms remain clean
         self.assertTrue((ROOT / 'platforms/macos').is_dir(), 'macOS platform directory must exist')

@@ -24,6 +24,7 @@ pub enum TypingMode {
 pub enum KeyboardLayout {
     AvroPhonetic = 0,
     National = 1,
+    Borno = 2,
 }
 
 pub struct BongoWindowsEngine {
@@ -171,13 +172,14 @@ pub extern "C" fn bongo_engine_free(engine: *mut BongoWindowsEngine) {
     }
 }
 
-/// Sets the active keyboard layout: 0 = Avro Phonetic, 1 = National (Bijoy).
+/// Sets the active keyboard layout: 0 = Avro Phonetic, 1 = National (Bijoy), 2 = Borno (SafeWorks).
 #[no_mangle]
 pub extern "C" fn bongo_engine_set_layout(engine: *mut BongoWindowsEngine, layout: u32) {
     if engine.is_null() { return; }
     let eng = unsafe { &mut *engine };
     let new_layout = match layout {
         1 => KeyboardLayout::National,
+        2 => KeyboardLayout::Borno,
         _ => KeyboardLayout::AvroPhonetic,
     };
     if eng.layout == new_layout {
@@ -189,6 +191,16 @@ pub extern "C" fn bongo_engine_set_layout(engine: *mut BongoWindowsEngine, layou
     match eng.layout {
         KeyboardLayout::National => {
             config.set_layout_file_path("national");
+            config.set_fixed_automatic_vowel(true);
+            config.set_fixed_old_kar_order(true);
+            config.set_fixed_traditional_kar(true);
+            config.set_fixed_old_reph(true);
+            config.set_fixed_automatic_chandra(true);
+            config.set_fixed_numpad(true);
+            config.set_fixed_suggestion(false);
+        }
+        KeyboardLayout::Borno => {
+            config.set_layout_file_path("borno");
             config.set_fixed_automatic_vowel(true);
             config.set_fixed_old_kar_order(true);
             config.set_fixed_traditional_kar(true);

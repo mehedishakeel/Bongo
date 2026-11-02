@@ -24,6 +24,7 @@ pub enum TypingMode {
 pub enum KeyboardLayout {
     AvroPhonetic = 0,
     National = 1,
+    Borno = 2,
 }
 
 pub struct BongoLinuxEngine {
@@ -50,6 +51,16 @@ fn configs_for(mode: TypingMode, layout: KeyboardLayout, show_emoji: bool) -> (C
             main_config.set_fixed_numpad(true);
             main_config.set_fixed_suggestion(false);
         }
+        KeyboardLayout::Borno => {
+            main_config.set_layout_file_path("borno");
+            main_config.set_fixed_automatic_vowel(true);
+            main_config.set_fixed_old_kar_order(true);
+            main_config.set_fixed_traditional_kar(true);
+            main_config.set_fixed_old_reph(true);
+            main_config.set_fixed_automatic_chandra(true);
+            main_config.set_fixed_numpad(true);
+            main_config.set_fixed_suggestion(false);
+        }
         KeyboardLayout::AvroPhonetic => {
             main_config.set_layout_file_path("avro_phonetic");
             main_config.set_phonetic_suggestion(mode != TypingMode::PhoneticOnly);
@@ -61,6 +72,16 @@ fn configs_for(mode: TypingMode, layout: KeyboardLayout, show_emoji: bool) -> (C
     match layout {
         KeyboardLayout::National => {
             shadow_config.set_layout_file_path("national");
+            shadow_config.set_fixed_automatic_vowel(true);
+            shadow_config.set_fixed_old_kar_order(true);
+            shadow_config.set_fixed_traditional_kar(true);
+            shadow_config.set_fixed_old_reph(true);
+            shadow_config.set_fixed_automatic_chandra(true);
+            shadow_config.set_fixed_numpad(true);
+            shadow_config.set_fixed_suggestion(false);
+        }
+        KeyboardLayout::Borno => {
+            shadow_config.set_layout_file_path("borno");
             shadow_config.set_fixed_automatic_vowel(true);
             shadow_config.set_fixed_old_kar_order(true);
             shadow_config.set_fixed_traditional_kar(true);
@@ -215,13 +236,14 @@ pub extern "C" fn bongo_engine_free(engine: *mut BongoLinuxEngine) {
     }
 }
 
-/// Sets the active keyboard layout: 0 = Avro Phonetic, 1 = National (Bijoy).
+/// Sets the active keyboard layout: 0 = Avro Phonetic, 1 = National (Bijoy), 2 = Borno (SafeWorks).
 #[no_mangle]
 pub extern "C" fn bongo_engine_set_layout(engine: *mut BongoLinuxEngine, layout: u32) {
     if engine.is_null() { return; }
     let eng = unsafe { &mut *engine };
     let new_layout = match layout {
         1 => KeyboardLayout::National,
+        2 => KeyboardLayout::Borno,
         _ => KeyboardLayout::AvroPhonetic,
     };
     if eng.layout == new_layout {

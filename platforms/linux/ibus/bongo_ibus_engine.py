@@ -266,7 +266,7 @@ def load_settings():
     config_dir = Path.home() / ".config" / "bongo"
     config_file = config_dir / "settings.json"
     defaults = {
-        "keyboard_layout": 0,   # 0: Avro Phonetic, 1: National (Bijoy)
+        "keyboard_layout": 0,   # 0: Avro Phonetic, 1: National (Bijoy), 2: Borno (SafeWorks)
         "typing_mode": 0,       # 0: PhoneticFirst, 1: Smart, 2: PhoneticOnly
         "suggest_emoji": True,
         "candidate_font": "Noto Sans Bengali",

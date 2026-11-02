@@ -104,7 +104,7 @@ Settings parseSettings(std::string_view text) {
         const auto *begin = value.data();
         const auto *end = begin + value.size();
         const auto result = std::from_chars(begin, end, layout);
-        if (result.ec == std::errc() && layout >= 0 && layout <= 1) {
+        if (result.ec == std::errc() && layout >= 0 && layout <= 2) {
             settings.keyboardLayout = layout;
         }
     }

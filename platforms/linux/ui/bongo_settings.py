@@ -47,7 +47,7 @@ CONFIG_DIR = Path.home() / ".config" / "bongo"
 CONFIG_FILE = CONFIG_DIR / "settings.json"
 
 DEFAULT_SETTINGS = {
-    "keyboard_layout": 0,     # 0: Avro Phonetic, 1: National (Bijoy)
+    "keyboard_layout": 0,     # 0: Avro Phonetic, 1: National (Bijoy), 2: Borno (SafeWorks)
     "typing_mode": 0,         # 0: PhoneticFirst, 1: Smart, 2: PhoneticOnly
     "suggest_emoji": True,
     "candidate_font": "Noto Sans Bengali",
@@ -1005,7 +1005,9 @@ class BongoSettingsApp:
             (0, "Avro Phonetic",
              "Modern phonetic input: type as you speak in English letters (e.g. ami -> আমি, bangla -> বাংলা).", True),
             (1, "National / Bijoy (জাতীয়)",
-             "Standard Bangladesh BDS 1738:2004 layout: fixed keymap (e.g. j -> ক, d+j -> কি, g -> ্).", False)
+             "Standard Bangladesh BDS 1738:2004 layout: fixed keymap (e.g. j -> ক, d+j -> কি, g -> ্).", False),
+            (2, "Borno (বর্ণ)",
+             "SafeWorks Bornona layout: intuitive fixed keymap (e.g. k -> ক, K -> খ, h -> ্).", False)
         ]
 
         current_layout = self.settings.get("keyboard_layout", 0)

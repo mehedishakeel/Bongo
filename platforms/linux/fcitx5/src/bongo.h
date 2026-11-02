@@ -18,12 +18,12 @@
 namespace bongo {
 
 enum class BongoTypingMode { PhoneticFirst, Smart, PhoneticOnly };
-enum class BongoKeyboardLayout { AvroPhonetic, National };
+enum class BongoKeyboardLayout { AvroPhonetic, National, Borno };
 
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(BongoTypingMode, N_("Phonetic First"),
                                  N_("Smart"), N_("Phonetic Only"));
 FCITX_CONFIG_ENUM_NAME_WITH_I18N(BongoKeyboardLayout, N_("Avro Phonetic"),
-                                 N_("National (Bijoy)"));
+                                 N_("National (Bijoy)"), N_("Borno (SafeWorks)"));
 
 FCITX_CONFIGURATION(
     BongoAddonConfig,

@@ -100,7 +100,7 @@ def log_msg(msg: str):
         pass
 
 DEFAULT_SETTINGS = {
-    "keyboard_layout": 0,     # 0: Avro Phonetic, 1: National (Bijoy)
+    "keyboard_layout": 0,     # 0: Avro Phonetic, 1: National (Bijoy), 2: Borno (SafeWorks)
     "typing_mode": 0,         # 0: PhoneticFirst, 1: Smart, 2: PhoneticOnly
     "suggest_emoji": True,
     "candidate_font": "Noto Sans Bengali",

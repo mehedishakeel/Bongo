@@ -33,7 +33,7 @@ impl Config {
     ///
     /// Returns `true` if the layout file path or name is valid.
     pub fn set_layout_file_path(&mut self, layout: &str) -> bool {
-        if layout == "avro_phonetic" || layout == "national" || layout == "bijoy" || Path::new(layout).exists() {
+        if layout == "avro_phonetic" || layout == "national" || layout == "bijoy" || layout == "borno" || layout == "bornona" || Path::new(layout).exists() {
             self.layout = layout.into();
             true
         } else {
@@ -196,6 +196,9 @@ impl Config {
         } else if self.get_layout_file_path() == "national" || self.get_layout_file_path() == "bijoy" {
             let s = include_str!("../data/National.json");
             serde_json::from_str::<Value>(s).ok().map(|v| v["layout"].to_owned())
+        } else if self.get_layout_file_path() == "borno" || self.get_layout_file_path() == "bornona" {
+            let s = include_str!("../data/Borno.json");
+            serde_json::from_str::<Value>(s).ok().map(|v| v["layout"].to_owned())
         } else {
             read_to_string(self.get_layout_file_path())
                 .ok()
@@ -342,6 +345,8 @@ mod tests {
 
         assert!(!config.set_layout_file_path("non_existent"));
         assert!(config.set_layout_file_path("avro_phonetic"));
+        assert!(config.set_layout_file_path("national"));
+        assert!(config.set_layout_file_path("borno"));
 
         assert!(!config.set_layout_file_path("/non_existent/Probhat.json"));
         assert!(config.set_layout_file_path(&format!(

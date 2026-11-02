@@ -39,6 +39,8 @@ int main() {
                    false, "emoji only");
     expectSettings(bongo::parseSettings(R"({"keyboard_layout": 1})"), 0, true,
                    "layout only", 1);
+    expectSettings(bongo::parseSettings(R"({"keyboard_layout": 2})"), 0, true,
+                   "borno layout", 2);
     expectSettings(bongo::parseSettings(R"({"keyboard_layout": 5})"), 0, true,
                    "out of range layout", 0);
     expectSettings(bongo::parseSettings(R"({"typing_mode": 9})"), 0, true,

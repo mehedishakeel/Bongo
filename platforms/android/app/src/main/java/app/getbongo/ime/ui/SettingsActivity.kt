@@ -188,7 +188,7 @@ class SettingsActivity : Activity() {
             setPadding(dp(16), 0, dp(16), dp(16))
         }
 
-        val layoutOptions = listOf("Avro Phonetic" to 0, "National / Bijoy" to 1)
+        val layoutOptions = listOf("Avro Phonetic" to 0, "National / Bijoy" to 1, "Borno" to 2)
         val layoutButtons = mutableListOf<Button>()
 
         layoutOptions.forEach { (name, id) ->
