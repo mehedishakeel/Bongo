@@ -41,6 +41,7 @@ private:
     void updateSettingsIfChanged();
     void applySettings();
     bool hasSession() const;
+    bool hasVisibleComposition() const;
     int selectedIndex() const;
     void moveCandidate(bool next);
 

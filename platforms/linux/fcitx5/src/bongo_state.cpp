@@ -128,8 +128,26 @@ bool BongoState::feedChar(uint32_t codepoint, bool shift) {
         return false;
     }
 
+    const size_t reported = api_.suggestionCount(suggestion.get());
     updateSuggestions(std::move(suggestion));
-    return hasSession() || !candidates_.empty();
+
+    if (hasVisibleComposition()) {
+        return true;
+    }
+
+    // The engine answered but there is nothing to show. A suggestion that
+    // carried no text at all (for example a lone grave accent in the Avro
+    // layout) is not a composition: drop it and let the key reach the
+    // application instead of leaving a stale session that swallows later
+    // keystrokes. The IBus engine resets the session in the same situation.
+    // An engine that reports a session with no suggestion at all is a pending
+    // composition (for example a pre-base kar in the National layout) and
+    // must stay consumed so the next key can complete it.
+    if (reported == 0 && hasSession()) {
+        return true;
+    }
+    resetSession();
+    return false;
 }
 
 void BongoState::backspace() {
@@ -282,6 +300,18 @@ void BongoState::applySettings() {
 
 bool BongoState::hasSession() const {
     return engine_ && api_.hasSession(engine_);
+}
+
+bool BongoState::hasVisibleComposition() const {
+    if (!preedit_.empty()) {
+        return true;
+    }
+    for (const auto &candidate : candidates_) {
+        if (!candidate.empty()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 int BongoState::selectedIndex() const {
