@@ -68,7 +68,7 @@ fi
 if [[ "${UNINSTALL}" == "true" ]]; then
     PREFIX="${PREFIX:-/usr}"
     DESTDIR="${DESTDIR:-}"
-    if [[ -z "${DESTDIR}" && $EUID -ne 0 ]]; then
+    if [[ -z "${DESTDIR}" && $EUID -ne 0 && "${PREFIX}" == "/usr" ]]; then
         echo "Error: run the uninstaller with sudo (or set DESTDIR)." >&2
         exit 1
     fi
@@ -119,6 +119,7 @@ if [[ "${UNINSTALL}" == "true" ]]; then
     # may contain files from other packages.
     rmdir --ignore-fail-on-non-empty \
         "${DESTDIR}${PREFIX}/lib/bongo" \
+        "${DESTDIR}${PREFIX}/lib/fcitx5" \
         "${DESTDIR}${PREFIX}/share/bongo" 2>/dev/null || true
 
     if [[ -z "${DESTDIR}" ]]; then
@@ -430,13 +431,18 @@ for arg in "$@"; do
         --configure-fcitx5)
             CONFIGURE_FCITX5=true
             ;;
+        --user)
+            PREFIX="${HOME}/.local"
+            ;;
         --prebuilt)
             ;;
         -h|--help)
-            echo "Usage: install.sh [--prebuilt] [--no-configure-fcitx5]"
-            echo "       install.sh --uninstall"
+            echo "Usage: install.sh [--prebuilt] [--user] [--no-configure-fcitx5]"
+            echo "       install.sh --uninstall [--user]"
             echo "Environment: BONGO_FCITX5=auto|1|0 PREFIX=... DESTDIR=..."
-            echo "  --uninstall  Remove a prebuilt tarball install (uses install-manifest)."
+            echo "  --prebuilt   Install from prebuilt archive without compiling."
+            echo "  --user       Install into ~/.local (for non-root or immutable systems like SteamOS/Bazzite/Silverblue)."
+            echo "  --uninstall  Remove an install (uses install-manifest)."
             exit 0
             ;;
         *)
@@ -465,11 +471,6 @@ if [[ $EUID -ne 0 && "${PREFIX}" == "/usr" && -z "${DESTDIR}" ]]; then
 fi
 
 if [[ "${PREBUILT}" == "true" ]]; then
-    if [[ -z "${DESTDIR}" && "${PREFIX}" != "/usr" ]]; then
-        echo "Error: the prebuilt tarball installs system-wide under /usr." >&2
-        echo "Run it with sudo, or use the source installer for a user-local install." >&2
-        exit 1
-    fi
     # The payload already contains (or omits) the fcitx5 addon.
     BONGO_FCITX5=0
 fi
@@ -625,36 +626,60 @@ if [[ "${PREBUILT}" == "true" ]]; then
     # a sudo install must produce root-owned system files.
     cp -a --no-preserve=ownership "${SCRIPT_DIR}/payload/." "${DESTDIR}${PREFIX}/"
 
+    # If installing to a custom prefix like ~/.local, rewrite paths in ibus and desktop files:
+    if [[ -z "${DESTDIR}" && "${PREFIX}" != "/usr" ]]; then
+        if [[ -f "${DESTDIR}${PREFIX}/share/ibus/component/bongo.xml" ]]; then
+            sed -i \
+                -e "s|/usr/libexec/bongo-ibus-engine|${PREFIX}/libexec/bongo-ibus-engine|g" \
+                -e "s|/usr/bin/bongo-settings|${PREFIX}/bin/bongo-settings|g" \
+                -e "s|/usr/share/|${PREFIX}/share/|g" \
+                "${DESTDIR}${PREFIX}/share/ibus/component/bongo.xml"
+        fi
+        if [[ -f "${DESTDIR}${PREFIX}/share/applications/app.getbongo.Bongo.desktop" ]]; then
+            sed -i "s|^Exec=bongo-settings|Exec=${PREFIX}/bin/bongo-settings|" \
+                "${DESTDIR}${PREFIX}/share/applications/app.getbongo.Bongo.desktop"
+        fi
+    fi
+
     # Place the fcitx5 addon in this distribution's addon directory.
     if [[ -f "${SCRIPT_DIR}/fcitx5/libbongo.so" ]]; then
         fcitx5_addondir=""
-        # The .pc file is only present with the development package, so treat
-        # it as the first choice and fall back to the runtime layout.
-        if command -v pkg-config >/dev/null 2>&1; then
-            fcitx5_libdir="$(pkg-config --variable=libdir Fcitx5Core 2>/dev/null || true)"
-            if [[ "${fcitx5_libdir}" == /* ]]; then
-                fcitx5_addondir="${fcitx5_libdir}/fcitx5"
-            fi
-        fi
-        if [[ -z "${fcitx5_addondir}" ]]; then
-            for candidate in /usr/lib/fcitx5 /usr/lib64/fcitx5 /usr/lib/*-linux-gnu*/fcitx5; do
-                if [[ -d "${DESTDIR}${candidate}" || -d "${candidate}" ]]; then
-                    fcitx5_addondir="${candidate}"
-                    break
+        if [[ "${PREFIX}" != "/usr" ]]; then
+            fcitx5_addondir="${PREFIX}/lib/fcitx5"
+        else
+            # The .pc file is only present with the development package, so treat
+            # it as the first choice and fall back to the runtime layout.
+            if command -v pkg-config >/dev/null 2>&1; then
+                fcitx5_libdir="$(pkg-config --variable=libdir Fcitx5Core 2>/dev/null || true)"
+                if [[ "${fcitx5_libdir}" == /* ]]; then
+                    fcitx5_addondir="${fcitx5_libdir}/fcitx5"
                 fi
-            done
-        fi
-        if [[ -z "${fcitx5_addondir}" ]] && command -v ldconfig >/dev/null 2>&1; then
-            fcitx5_core="$(ldconfig -p 2>/dev/null | awk '/libfcitx5core\.so/{print $NF; exit}')"
-            if [[ -n "${fcitx5_core}" ]]; then
-                fcitx5_addondir="$(dirname "${fcitx5_core}")/fcitx5"
             fi
+            if [[ -z "${fcitx5_addondir}" ]]; then
+                for candidate in /usr/lib/fcitx5 /usr/lib64/fcitx5 /usr/lib/*-linux-gnu*/fcitx5; do
+                    if [[ -d "${DESTDIR}${candidate}" || -d "${candidate}" ]]; then
+                        fcitx5_addondir="${candidate}"
+                        break
+                    fi
+                done
+            fi
+            if [[ -z "${fcitx5_addondir}" ]] && command -v ldconfig >/dev/null 2>&1; then
+                fcitx5_core="$(ldconfig -p 2>/dev/null | awk '/libfcitx5core\.so/{print $NF; exit}')"
+                if [[ -n "${fcitx5_core}" ]]; then
+                    fcitx5_addondir="$(dirname "${fcitx5_core}")/fcitx5"
+                fi
+            fi
+            fcitx5_addondir="${fcitx5_addondir:-/usr/lib/fcitx5}"
         fi
-        fcitx5_addondir="${fcitx5_addondir:-/usr/lib/fcitx5}"
         install -d "${DESTDIR}${fcitx5_addondir}"
         install -m 755 "${SCRIPT_DIR}/fcitx5/libbongo.so" \
             "${DESTDIR}${fcitx5_addondir}/libbongo.so"
         echo "--> Installed fcitx5 addon in ${fcitx5_addondir}"
+
+        if [[ "${PREFIX}" != "/usr" && -f "${DESTDIR}${PREFIX}/share/fcitx5/addon/bongo.conf" ]]; then
+            sed -i "s|^Library=.*|Library=${PREFIX}/lib/fcitx5/libbongo.so|" \
+                "${DESTDIR}${PREFIX}/share/fcitx5/addon/bongo.conf"
+        fi
     fi
     installed_addondir="${fcitx5_addondir:-}"
 

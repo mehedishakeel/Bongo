@@ -17,6 +17,7 @@ packages include both frontends rather than forcing either one.
 - **Debian**: 13 (Trixie) and newer (12 via source)
 - **Fedora**: 40 and newer
 - **Arch Linux / Manjaro / Omarchy**
+- **SteamOS / Bazzite / Fedora Silverblue** (Immutable distributions via AppImage or rootless install)
 - **Pop!_OS / Linux Mint** (versions based on Ubuntu 24.04 or newer)
 
 ---
@@ -31,7 +32,12 @@ extract and install:
 ```bash
 tar -xzf Bongo-1.1.0-linux-x86_64.tar.gz
 cd Bongo-1.1.0-linux-x86_64
+
+# System-wide install (requires root):
 sudo bash install.sh --prebuilt
+
+# Or current user / immutable distros (SteamOS, Bazzite, Silverblue - rootless):
+bash install.sh --prebuilt --user
 ```
 
 The tarball contains prebuilt binaries, so no compiler or network access is
@@ -44,11 +50,52 @@ To remove a tarball install, run this from the extracted folder:
 
 ```bash
 sudo bash install.sh --uninstall
+# or for user-mode installs:
+bash install.sh --uninstall --user
 ```
 
 ---
 
-## Option 2: Debian / Ubuntu package
+## Option 2: Arch Linux (AUR)
+
+For Arch Linux, EndeavourOS, Manjaro, and Omarchy:
+
+```bash
+# Using yay:
+yay -S bongo-bin
+
+# Using paru:
+paru -S bongo-bin
+
+# Or build manually:
+git clone https://aur.archlinux.org/bongo-bin.git
+cd bongo-bin
+makepkg -si
+```
+
+---
+
+## Option 3: AppImage (SteamOS, Bazzite, Fedora Silverblue, Immutable Distros)
+
+For immutable operating systems with read-only root filesystems, download `Bongo-1.1.0-linux-x86_64.AppImage` (or `aarch64`):
+
+```bash
+chmod +x Bongo-1.1.0-linux-x86_64.AppImage
+
+# Integrate Bongo IME and Settings into ~/.local (no root required!):
+./Bongo-1.1.0-linux-x86_64.AppImage --install-user
+
+# Launch Bongo Settings & Layout Viewer directly:
+./Bongo-1.1.0-linux-x86_64.AppImage
+
+# Check status or uninstall anytime:
+./Bongo-1.1.0-linux-x86_64.AppImage --status
+./Bongo-1.1.0-linux-x86_64.AppImage --uninstall
+```
+
+---
+
+## Option 4: Debian / Ubuntu package
 
 Download `bongo_1.1.0_amd64.deb` (or `bongo_1.1.0_arm64.deb`) from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then install via terminal:
 
@@ -62,7 +109,7 @@ when it was built with fcitx5 development headers. It uses the same glibc
 
 ---
 
-## Option 3: Install from Source
+## Option 5: Install from Source
 
 ### Prerequisites
 

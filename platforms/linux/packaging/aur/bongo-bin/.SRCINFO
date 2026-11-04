@@ -1,0 +1,28 @@
+pkgbase = bongo-bin
+	pkgdesc = Modern Bangla phonetic & Bijoy keyboard with native Fcitx5 and IBus support
+	pkgver = 1.1.0
+	pkgrel = 1
+	url = https://getbongo.app
+	install = bongo-bin.install
+	arch = x86_64
+	arch = aarch64
+	license = MPL-2.0
+	depends = glibc>=2.39
+	depends = gtk4
+	depends = python
+	depends = python-gobject
+	depends = hicolor-icon-theme
+	optdepends = fcitx5: Native Fcitx5 input method addon (recommended for KDE, Sway, Hyprland)
+	optdepends = ibus: IBus input method engine (recommended for GNOME)
+	provides = bongo
+	provides = bongo-bin
+	provides = fcitx5-bongo
+	provides = ibus-bongo
+	conflicts = bongo
+	conflicts = bongo-git
+	source_x86_64 = https://github.com/mehedishakeel/Bongo/releases/download/v1.1.0/Bongo-1.1.0-linux-x86_64.tar.gz
+	sha256sums_x86_64 = SKIP
+	source_aarch64 = https://github.com/mehedishakeel/Bongo/releases/download/v1.1.0/Bongo-1.1.0-linux-aarch64.tar.gz
+	sha256sums_aarch64 = SKIP
+
+pkgname = bongo-bin

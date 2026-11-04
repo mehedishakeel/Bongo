@@ -95,6 +95,10 @@ jobs:
         run: |
           bash platforms/linux/scripts/build-tarball.sh
 
+      - name: Build Standalone AppImage
+        run: |
+          bash platforms/linux/scripts/build-appimage.sh
+
       - name: Smoke-test Prebuilt Install
         run: |
           tarball="$(ls platforms/linux/release/Bongo-*-linux-${{ matrix.arch }}.tar.gz)"
@@ -114,7 +118,7 @@ jobs:
       - name: Generate Checksums
         run: |
           cd platforms/linux/release
-          for artifact in *.deb *.tar.gz; do
+          for artifact in *.deb *.tar.gz *.AppImage; do
             if [ -f "$artifact" ]; then
               shasum -a 256 "$artifact" > "${artifact}.sha256"
               echo "Generated checksum for $artifact:"
@@ -129,6 +133,7 @@ jobs:
           path: |
             platforms/linux/release/*.deb
             platforms/linux/release/*.tar.gz
+            platforms/linux/release/*.AppImage
             platforms/linux/release/*.sha256
 
   build-windows:
@@ -243,6 +248,7 @@ jobs:
             release-artifacts/*.dmg
             release-artifacts/*.deb
             release-artifacts/*.tar.gz
+            release-artifacts/*.AppImage
             release-artifacts/*.exe
             release-artifacts/*.msi
             release-artifacts/*.zip

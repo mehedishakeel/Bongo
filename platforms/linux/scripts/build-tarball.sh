@@ -76,8 +76,12 @@ Bongo ${VERSION} — universal Linux package (${TARBALL_ARCH})
 Install system-wide:
   sudo bash install.sh --prebuilt
 
+Install for current user / immutable distros (SteamOS, Bazzite, Silverblue):
+  bash install.sh --prebuilt --user
+
 Uninstall (from this extracted directory):
   sudo bash install.sh --uninstall
+  (or: bash install.sh --uninstall --user)
 
 The installer detects GNOME (IBus) or KDE / Hyprland / Omarchy (fcitx5) and
 enables Bongo automatically. It verifies MANIFEST.sha256 before copying files.

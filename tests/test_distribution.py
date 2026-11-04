@@ -74,6 +74,8 @@ class DistributionTests(unittest.TestCase):
         self.assertTrue((ROOT / 'platforms/linux/engine/Cargo.toml').is_file())
         self.assertTrue((ROOT / 'platforms/linux/scripts/install.sh').is_file())
         self.assertTrue((ROOT / 'platforms/linux/scripts/build-deb.sh').is_file())
+        self.assertTrue((ROOT / 'platforms/linux/scripts/build-tarball.sh').is_file())
+        self.assertTrue((ROOT / 'platforms/linux/scripts/build-appimage.sh').is_file())
         self.assertTrue((ROOT / 'platforms/linux/scripts/build-rpm.sh').is_file())
         self.assertTrue((ROOT / 'docs/install.sh').is_file())
         self.assertEqual(
@@ -81,6 +83,57 @@ class DistributionTests(unittest.TestCase):
             (ROOT / 'platforms/linux/scripts/install.sh').read_bytes(),
             "docs/install.sh must stay in sync with platforms/linux/scripts/install.sh so https://getbongo.app/install.sh serves the latest installer",
         )
+
+    def test_linux_aur_and_appimage_packaging(self):
+        """Verify Arch Linux AUR (bongo-bin) package structure and AppImage packaging."""
+        aur_dir = ROOT / 'platforms/linux/packaging/aur/bongo-bin'
+        pkgbuild_file = aur_dir / 'PKGBUILD'
+        install_file = aur_dir / 'bongo-bin.install'
+        srcinfo_file = aur_dir / '.SRCINFO'
+        readme_file = aur_dir / 'README.md'
+
+        self.assertTrue(pkgbuild_file.is_file(), "PKGBUILD must exist")
+        self.assertTrue(install_file.is_file(), "bongo-bin.install must exist")
+        self.assertTrue(srcinfo_file.is_file(), ".SRCINFO must exist")
+        self.assertTrue(readme_file.is_file(), "AUR README.md must exist")
+
+        pkgbuild = pkgbuild_file.read_text()
+        self.assertIn("pkgname=bongo-bin", pkgbuild)
+        self.assertIn("pkgver=1.1.0", pkgbuild)
+        self.assertIn("arch=('x86_64' 'aarch64')", pkgbuild)
+        self.assertIn("license=('MPL-2.0')", pkgbuild)
+        self.assertIn("fcitx5-bongo", pkgbuild)
+        self.assertIn("ibus-bongo", pkgbuild)
+        self.assertIn("install=bongo-bin.install", pkgbuild)
+        self.assertIn("payload", pkgbuild)
+        self.assertIn("fcitx5/libbongo.so", pkgbuild)
+
+        install_script = install_file.read_text()
+        self.assertIn("post_install()", install_script)
+        self.assertIn("post_upgrade()", install_script)
+        self.assertIn("post_remove()", install_script)
+
+        srcinfo = srcinfo_file.read_text()
+        self.assertIn("pkgbase = bongo-bin", srcinfo)
+        self.assertIn("pkgname = bongo-bin", srcinfo)
+        self.assertIn("pkgver = 1.1.0", srcinfo)
+        self.assertIn("arch = x86_64", srcinfo)
+        self.assertIn("arch = aarch64", srcinfo)
+
+        appimage_script = (ROOT / 'platforms/linux/scripts/build-appimage.sh').read_text()
+        self.assertIn("AppRun", appimage_script)
+        self.assertIn("--install-user", appimage_script)
+        self.assertIn("--uninstall", appimage_script)
+        self.assertIn("--status", appimage_script)
+        self.assertIn("appimagetool", appimage_script)
+        self.assertIn("x86_64", appimage_script)
+        self.assertIn("aarch64", appimage_script)
+
+        # Release workflow includes AppImage
+        workflow = (ROOT / '.github/workflows/release.yml').read_text()
+        self.assertIn("build-appimage.sh", workflow)
+        self.assertIn("*.AppImage", workflow)
+        self.assertIn("release-artifacts/*.AppImage", workflow)
 
     def test_windows_registration(self):
         # Windows UI parity checks (exact same 4 tabs)

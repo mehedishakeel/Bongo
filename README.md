@@ -79,7 +79,7 @@ brew install --cask mehedishakeel/bongo/bongo
 
 See [docs/MACOS-INSTALL.md](docs/MACOS-INSTALL.md) or [platforms/macos/README.md](platforms/macos/README.md) for details.
 
-### Linux (Ubuntu, Debian, Fedora, Arch, Omarchy)
+### Linux (Ubuntu, Debian, Fedora, Arch, SteamOS, Bazzite)
 
 #### Option 1: Universal Tarball (any distribution)
 1. **Download**: Get `Bongo-1.1.0-linux-x86_64.tar.gz` (64-bit PC) or `Bongo-1.1.0-linux-aarch64.tar.gz` (ARM64) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
@@ -87,7 +87,12 @@ See [docs/MACOS-INSTALL.md](docs/MACOS-INSTALL.md) or [platforms/macos/README.md
    ```bash
    tar -xzf Bongo-1.1.0-linux-x86_64.tar.gz
    cd Bongo-1.1.0-linux-x86_64
+
+   # System-wide installation (requires sudo):
    sudo bash install.sh --prebuilt
+
+   # Or current user / immutable distros (SteamOS, Bazzite, Silverblue - no sudo required):
+   bash install.sh --prebuilt --user
    ```
    The tarball needs glibc 2.39+ (Ubuntu 24.04+, Debian 13+, Fedora 40+, Arch) and Python 3 + GTK 4 for the settings app. The installer verifies every file against `MANIFEST.sha256` and installs the matching architecture only.
 3. **Activate**: The installer detects your desktop and enables Bongo automatically:
@@ -96,9 +101,32 @@ See [docs/MACOS-INSTALL.md](docs/MACOS-INSTALL.md) or [platforms/macos/README.md
 4. **Uninstall** (from the extracted folder):
    ```bash
    sudo bash install.sh --uninstall
+   # or for user installs: bash install.sh --uninstall --user
    ```
 
-#### Option 2: Debian / Ubuntu package
+#### Option 2: Arch Linux (AUR)
+Install using your preferred AUR helper:
+```bash
+# Using yay:
+yay -S bongo-bin
+
+# Using paru:
+paru -S bongo-bin
+```
+
+#### Option 3: AppImage (SteamOS, Bazzite, Fedora Silverblue, Immutable Distros)
+Download `Bongo-1.1.0-linux-x86_64.AppImage` (or `aarch64`) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest):
+```bash
+chmod +x Bongo-1.1.0-linux-x86_64.AppImage
+
+# Integrate Bongo IME and Settings into ~/.local (no root required!):
+./Bongo-1.1.0-linux-x86_64.AppImage --install-user
+
+# Launch Bongo Settings & Layout Viewer directly:
+./Bongo-1.1.0-linux-x86_64.AppImage
+```
+
+#### Option 4: Debian / Ubuntu package
 1. **Download**: Get `bongo_1.1.0_amd64.deb` (standard 64-bit PC) or `bongo_1.1.0_arm64.deb` (ARM64) from [Releases](https://github.com/mehedishakeel/Bongo/releases/latest).
 2. **Install**:
    ```bash
@@ -107,7 +135,7 @@ See [docs/MACOS-INSTALL.md](docs/MACOS-INSTALL.md) or [platforms/macos/README.md
    These packages use the same glibc 2.39+ floor (Ubuntu 24.04+, Debian 13+).
 3. **Activate**: Add **Bengali (Bongo)** under **Settings -> Keyboard -> Input Sources** (GNOME), or run `fcitx5-configtool` and add **Bongo** (KDE / Hyprland / Omarchy).
 
-#### Option 3: Build from source
+#### Option 5: Build from source
 For older distributions or development:
 ```bash
 sudo ./platforms/linux/scripts/install.sh

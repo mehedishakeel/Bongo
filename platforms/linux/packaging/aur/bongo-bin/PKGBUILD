@@ -1,0 +1,49 @@
+# Maintainer: Mehedi Shakeel <contact@getbongo.app>
+pkgname=bongo-bin
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="Modern Bangla phonetic & Bijoy keyboard with native Fcitx5 and IBus support"
+arch=('x86_64' 'aarch64')
+url="https://getbongo.app"
+license=('MPL-2.0')
+depends=(
+    'glibc>=2.39'
+    'gtk4'
+    'python'
+    'python-gobject'
+    'hicolor-icon-theme'
+)
+optdepends=(
+    'fcitx5: Native Fcitx5 input method addon (recommended for KDE, Sway, Hyprland)'
+    'ibus: IBus input method engine (recommended for GNOME)'
+)
+provides=('bongo' 'bongo-bin' 'fcitx5-bongo' 'ibus-bongo')
+conflicts=('bongo' 'bongo-git')
+install=bongo-bin.install
+
+_tarball_x86_64="Bongo-${pkgver}-linux-x86_64.tar.gz"
+_tarball_aarch64="Bongo-${pkgver}-linux-aarch64.tar.gz"
+
+source_x86_64=("https://github.com/mehedishakeel/Bongo/releases/download/v${pkgver}/${_tarball_x86_64}")
+source_aarch64=("https://github.com/mehedishakeel/Bongo/releases/download/v${pkgver}/${_tarball_aarch64}")
+sha256sums_x86_64=('SKIP')
+sha256sums_aarch64=('SKIP')
+
+package() {
+    local _dir="Bongo-${pkgver}-linux-${CARCH}"
+    cd "${srcdir}/${_dir}"
+
+    install -d "${pkgdir}/usr"
+    cp -a payload/* "${pkgdir}/usr/"
+
+    # Place fcitx5 addon in Arch standard addon directory (/usr/lib/fcitx5)
+    if [ -f fcitx5/libbongo.so ]; then
+        install -Dm755 fcitx5/libbongo.so "${pkgdir}/usr/lib/fcitx5/libbongo.so"
+    fi
+
+    # Ensure executable permissions for binaries and libraries
+    chmod 755 "${pkgdir}/usr/bin/bongo-settings" \
+              "${pkgdir}/usr/bin/bongo-fcitx5-setup" \
+              "${pkgdir}/usr/libexec/bongo-ibus-engine" \
+              "${pkgdir}/usr/lib/bongo/libbongo_engine.so"
+}

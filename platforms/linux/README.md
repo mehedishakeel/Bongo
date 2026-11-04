@@ -29,11 +29,14 @@ platforms/linux/
 │   └── tests/                           # CTest unit and integration tests
 ├── ibus/                                # IBus input method engine daemon
 │   └── bongo-ibus-engine.py             # Python IBus engine implementation
+├── packaging/
+│   └── aur/bongo-bin/                   # Arch User Repository (AUR) PKGBUILD & metadata
 ├── scripts/
-│   ├── install.sh                       # Local build and install script
+│   ├── install.sh                       # Local build, install & uninstall script
 │   ├── configure-fcitx5.py              # Safe, idempotent profile helper
 │   ├── build-deb.sh                     # Debian / Ubuntu package builder
 │   ├── build-tarball.sh                 # Universal prebuilt tarball builder
+│   ├── build-appimage.sh                # Standalone AppImage builder (SteamOS / immutable distros)
 │   └── build-rpm.sh                     # Legacy Fedora / RHEL package builder
 └── ui/
     └── bongo_settings.py                # GTK settings and welcome application
