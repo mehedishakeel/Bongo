@@ -3,6 +3,7 @@
 
 #include <fcitx-utils/eventdispatcher.h>
 #include <fcitx-utils/key.h>
+#include <fcitx-utils/keysym.h>
 #include <fcitx-utils/log.h>
 #include <fcitx/addonmanager.h>
 #include <fcitx/inputcontext.h>
@@ -235,6 +236,51 @@ int main() {
         ok = expect(preedit(ic).empty(),
                     "client preedit focus out commits once") &&
              ok;
+
+        ic->setCapabilityFlags(fcitx::CapabilityFlags());
+        ic->focusIn();
+
+        // A pending pre-base kar in the National layout has no visible
+        // composition, but it must stay consumed so the next consonant
+        // completes the juktakkhor instead of being reset.
+        writeSettings(
+            R"({"keyboard_layout": 1, "typing_mode": 0, "suggest_emoji": false})");
+        key("Escape");
+        {
+            const bool consumed = frontend->call<ITestFrontend::sendKeyEvent>(
+                uuid, fcitx::Key("d"), false);
+            ok = expect(consumed, "a pending National kar is consumed") && ok;
+            key("j");
+            ok = expect(preedit(ic) == "কি",
+                        "a pending National kar then a consonant composes") &&
+                 ok;
+            key("Escape");
+        }
+
+        // A printable key that the engine answers with a session but no
+        // visible composition (a lone grave accent / backtick in the Avro
+        // layout) must reach the application instead of being swallowed.
+        // The engine reports an ongoing session for it, so the addon used to
+        // consume the key while the input panel stayed empty, leaving a stale
+        // composition behind. The IBus engine resets the session instead.
+        writeSettings(
+            R"({"keyboard_layout": 0, "typing_mode": 0, "suggest_emoji": true})");
+        key("Escape");
+        {
+            const bool consumed = frontend->call<ITestFrontend::sendKeyEvent>(
+                uuid, fcitx::Key(FcitxKey_grave), false);
+            ok = expect(!consumed,
+                        "a key with no visible composition is not consumed") &&
+                 ok;
+            ok = expect(candidateCount(ic) == 0,
+                        "no empty candidate is shown for a bare grave accent") &&
+                 ok;
+            key("a");
+            ok = expect(preedit(ic) == "আ",
+                        "the engine starts clean after an invisible key") &&
+                 ok;
+            key("Escape");
+        }
 
         instance.exit();
     });
