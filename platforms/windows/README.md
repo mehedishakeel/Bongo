@@ -34,7 +34,8 @@ platforms/windows/
 ## Features
 
 * **Universal Compatibility**: Works across all Windows applications including browsers (Chrome, Edge, Firefox), Microsoft Office (Word, PowerPoint), editors (VS Code, Notepad), and messaging apps.
-* **Instant Toggle**: Switch between English and Bangla at any moment using `F12` or `Ctrl + Space` (customizable in Settings).
+* **Instant Toggle**: Switch between English and Bangla at any moment using `Win + Space`, `F12`, or `Ctrl + Shift` (customizable in Settings).
+* **System Tray Integration**: Native Windows system tray icon displaying active language (`EN` / `বা`), interactive language toggle, and right-click context menu.
 * **Native Look and Feel**: Dark mode Settings application with 4 sections (Getting Started, Bongo Layout, Settings, Fonts).
 * **Live Candidate HUD**: Floating candidate bar preview with configurable Bengali fonts and sizes.
 * **Diagnostics & Logging**: Service activity and keystroke events are logged to `%APPDATA%\Bongo\bongo_service.log` for easy troubleshooting.
@@ -82,4 +83,4 @@ python platforms\windows\service\bongo_service.py
 python platforms\windows\ui\bongo_settings.py
 ```
 
-Press `F12` to toggle Bangla typing on or off in any text field.
+Press `Win + Space` or `F12` to toggle Bangla typing on or off in any text field.

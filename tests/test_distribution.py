@@ -14,11 +14,11 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(p['TISIntendedLanguage'], 'bn')
         self.assertEqual(p['TISInputSourceID'], p['CFBundleIdentifier'])
         self.assertEqual(p['LSArchitecturePriority'], ['arm64'])
-        controller = (ROOT / 'platforms/macos/Bongo/Sources/InputController.swift').read_text()
+        controller = (ROOT / 'platforms/macos/Bongo/Sources/InputController.swift').read_text(encoding='utf-8')
         self.assertIn('@objc(' + p['InputMethodServerControllerClass'] + ')', controller)
-        main = (ROOT / 'platforms/macos/Bongo/Sources/main.swift').read_text()
+        main = (ROOT / 'platforms/macos/Bongo/Sources/main.swift').read_text(encoding='utf-8')
         self.assertIn(p['InputMethodConnectionName'], main)
-        welcome = (ROOT / 'platforms/macos/Bongo/Sources/WelcomeWindow.swift').read_text()
+        welcome = (ROOT / 'platforms/macos/Bongo/Sources/WelcomeWindow.swift').read_text(encoding='utf-8')
         self.assertIn('final class SidebarNavigationButton: NSButton', welcome)
         self.assertIn('acceptsFirstMouse(for event:', welcome)
         for title in ['Getting Started', 'Bongo Layout', 'Settings', 'Fonts']:
@@ -26,7 +26,7 @@ class DistributionTests(unittest.TestCase):
         self.assertNotIn('"Avro Layout"', welcome)
         self.assertNotIn('On-device typing', welcome)
         self.assertIn('final class FontsView: NSView', welcome)
-        self.assertIn('BongoFontSettings.font()', (ROOT / 'platforms/macos/Bongo/Sources/CandidatePanel.swift').read_text())
+        self.assertIn('BongoFontSettings.font()', (ROOT / 'platforms/macos/Bongo/Sources/CandidatePanel.swift').read_text(encoding='utf-8'))
         self.assertTrue(p['TISIconIsTemplate'])
         icon = ROOT / 'platforms/macos/Bongo/Resources' / (p['tsInputMethodIconFileKey'] + '.pdf')
         self.assertTrue(icon.is_file())
@@ -35,34 +35,34 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(launcher_plist['CFBundleIdentifier'], 'org.bongo.Bongo')
         self.assertEqual(launcher_plist['LSArchitecturePriority'], ['arm64'])
         self.assertNotIn('LSUIElement', launcher_plist)
-        launcher = (ROOT / 'platforms/macos/Launcher/Sources/main.swift').read_text()
+        launcher = (ROOT / 'platforms/macos/Launcher/Sources/main.swift').read_text(encoding='utf-8')
         self.assertIn('org.bongo.inputmethod.Bongo', launcher)
         self.assertIn('Contents/Library/Input Methods/Bongo Input Method.app', launcher)
         self.assertIn('installInputMethod(from:', launcher)
         self.assertIn('CFBundleVersion', launcher)
         self.assertIn('configuration.arguments = ["--show-settings"]', launcher)
-        self.assertIn('CommandLine.arguments.contains("--show-settings")', (ROOT / 'platforms/macos/Bongo/Sources/AppDelegate.swift').read_text())
+        self.assertIn('CommandLine.arguments.contains("--show-settings")', (ROOT / 'platforms/macos/Bongo/Sources/AppDelegate.swift').read_text(encoding='utf-8'))
 
     def test_linux_registration(self):
         # IBus component XML verification
-        ibus_xml = (ROOT / 'platforms/linux/ibus/bongo.xml').read_text()
+        ibus_xml = (ROOT / 'platforms/linux/ibus/bongo.xml').read_text(encoding='utf-8')
         self.assertIn('<name>org.freedesktop.IBus.Bongo</name>', ibus_xml)
         self.assertIn('<name>bongo</name>', ibus_xml)
         self.assertIn('<language>bn</language>', ibus_xml)
         self.assertIn('<exec>/usr/libexec/bongo-ibus-engine --ibus</exec>', ibus_xml)
 
         # Desktop entry & AppStream
-        desktop_entry = (ROOT / 'platforms/linux/data/app.getbongo.Bongo.desktop').read_text()
+        desktop_entry = (ROOT / 'platforms/linux/data/app.getbongo.Bongo.desktop').read_text(encoding='utf-8')
         self.assertIn('Exec=bongo-settings', desktop_entry)
         self.assertIn('Icon=bongo', desktop_entry)
         self.assertIn('StartupWMClass=app.getbongo.Bongo', desktop_entry)
 
-        metainfo = (ROOT / 'platforms/linux/data/app.getbongo.Bongo.metainfo.xml').read_text()
+        metainfo = (ROOT / 'platforms/linux/data/app.getbongo.Bongo.metainfo.xml').read_text(encoding='utf-8')
         self.assertIn('<id>app.getbongo.Bongo</id>', metainfo)
         self.assertIn('<name>Bongo</name>', metainfo)
 
         # Linux UI parity checks (exact same 4 tabs)
-        ui_script = (ROOT / 'platforms/linux/ui/bongo_settings.py').read_text()
+        ui_script = (ROOT / 'platforms/linux/ui/bongo_settings.py').read_text(encoding='utf-8')
         for title in ['Getting Started', 'Bongo Layout', 'Settings', 'Fonts']:
             self.assertIn(title, ui_script)
         self.assertIn('Phonetic first', ui_script)
@@ -97,7 +97,7 @@ class DistributionTests(unittest.TestCase):
         self.assertTrue(srcinfo_file.is_file(), ".SRCINFO must exist")
         self.assertTrue(readme_file.is_file(), "AUR README.md must exist")
 
-        pkgbuild = pkgbuild_file.read_text()
+        pkgbuild = pkgbuild_file.read_text(encoding='utf-8')
         self.assertIn("pkgname=bongo-bin", pkgbuild)
         self.assertIn("pkgver=1.1.0", pkgbuild)
         self.assertIn("arch=('x86_64' 'aarch64')", pkgbuild)
@@ -108,19 +108,19 @@ class DistributionTests(unittest.TestCase):
         self.assertIn("payload", pkgbuild)
         self.assertIn("fcitx5/libbongo.so", pkgbuild)
 
-        install_script = install_file.read_text()
+        install_script = install_file.read_text(encoding='utf-8')
         self.assertIn("post_install()", install_script)
         self.assertIn("post_upgrade()", install_script)
         self.assertIn("post_remove()", install_script)
 
-        srcinfo = srcinfo_file.read_text()
+        srcinfo = srcinfo_file.read_text(encoding='utf-8')
         self.assertIn("pkgbase = bongo-bin", srcinfo)
         self.assertIn("pkgname = bongo-bin", srcinfo)
         self.assertIn("pkgver = 1.1.0", srcinfo)
         self.assertIn("arch = x86_64", srcinfo)
         self.assertIn("arch = aarch64", srcinfo)
 
-        appimage_script = (ROOT / 'platforms/linux/scripts/build-appimage.sh').read_text()
+        appimage_script = (ROOT / 'platforms/linux/scripts/build-appimage.sh').read_text(encoding='utf-8')
         self.assertIn("AppRun", appimage_script)
         self.assertIn("--install-user", appimage_script)
         self.assertIn("--uninstall", appimage_script)
@@ -130,14 +130,14 @@ class DistributionTests(unittest.TestCase):
         self.assertIn("aarch64", appimage_script)
 
         # Release workflow includes AppImage
-        workflow = (ROOT / '.github/workflows/release.yml').read_text()
+        workflow = (ROOT / '.github/workflows/release.yml').read_text(encoding='utf-8')
         self.assertIn("build-appimage.sh", workflow)
         self.assertIn("*.AppImage", workflow)
         self.assertIn("release-artifacts/*.AppImage", workflow)
 
     def test_windows_registration(self):
         # Windows UI parity checks (exact same 4 tabs)
-        ui_script = (ROOT / 'platforms/windows/ui/bongo_settings.py').read_text()
+        ui_script = (ROOT / 'platforms/windows/ui/bongo_settings.py').read_text(encoding='utf-8')
         for title in ['Getting Started', 'Bongo Layout', 'Settings', 'Fonts']:
             self.assertIn(title, ui_script)
         self.assertIn('Phonetic first', ui_script)
@@ -150,7 +150,7 @@ class DistributionTests(unittest.TestCase):
         self.assertNotIn('fg=TEXT_WHITE', ui_script)
 
         # Windows service verification
-        service_script = (ROOT / 'platforms/windows/service/bongo_service.py').read_text()
+        service_script = (ROOT / 'platforms/windows/service/bongo_service.py').read_text(encoding='utf-8')
         self.assertIn('WH_KEYBOARD_LL', service_script)
         self.assertIn('SendInput', service_script)
         self.assertIn('bongo_engine', service_script)
@@ -211,14 +211,14 @@ class DistributionTests(unittest.TestCase):
         self.assertFalse((ROOT / 'licenses/MPL-1.1.txt').exists(), 'Legacy MPL-1.1 license should not exist')
 
         # Check create-dmg.sh supports Apple Silicon and Intel targets
-        script = (ROOT / 'platforms/macos/scripts/create-dmg.sh').read_text()
+        script = (ROOT / 'platforms/macos/scripts/create-dmg.sh').read_text(encoding='utf-8')
         self.assertIn('aarch64-apple-darwin', script)
         self.assertIn('arm64-apple-macos13.0', script)
         self.assertIn('x86_64-apple-darwin', script)
         self.assertIn('x86_64-apple-macos13.0', script)
 
         # Ensure upstream.lock.json tracks components cleanly
-        upstream = json.loads((ROOT / 'upstream.lock.json').read_text())
+        upstream = json.loads((ROOT / 'upstream.lock.json').read_text(encoding='utf-8'))
         self.assertIn('Lekho', upstream)
         self.assertIn('riti-macos', upstream)
         self.assertIn('riti-linux', upstream)
@@ -231,7 +231,7 @@ class DistributionTests(unittest.TestCase):
         for name in ['install.sh', 'uninstall.sh', 'create_dmg.sh']:
             self.assertFalse((ROOT / 'platforms/macos/scripts' / name).exists())
         self.assertFalse((ROOT / 'scripts/Register Bongo.command').exists())
-        release = (ROOT / 'platforms/macos/scripts/create-dmg.sh').read_text()
+        release = (ROOT / 'platforms/macos/scripts/create-dmg.sh').read_text(encoding='utf-8')
         self.assertNotIn('BongoRegister', release)
         self.assertNotIn('Register Bongo.command', release)
         self.assertIn('$STAGE/Bongo.app', release)
@@ -257,7 +257,7 @@ class DistributionTests(unittest.TestCase):
         self.assertFalse((ROOT / 'scripts').exists())
 
     def test_updates_use_bongo_release_configuration(self):
-        mac = (ROOT / 'platforms/macos/Bongo/Sources/WelcomeWindow.swift').read_text()
+        mac = (ROOT / 'platforms/macos/Bongo/Sources/WelcomeWindow.swift').read_text(encoding='utf-8')
         self.assertIn('BongoGitHubRepository', mac)
         self.assertIn('api.github.com/repos/', mac)
         self.assertIn('releases?per_page=1', mac)
@@ -319,6 +319,8 @@ class DistributionTests(unittest.TestCase):
 
         # 3. Test Windows Service Key Processing Lifecycle
         svc = mod_win.BongoWindowsService()
+        if not svc.bangla_active:
+            svc.toggle_mode()
         self.assertFalse(svc.has_session())
 
         # Feed "ami"
@@ -415,7 +417,7 @@ class DistributionTests(unittest.TestCase):
         android_dir = ROOT / 'platforms/android'
 
         # 1. AndroidManifest verification
-        manifest = (android_dir / 'app/src/main/AndroidManifest.xml').read_text()
+        manifest = (android_dir / 'app/src/main/AndroidManifest.xml').read_text(encoding='utf-8')
         self.assertIn('.BongoInputMethodService', manifest)
         self.assertIn('android.permission.BIND_INPUT_METHOD', manifest)
         self.assertIn('android.view.InputMethod', manifest)
@@ -423,17 +425,17 @@ class DistributionTests(unittest.TestCase):
         self.assertIn('.ui.SettingsActivity', manifest)
 
         # 2. IME Subtype XML verification (unified clean Bongo Keyboard declaration matching Ridmik)
-        method_xml = (android_dir / 'app/src/main/res/xml/method.xml').read_text()
+        method_xml = (android_dir / 'app/src/main/res/xml/method.xml').read_text(encoding='utf-8')
         self.assertIn('imeSubtypeMode="keyboard"', method_xml)
         self.assertIn('isAsciiCapable="true"', method_xml)
 
         # 3. Native Engine (Rust & JNI) verification
-        cargo_toml = (android_dir / 'engine/Cargo.toml').read_text()
+        cargo_toml = (android_dir / 'engine/Cargo.toml').read_text(encoding='utf-8')
         self.assertIn('name = "bongo_engine"', cargo_toml)
         self.assertIn('crate-type = ["cdylib"', cargo_toml)
         self.assertTrue((android_dir / 'engine/.cargo/config.toml').is_file())
         
-        lib_rs = (android_dir / 'engine/src/lib.rs').read_text()
+        lib_rs = (android_dir / 'engine/src/lib.rs').read_text(encoding='utf-8')
         self.assertIn('Java_app_getbongo_ime_engine_BongoNative_engineNew', lib_rs)
         self.assertIn('Java_app_getbongo_ime_engine_BongoNative_engineFeedChar', lib_rs)
         self.assertIn('Java_app_getbongo_ime_engine_BongoNative_engineCommit', lib_rs)
@@ -464,12 +466,12 @@ class DistributionTests(unittest.TestCase):
         self.assertTrue((android_dir / 'README.md').is_file())
 
         # 6. Verify space bar and subtype naming (Bongo & English, not Bangla.phonetic)
-        strings_xml = (android_dir / 'app/src/main/res/values/strings.xml').read_text()
+        strings_xml = (android_dir / 'app/src/main/res/values/strings.xml').read_text(encoding='utf-8')
         self.assertIn('<string name="subtype_bengali">Bongo</string>', strings_xml)
         self.assertIn('<string name="subtype_english">English</string>', strings_xml)
         self.assertNotIn('Bangla.phonetic', strings_xml)
 
-        keyboard_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/ui/BongoKeyboardView.kt').read_text()
+        keyboard_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/ui/BongoKeyboardView.kt').read_text(encoding='utf-8')
         self.assertIn('"SPACE" -> if (isBangla) "Bongo" else "English"', keyboard_kt)
         self.assertNotIn('Bangla.phonetic', keyboard_kt)
 

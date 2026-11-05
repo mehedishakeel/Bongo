@@ -34,7 +34,8 @@ DEFAULT_SETTINGS = {
     "suggest_emoji": True,
     "candidate_font": "Noto Sans Bengali",
     "candidate_font_size": 16,
-    "toggle_key": "F12",
+    "toggle_key": "Win+Space",
+    "startup_language": "English",
     "autostart": True,
 }
 
@@ -1167,16 +1168,40 @@ class BongoSettingsApp:
         )
         hk_lbl.pack(side=tk.LEFT, padx=(0, 10))
 
-        self.hotkey_var = tk.StringVar(value=self.settings.get("toggle_key", "F12"))
+        self.hotkey_var = tk.StringVar(value=self.settings.get("toggle_key", "Win+Space"))
         hk_combo = ttk.Combobox(
             hk_row,
             textvariable=self.hotkey_var,
-            values=["F12", "Ctrl+Shift", "Win+Space"],
+            values=["Win+Space", "F12", "Ctrl+Shift", "Ctrl+Space"],
             state="readonly",
             width=14
         )
         hk_combo.pack(side=tk.LEFT)
         hk_combo.bind("<<ComboboxSelected>>", self.on_hotkey_changed)
+
+        # Row 3: Startup Language Mode
+        lang_row = tk.Frame(win_card, bg=BG_CARD)
+        lang_row.pack(fill=tk.X, pady=(12, 0))
+
+        lang_lbl = tk.Label(
+            lang_row,
+            text="Default Startup Mode:",
+            font=("Segoe UI", 10),
+            fg=TEXT_PRIMARY,
+            bg=BG_CARD
+        )
+        lang_lbl.pack(side=tk.LEFT, padx=(0, 10))
+
+        self.startup_lang_var = tk.StringVar(value=self.settings.get("startup_language", "English"))
+        lang_combo = ttk.Combobox(
+            lang_row,
+            textvariable=self.startup_lang_var,
+            values=["English", "Bangla"],
+            state="readonly",
+            width=14
+        )
+        lang_combo.pack(side=tk.LEFT)
+        lang_combo.bind("<<ComboboxSelected>>", self.on_startup_lang_changed)
 
         return container
 
@@ -1389,6 +1414,10 @@ class BongoSettingsApp:
 
     def on_hotkey_changed(self, *args):
         self.settings["toggle_key"] = self.hotkey_var.get()
+        save_settings(self.settings)
+
+    def on_startup_lang_changed(self, *args):
+        self.settings["startup_language"] = self.startup_lang_var.get()
         save_settings(self.settings)
 
     # -------------------------------------------------------------

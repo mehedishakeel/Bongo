@@ -105,7 +105,8 @@ DEFAULT_SETTINGS = {
     "suggest_emoji": True,
     "candidate_font": "Noto Sans Bengali",
     "candidate_font_size": 16,
-    "toggle_key": "F12",
+    "toggle_key": "Win+Space",
+    "startup_language": "English",
     "autostart": True,
 }
 
@@ -135,6 +136,18 @@ def find_engine_dll():
         if p.is_file():
             return str(p)
     return "bongo_engine.dll"
+
+def find_icon_file():
+    candidates = [
+        Path(sys.executable).parent / "data" / "bongo.ico",
+        Path(__file__).resolve().parent.parent / "data" / "bongo.ico",
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Bongo" / "data" / "bongo.ico",
+        Path(r"C:\Program Files\Bongo\data\bongo.ico"),
+    ]
+    for c in candidates:
+        if c.is_file():
+            return str(c)
+    return None
 
 # Native C FFI Binding for bongo_engine.dll
 class BongoNativeBinding:
@@ -333,13 +346,19 @@ VK_SPACE = 0x20
 VK_UP = 0x26
 VK_DOWN = 0x28
 VK_F12 = 0x7B
+VK_LWIN = 0x5B
+VK_RWIN = 0x5C
+VK_LSHIFT = 0xA0
+VK_RSHIFT = 0xA1
+VK_LCONTROL = 0xA2
+VK_RCONTROL = 0xA3
 
 INPUT_KEYBOARD = 1
 KEYEVENTF_KEYUP = 0x0002
 KEYEVENTF_UNICODE = 0x0004
 LLKHF_INJECTED = 0x00000010
 
-# Win32 Candidate HUD Window Styles and Messages
+# Win32 Candidate HUD and System Tray Window Styles, Messages & Constants
 WS_EX_TOPMOST = 0x00000008
 WS_EX_TOOLWINDOW = 0x00000080
 WS_EX_NOACTIVATE = 0x08000000
@@ -357,6 +376,32 @@ WM_DESTROY = 0x0002
 WM_MOUSEACTIVATE = 0x0021
 MA_NOACTIVATE = 3
 WM_LBUTTONDOWN = 0x0201
+WM_LBUTTONUP = 0x0202
+WM_LBUTTONDBLCLK = 0x0203
+WM_RBUTTONUP = 0x0205
+WM_CONTEXTMENU = 0x007B
+WM_USER = 0x0400
+WM_TRAY_CALLBACK = WM_USER + 100
+
+NIM_ADD = 0x00000000
+NIM_MODIFY = 0x00000001
+NIM_DELETE = 0x00000002
+NIF_MESSAGE = 0x00000001
+NIF_ICON = 0x00000002
+NIF_TIP = 0x00000004
+NIF_STATE = 0x00000008
+NIF_INFO = 0x00000010
+
+MF_STRING = 0x00000000
+MF_GRAYED = 0x00000001
+MF_DISABLED = 0x00000002
+MF_CHECKED = 0x00000008
+MF_UNCHECKED = 0x00000000
+MF_SEPARATOR = 0x00000800
+TPM_RIGHTBUTTON = 0x0002
+TPM_BOTTOMALIGN = 0x0020
+TPM_RETURNCMD = 0x0100
+
 CS_HREDRAW = 0x0002
 CS_VREDRAW = 0x0001
 CS_DROPSHADOW = 0x00020000
@@ -365,6 +410,7 @@ DT_LEFT = 0x00000000
 DT_TOP = 0x00000000
 DT_SINGLELINE = 0x00000020
 DT_VCENTER = 0x00000004
+DT_CENTER = 0x00000001
 DT_NOPREFIX = 0x00000800
 SPI_GETWORKAREA = 0x0030
 SRCCOPY = 0x00CC0020
@@ -374,6 +420,35 @@ if sys.platform == "win32":
     user32 = ctypes.windll.user32
     kernel32 = ctypes.windll.kernel32
     gdi32 = ctypes.windll.gdi32
+    shell32 = ctypes.windll.shell32
+
+    class ICONINFO(ctypes.Structure):
+        _fields_ = [
+            ("fIcon", wintypes.BOOL),
+            ("xHotspot", wintypes.DWORD),
+            ("yHotspot", wintypes.DWORD),
+            ("hbmMask", wintypes.HBITMAP),
+            ("hbmColor", wintypes.HBITMAP),
+        ]
+
+    class NOTIFYICONDATAW(ctypes.Structure):
+        _fields_ = [
+            ("cbSize", wintypes.DWORD),
+            ("hWnd", wintypes.HWND),
+            ("uID", wintypes.UINT),
+            ("uFlags", wintypes.UINT),
+            ("uCallbackMessage", wintypes.UINT),
+            ("hIcon", wintypes.HICON),
+            ("szTip", wintypes.WCHAR * 128),
+            ("dwState", wintypes.DWORD),
+            ("dwStateMask", wintypes.DWORD),
+            ("szInfo", wintypes.WCHAR * 256),
+            ("uTimeoutOrVersion", wintypes.UINT),
+            ("szInfoTitle", wintypes.WCHAR * 64),
+            ("dwInfoFlags", wintypes.DWORD),
+            ("guidItem", ctypes.c_byte * 16),
+            ("hBalloonIcon", wintypes.HICON),
+        ]
 
     # Accurate 64-bit Win32 types
     wintypes.HMODULE = ctypes.c_void_p
@@ -640,6 +715,32 @@ if sys.platform == "win32":
 
     gdi32.CreatePen.argtypes = [ctypes.c_int, ctypes.c_int, wintypes.COLORREF]
     gdi32.CreatePen.restype = wintypes.HPEN
+
+    # Shell32 & Menu Signatures for System Tray
+    shell32.Shell_NotifyIconW.argtypes = [wintypes.DWORD, ctypes.c_void_p]
+    shell32.Shell_NotifyIconW.restype = wintypes.BOOL
+
+    user32.CreatePopupMenu.restype = wintypes.HMENU
+    user32.AppendMenuW.argtypes = [wintypes.HMENU, wintypes.UINT, ctypes.c_size_t, wintypes.LPCWSTR]
+    user32.AppendMenuW.restype = wintypes.BOOL
+    user32.TrackPopupMenu.argtypes = [wintypes.HMENU, wintypes.UINT, ctypes.c_int, ctypes.c_int, ctypes.c_int, wintypes.HWND, ctypes.c_void_p]
+    user32.TrackPopupMenu.restype = ctypes.c_uint
+    user32.DestroyMenu.argtypes = [wintypes.HMENU]
+    user32.DestroyMenu.restype = wintypes.BOOL
+    user32.SetForegroundWindow.argtypes = [wintypes.HWND]
+    user32.SetForegroundWindow.restype = wintypes.BOOL
+    user32.PostMessageW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
+    user32.PostMessageW.restype = wintypes.BOOL
+    user32.CreateIconIndirect.argtypes = [ctypes.c_void_p]
+    user32.CreateIconIndirect.restype = wintypes.HICON
+    user32.DestroyIcon.argtypes = [wintypes.HICON]
+    user32.DestroyIcon.restype = wintypes.BOOL
+    user32.RegisterWindowMessageW.argtypes = [wintypes.LPCWSTR]
+    user32.RegisterWindowMessageW.restype = wintypes.UINT
+    user32.LoadImageW.argtypes = [wintypes.HINSTANCE, wintypes.LPCWSTR, wintypes.UINT, ctypes.c_int, ctypes.c_int, wintypes.UINT]
+    user32.LoadImageW.restype = wintypes.HICON
+    user32.LoadIconW.argtypes = [wintypes.HINSTANCE, wintypes.LPCWSTR]
+    user32.LoadIconW.restype = wintypes.HICON
 
 
 def replace_inline_text(erase_count: int, new_text: str):
@@ -1015,12 +1116,270 @@ class BongoCandidateHUD:
                     gdi32.DeleteObject(gdi_obj)
 
 
+class BongoTrayIcon:
+    """
+    Native Windows System Tray Icon for Bongo.
+    Shows the current typing language (EN / বা), provides tooltip feedback,
+    and a right-click context menu (Toggle language, Settings, Exit).
+    """
+    def __init__(self, settings: dict, on_toggle=None, on_open_settings=None, on_exit=None):
+        self.settings = settings
+        self.on_toggle = on_toggle
+        self.on_open_settings = on_open_settings
+        self.on_exit = on_exit
+        self.hwnd = None
+        self._wnd_proc_ref = None
+        self.icon_en = None
+        self.icon_bn = None
+        self.is_added = False
+        self.current_mode_is_bangla = False
+        self.wm_taskbar_created = 0
+
+    def init_tray(self, initial_is_bangla: bool = False):
+        if sys.platform != "win32":
+            return
+        self.current_mode_is_bangla = initial_is_bangla
+        try:
+            self._wnd_proc_ref = WNDPROC(self._wnd_proc)
+            hinst = kernel32.GetModuleHandleW(None)
+            cls_name = "BongoTrayWindowClass"
+
+            wc = WNDCLASSEXW()
+            wc.cbSize = ctypes.sizeof(WNDCLASSEXW)
+            wc.style = 0
+            wc.lpfnWndProc = self._wnd_proc_ref
+            wc.cbClsExtra = 0
+            wc.cbWndExtra = 0
+            wc.hInstance = hinst
+            wc.hIcon = None
+            wc.hCursor = None
+            wc.hbrBackground = None
+            wc.lpszMenuName = None
+            wc.lpszClassName = cls_name
+            wc.hIconSm = None
+
+            user32.RegisterClassExW(ctypes.byref(wc))
+
+            self.hwnd = user32.CreateWindowExW(
+                0,
+                cls_name,
+                "BongoTrayMessageWindow",
+                0,
+                0, 0, 0, 0,
+                None, None, hinst, None
+            )
+
+            self.wm_taskbar_created = user32.RegisterWindowMessageW("TaskbarCreated")
+
+            self._load_or_create_icons()
+            self._add_tray_icon()
+            log_msg("Bongo System Tray Icon initialized successfully.")
+        except Exception as e:
+            log_msg(f"Note: Tray icon initialization warning ({e})")
+
+    def _load_or_create_icons(self):
+        try:
+            self.icon_en = self._create_badge_icon("EN", 0x332626, 0xFFFFFF, "Segoe UI")
+            self.icon_bn = self._create_badge_icon("বা", 0x1E1EB8, 0xFFFFFF, "Nirmala UI")
+        except Exception as e:
+            log_msg(f"Could not create dynamic badge icons: {e}")
+
+        if not self.icon_en or not self.icon_bn:
+            ico_file = find_icon_file()
+            fallback_icon = None
+            if ico_file and Path(ico_file).is_file():
+                try:
+                    fallback_icon = user32.LoadImageW(None, str(ico_file), 1, 16, 16, 0x0010)
+                except Exception:
+                    pass
+            if not fallback_icon:
+                try:
+                    fallback_icon = user32.LoadIconW(None, ctypes.cast(32512, wintypes.LPCWSTR))
+                except Exception:
+                    pass
+
+            if not self.icon_en:
+                self.icon_en = fallback_icon
+            if not self.icon_bn:
+                self.icon_bn = fallback_icon
+
+    def _create_badge_icon(self, text: str, bg_color: int, text_color: int, font_name: str = "Segoe UI"):
+        hdc = user32.GetDC(0)
+        if not hdc:
+            return None
+        mem_dc = gdi32.CreateCompatibleDC(hdc)
+        hbm_color = gdi32.CreateCompatibleBitmap(hdc, 16, 16)
+        hbm_mask = gdi32.CreateBitmap(16, 16, 1, 1, None)
+
+        old_bmp = gdi32.SelectObject(mem_dc, hbm_color)
+        brush = gdi32.CreateSolidBrush(bg_color)
+        rect = RECT(0, 0, 16, 16)
+        user32.FillRect(mem_dc, ctypes.byref(rect), brush)
+        gdi32.DeleteObject(brush)
+
+        gdi32.SetBkMode(mem_dc, TRANSPARENT)
+        gdi32.SetTextColor(mem_dc, text_color)
+        font = gdi32.CreateFontW(-11, 0, 0, 0, 700, 0, 0, 0, 1, 0, 0, 2, 0, font_name)
+        old_font = gdi32.SelectObject(mem_dc, font)
+        user32.DrawTextW(mem_dc, text, -1, ctypes.byref(rect), DT_SINGLELINE | DT_CENTER | DT_VCENTER)
+
+        gdi32.SelectObject(mem_dc, old_font)
+        gdi32.DeleteObject(font)
+        gdi32.SelectObject(mem_dc, old_bmp)
+        gdi32.DeleteDC(mem_dc)
+        user32.ReleaseDC(0, hdc)
+
+        ii = ICONINFO(True, 0, 0, hbm_mask, hbm_color)
+        hicon = user32.CreateIconIndirect(ctypes.byref(ii))
+        gdi32.DeleteObject(hbm_color)
+        gdi32.DeleteObject(hbm_mask)
+        return hicon
+
+    def _get_tooltip(self):
+        mode = "বাংলা (Bangla)" if self.current_mode_is_bangla else "English"
+        key = self.settings.get("toggle_key", "Win+Space")
+        tip = f"Bongo · {mode} [{key}]"
+        return tip[:127]
+
+    def _add_tray_icon(self):
+        if not self.hwnd:
+            return
+        nid = NOTIFYICONDATAW()
+        nid.cbSize = ctypes.sizeof(NOTIFYICONDATAW)
+        nid.hWnd = self.hwnd
+        nid.uID = 1001
+        nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP
+        nid.uCallbackMessage = WM_TRAY_CALLBACK
+        nid.hIcon = self.icon_bn if self.current_mode_is_bangla else self.icon_en
+        nid.szTip = self._get_tooltip()
+        res = shell32.Shell_NotifyIconW(NIM_ADD, ctypes.byref(nid))
+        self.is_added = bool(res)
+
+    def update_mode(self, is_bangla: bool):
+        self.current_mode_is_bangla = is_bangla
+        if not self.hwnd:
+            return
+        nid = NOTIFYICONDATAW()
+        nid.cbSize = ctypes.sizeof(NOTIFYICONDATAW)
+        nid.hWnd = self.hwnd
+        nid.uID = 1001
+        nid.uFlags = NIF_ICON | NIF_TIP
+        nid.hIcon = self.icon_bn if self.current_mode_is_bangla else self.icon_en
+        nid.szTip = self._get_tooltip()
+        if self.is_added:
+            shell32.Shell_NotifyIconW(NIM_MODIFY, ctypes.byref(nid))
+        else:
+            nid.uFlags |= NIF_MESSAGE
+            nid.uCallbackMessage = WM_TRAY_CALLBACK
+            res = shell32.Shell_NotifyIconW(NIM_ADD, ctypes.byref(nid))
+            self.is_added = bool(res)
+
+    def update_settings(self, new_settings: dict):
+        self.settings = new_settings
+        self.update_mode(self.current_mode_is_bangla)
+
+    def _show_context_menu(self):
+        if not self.hwnd:
+            return
+        pt = POINT()
+        user32.GetCursorPos(ctypes.byref(pt))
+        h_menu = user32.CreatePopupMenu()
+        if not h_menu:
+            return
+
+        ID_STATUS = 1001
+        ID_SET_BANGLA = 1002
+        ID_SET_ENGLISH = 1003
+        ID_SETTINGS = 1004
+        ID_EXIT = 1005
+
+        curr_mode = "বাংলা (Bangla)" if self.current_mode_is_bangla else "English"
+        user32.AppendMenuW(h_menu, MF_STRING | MF_GRAYED, ID_STATUS, f"Bongo · {curr_mode}")
+        user32.AppendMenuW(h_menu, MF_SEPARATOR, 0, None)
+
+        bn_flag = MF_STRING | (MF_CHECKED if self.current_mode_is_bangla else MF_UNCHECKED)
+        en_flag = MF_STRING | (MF_CHECKED if not self.current_mode_is_bangla else MF_UNCHECKED)
+        user32.AppendMenuW(h_menu, bn_flag, ID_SET_BANGLA, "বাংলা Mode (Bangla)")
+        user32.AppendMenuW(h_menu, en_flag, ID_SET_ENGLISH, "English Mode")
+        user32.AppendMenuW(h_menu, MF_SEPARATOR, 0, None)
+
+        user32.AppendMenuW(h_menu, MF_STRING, ID_SETTINGS, "Settings...")
+        user32.AppendMenuW(h_menu, MF_SEPARATOR, 0, None)
+        user32.AppendMenuW(h_menu, MF_STRING, ID_EXIT, "Exit Bongo")
+
+        user32.SetForegroundWindow(self.hwnd)
+        cmd = user32.TrackPopupMenu(
+            h_menu,
+            TPM_RIGHTBUTTON | TPM_BOTTOMALIGN | TPM_RETURNCMD,
+            pt.x, pt.y, 0, self.hwnd, None
+        )
+        user32.PostMessageW(self.hwnd, 0, 0, 0)
+        user32.DestroyMenu(h_menu)
+
+        if cmd == ID_SET_BANGLA and not self.current_mode_is_bangla:
+            if self.on_toggle: self.on_toggle()
+        elif cmd == ID_SET_ENGLISH and self.current_mode_is_bangla:
+            if self.on_toggle: self.on_toggle()
+        elif cmd == ID_SETTINGS:
+            if self.on_open_settings: self.on_open_settings()
+        elif cmd == ID_EXIT:
+            if self.on_exit: self.on_exit()
+
+    def _wnd_proc(self, hwnd, msg, wparam, lparam):
+        if self.wm_taskbar_created and msg == self.wm_taskbar_created:
+            self._add_tray_icon()
+            return 0
+        elif msg == WM_TRAY_CALLBACK:
+            event_id = lparam & 0xFFFF
+            if event_id == WM_LBUTTONUP:
+                if self.on_toggle:
+                    self.on_toggle()
+                return 0
+            elif event_id == WM_LBUTTONDBLCLK:
+                if self.on_open_settings:
+                    self.on_open_settings()
+                return 0
+            elif event_id in (WM_RBUTTONUP, WM_CONTEXTMENU):
+                self._show_context_menu()
+                return 0
+        return user32.DefWindowProcW(hwnd, msg, wparam, lparam)
+
+    def destroy(self):
+        if self.hwnd and self.is_added:
+            try:
+                nid = NOTIFYICONDATAW()
+                nid.cbSize = ctypes.sizeof(NOTIFYICONDATAW)
+                nid.hWnd = self.hwnd
+                nid.uID = 1001
+                shell32.Shell_NotifyIconW(NIM_DELETE, ctypes.byref(nid))
+            except Exception:
+                pass
+            self.is_added = False
+        if self.icon_en:
+            try: user32.DestroyIcon(self.icon_en)
+            except Exception: pass
+            self.icon_en = None
+        if self.icon_bn:
+            try: user32.DestroyIcon(self.icon_bn)
+            except Exception: pass
+            self.icon_bn = None
+        if self.hwnd:
+            try: user32.DestroyWindow(self.hwnd)
+            except Exception: pass
+            self.hwnd = None
+
+
 class BongoWindowsService:
     def __init__(self):
         self.settings = load_settings()
         self._settings_mtime = 0
+        self._last_settings_check = 0
+        self._ctrl_shift_pending = False
 
-        self.bangla_active = True  # Active by default on start; toggled via F12
+        # Language starts in English on startup/boot as requested
+        startup_lang = self.settings.get("startup_language", "English")
+        self.bangla_active = (startup_lang.strip().lower() == "bangla")
+
         self.phonetic_engine = AvroPhoneticEngine()
         self.native = BongoNativeBinding()
         self.engine_ptr = self.native.lib.bongo_engine_new() if (self.native and self.native.lib) else None
@@ -1032,11 +1391,38 @@ class BongoWindowsService:
         self.last_injected_len = 0
 
         self.hud = BongoCandidateHUD(self.settings, on_candidate_clicked=self.commit_candidate)
+        self.tray = BongoTrayIcon(
+            self.settings,
+            on_toggle=self.toggle_mode,
+            on_open_settings=self.open_settings,
+            on_exit=self.quit_service
+        )
 
         self.apply_settings()
 
         self.hook_id = None
         self.hook_proc_ref = None
+
+    def open_settings(self):
+        try:
+            import subprocess
+            candidates = [
+                Path(sys.executable).parent / "bongo-settings.exe",
+                Path(__file__).resolve().parent.parent / "ui" / "bongo_settings.py",
+            ]
+            for c in candidates:
+                if c.is_file():
+                    if c.suffix == ".py":
+                        subprocess.Popen([sys.executable, str(c)])
+                    else:
+                        subprocess.Popen([str(c)])
+                    break
+        except Exception as e:
+            log_msg(f"Warning opening settings from tray: {e}")
+
+    def quit_service(self):
+        log_msg("Exit requested via tray menu.")
+        user32.PostQuitMessage(0)
 
     def apply_settings(self):
         if not self.engine_ptr or not self.native or not self.native.lib:
@@ -1049,6 +1435,10 @@ class BongoWindowsService:
         self.native.lib.bongo_engine_set_emoji(self.engine_ptr, emoji)
 
     def check_reload_settings(self):
+        now = time.time()
+        if now - self._last_settings_check < 0.5:
+            return
+        self._last_settings_check = now
         if CONFIG_FILE.is_file():
             try:
                 mtime = CONFIG_FILE.stat().st_mtime
@@ -1056,6 +1446,9 @@ class BongoWindowsService:
                     self._settings_mtime = mtime
                     self.settings = load_settings()
                     self.apply_settings()
+                    if hasattr(self, "tray") and self.tray:
+                        self.tray.update_settings(self.settings)
+                    log_msg("Bongo: Settings dynamically reloaded.")
             except Exception:
                 pass
 
@@ -1069,6 +1462,8 @@ class BongoWindowsService:
         log_msg(f"Bongo: Switched to {mode_str} Mode")
         sys.stdout.write(f"Bongo: Switched to {mode_str} Mode\n")
         sys.stdout.flush()
+        if hasattr(self, "tray") and self.tray:
+            self.tray.update_mode(self.bangla_active)
 
     def has_session(self):
         if self.engine_ptr and self.native and self.native.lib:
@@ -1197,7 +1592,7 @@ class BongoWindowsService:
         self.preedit_str = ""
         self.last_injected_len = 0
 
-    def process_key(self, vk_code: int, is_down: bool, is_shift: bool, is_ctrl: bool, is_alt: bool, is_caps: bool = False) -> bool:
+    def process_key(self, vk_code: int, is_down: bool, is_shift: bool, is_ctrl: bool, is_alt: bool, is_caps: bool = False, is_win: bool = False) -> bool:
         """
         Returns True if the keystroke was handled/swallowed,
         or False to let it pass through to the system.
@@ -1205,8 +1600,17 @@ class BongoWindowsService:
         if not is_down:
             return False
 
-        # Toggle shortcut: F12 or Ctrl+Space
+        self.check_reload_settings()
+
+        toggle_key = self.settings.get("toggle_key", "Win+Space")
+
+        # 1. Universal toggle shortcuts: F12 and Ctrl+Space
         if vk_code == VK_F12 or (is_ctrl and vk_code == VK_SPACE):
+            self.toggle_mode()
+            return True
+
+        # 2. Win + Space: Configured toggle shortcut
+        if (toggle_key == "Win+Space") and is_win and vk_code == VK_SPACE:
             self.toggle_mode()
             return True
 
@@ -1359,8 +1763,29 @@ class BongoWindowsService:
                     is_ctrl = bool((user32.GetAsyncKeyState(VK_CONTROL) & 0x8000) or (user32.GetKeyState(VK_CONTROL) & 0x8000))
                     is_alt = bool((user32.GetAsyncKeyState(VK_MENU) & 0x8000) or (user32.GetKeyState(VK_MENU) & 0x8000))
                     is_caps = bool(user32.GetKeyState(VK_CAPITAL) & 0x0001)
+                    is_win = bool((user32.GetAsyncKeyState(0x5B) & 0x8000) or (user32.GetAsyncKeyState(0x5C) & 0x8000) or
+                                  (user32.GetKeyState(0x5B) & 0x8000) or (user32.GetKeyState(0x5C) & 0x8000))
 
-                    handled = self.process_key(vk, is_down, is_shift, is_ctrl, is_alt, is_caps)
+                    # Check Ctrl+Shift toggle key
+                    toggle_key = self.settings.get("toggle_key", "Win+Space")
+                    if toggle_key == "Ctrl+Shift":
+                        if is_down:
+                            if (vk in (VK_SHIFT, VK_LSHIFT, VK_RSHIFT) and is_ctrl) or (vk in (VK_CONTROL, VK_LCONTROL, VK_RCONTROL) and is_shift):
+                                self._ctrl_shift_pending = True
+                            elif vk not in (VK_SHIFT, VK_LSHIFT, VK_RSHIFT, VK_CONTROL, VK_LCONTROL, VK_RCONTROL):
+                                self._ctrl_shift_pending = False
+                        else:  # key up
+                            if vk in (VK_SHIFT, VK_LSHIFT, VK_RSHIFT, VK_CONTROL, VK_LCONTROL, VK_RCONTROL):
+                                if self._ctrl_shift_pending:
+                                    self._ctrl_shift_pending = False
+                                    self.toggle_mode()
+                                    return user32.CallNextHookEx(self.hook_id, n_code, w_param, l_param)
+
+                    # Swallow Space key-up if it was part of Win+Space toggle
+                    if not is_down and vk == VK_SPACE and is_win and toggle_key == "Win+Space":
+                        return 1
+
+                    handled = self.process_key(vk, is_down, is_shift, is_ctrl, is_alt, is_caps, is_win)
                     if handled:
                         return 1  # Swallow event
             except (KeyboardInterrupt, SystemExit):
@@ -1402,8 +1827,10 @@ class BongoWindowsService:
         sys.stdout.write(msg_welcome)
         sys.stdout.flush()
 
-        # Initialize Candidate HUD window on hook thread
+        # Initialize Candidate HUD and System Tray Icon on message thread
         self.hud._init_win32()
+        if hasattr(self, "tray") and self.tray:
+            self.tray.init_tray(initial_is_bangla=self.bangla_active)
 
         try:
             msg = wintypes.MSG()
@@ -1414,6 +1841,8 @@ class BongoWindowsService:
             log_msg(f"Error in Windows message loop: {e}")
         finally:
             self.hud.destroy()
+            if hasattr(self, "tray") and self.tray:
+                self.tray.destroy()
             if self.hook_id:
                 user32.UnhookWindowsHookEx(self.hook_id)
                 self.hook_id = None
