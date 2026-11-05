@@ -121,7 +121,7 @@ jobs:
           test ! -e /usr/bin/bongo-settings
 
   macos:
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - name: Select Apple Silicon Rust target
