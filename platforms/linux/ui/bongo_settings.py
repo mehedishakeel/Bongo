@@ -1540,6 +1540,10 @@ class BongoSettingsApp:
 
 
 def main():
+    if "--daemon" in sys.argv:
+        # Autostart on Linux is managed by IBus/Fcitx5 engines; exit silently without presenting the GUI
+        return
+
     initial_tab = 0
     if "--tab" in sys.argv:
         try:

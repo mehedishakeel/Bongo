@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   repository:
-    runs-on: macos-15
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Validate repository
@@ -26,6 +26,7 @@ jobs:
           bash -n docs/install.sh
           bash -n platforms/linux/scripts/build-deb.sh
           bash -n platforms/linux/scripts/build-tarball.sh
+          bash -n platforms/linux/scripts/build-appimage.sh
           bash -n platforms/linux/scripts/build-rpm.sh
           python3 -m py_compile platforms/linux/ui/bongo_settings.py platforms/linux/ibus/bongo_ibus_engine.py platforms/linux/scripts/configure-fcitx5.py
           python3 -m py_compile platforms/windows/ui/bongo_settings.py platforms/windows/service/bongo_service.py platforms/windows/scripts/package_windows.py
@@ -120,7 +121,7 @@ jobs:
           test ! -e /usr/bin/bongo-settings
 
   macos:
-    runs-on: macos-15
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - name: Select Apple Silicon Rust target
