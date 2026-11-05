@@ -1,5 +1,5 @@
 ; Inno Setup Script for Bongo on Windows (x64 and ARM64)
-; Builds professional standalone setup installer (Bongo-Setup-1.1.0.exe)
+; Builds professional standalone setup installer (Bongo-Setup-1.2.0.exe)
 
 #define MyAppName "Bongo"
 #define MyAppVersion "1.2.0"

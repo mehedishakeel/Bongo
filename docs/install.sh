@@ -66,6 +66,16 @@ fi
 # Uninstall only removes files recorded by the prebuilt installer's manifest.
 # Package-manager installs must be removed with apt/dnf/pacman.
 if [[ "${UNINSTALL}" == "true" ]]; then
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        echo "--> Uninstalling Bongo on macOS..."
+        killall "Bongo" 2>/dev/null || true
+        killall "Bongo Input Method" 2>/dev/null || true
+        rm -rf "/Applications/Bongo.app" "${HOME}/Applications/Bongo.app"
+        rm -rf "${HOME}/Library/Input Methods/Bongo.app" "${HOME}/Library/Input Methods/Bongo Input Method.app"
+        echo "--> Bongo uninstalled successfully."
+        exit 0
+    fi
+
     PREFIX="${PREFIX:-/usr}"
     DESTDIR="${DESTDIR:-}"
     if [[ -z "${DESTDIR}" && $EUID -ne 0 && "${PREFIX}" == "/usr" ]]; then
@@ -240,6 +250,114 @@ IBUS_SOURCE_ENABLED=false
 # Remote Mode (e.g. curl -sSL ... | bash)
 # ========================================================
 if [[ "${IS_LOCAL}" != "true" ]]; then
+    OS_TYPE="$(uname -s)"
+
+    # ----------------------------------------------------
+    # macOS Remote Installation
+    # ----------------------------------------------------
+    if [[ "${OS_TYPE}" == "Darwin" ]]; then
+        echo "=================================================="
+        echo "           Bongo macOS Installation               "
+        echo "=================================================="
+
+        ARCH="$(uname -m)"
+        case "${ARCH}" in
+            arm64|aarch64)
+                MAC_ARCH="arm64"
+                ;;
+            x86_64)
+                MAC_ARCH="intel-x86_64"
+                ;;
+            *)
+                MAC_ARCH="universal"
+                ;;
+        esac
+
+        BONGO_VERSION="${BONGO_VERSION:-1.2.0}"
+        DMG_NAME="Bongo-${BONGO_VERSION}-macos-${MAC_ARCH}.dmg"
+        DMG_URL="https://github.com/mehedishakeel/Bongo/releases/latest/download/${DMG_NAME}"
+        FALLBACK_URL="https://github.com/mehedishakeel/Bongo/releases/download/v${BONGO_VERSION}/${DMG_NAME}"
+        UNIVERSAL_URL="https://github.com/mehedishakeel/Bongo/releases/latest/download/Bongo-${BONGO_VERSION}-macos-universal.dmg"
+
+        TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/bongo-mac-XXXXXX")"
+        TMP_DMG="${TMP_DIR}/Bongo.dmg"
+        MOUNT_DIR="${TMP_DIR}/mnt"
+        mkdir -p "${MOUNT_DIR}"
+
+        cleanup_mac() {
+            hdiutil detach "${MOUNT_DIR}" -quiet 2>/dev/null || true
+            rm -rf "${TMP_DIR}"
+        }
+        trap cleanup_mac EXIT INT TERM
+
+        echo "--> Downloading Bongo for macOS (${MAC_ARCH})..."
+        DOWNLOADED=false
+        if curl -sSL -f -o "${TMP_DMG}" "${DMG_URL}"; then
+            DOWNLOADED=true
+        elif curl -sSL -f -o "${TMP_DMG}" "${FALLBACK_URL}"; then
+            DOWNLOADED=true
+        elif curl -sSL -f -o "${TMP_DMG}" "${UNIVERSAL_URL}"; then
+            DOWNLOADED=true
+        fi
+
+        if [[ "${DOWNLOADED}" != "true" || ! -s "${TMP_DMG}" ]]; then
+            echo "Error: Failed to download Bongo DMG from ${DMG_URL}" >&2
+            exit 1
+        fi
+
+        echo "--> Mounting Bongo disk image..."
+        hdiutil attach "${TMP_DMG}" -mountpoint "${MOUNT_DIR}" -nobrowse -quiet -noautoopen
+
+        if [[ ! -d "${MOUNT_DIR}/Bongo.app" ]]; then
+            echo "Error: Bongo.app not found inside DMG." >&2
+            exit 1
+        fi
+
+        APP_DEST="/Applications"
+        echo "--> Installing Bongo to ${APP_DEST}/Bongo.app..."
+        if [[ -w "${APP_DEST}" ]]; then
+            rm -rf "${APP_DEST}/Bongo.app"
+            cp -R "${MOUNT_DIR}/Bongo.app" "${APP_DEST}/"
+        else
+            if command -v sudo >/dev/null 2>&1; then
+                echo "--> Authenticating sudo to install into /Applications..."
+                if [ -t 0 ]; then
+                    sudo -v
+                elif [ -r /dev/tty ]; then
+                    sudo -v </dev/tty
+                fi
+                sudo rm -rf "${APP_DEST}/Bongo.app"
+                sudo cp -R "${MOUNT_DIR}/Bongo.app" "${APP_DEST}/"
+            else
+                APP_DEST="${HOME}/Applications"
+                mkdir -p "${APP_DEST}"
+                rm -rf "${APP_DEST}/Bongo.app"
+                cp -R "${MOUNT_DIR}/Bongo.app" "${APP_DEST}/"
+            fi
+        fi
+
+        hdiutil detach "${MOUNT_DIR}" -quiet 2>/dev/null || true
+        xattr -cr "${APP_DEST}/Bongo.app" 2>/dev/null || true
+
+        echo "--> Launching Bongo to register keyboard input method..."
+        open "${APP_DEST}/Bongo.app" 2>/dev/null || true
+
+        echo "=================================================="
+        echo "   Bongo has been successfully installed!        "
+        echo "=================================================="
+        echo ""
+        echo "Next Steps:"
+        echo "1. Bongo has been installed to ${APP_DEST}/Bongo.app and launched."
+        echo "2. Open System Settings -> Keyboard -> Input Sources."
+        echo "3. Click '+' and add 'Bengali (Bongo)'."
+        echo "4. Switch keyboards anytime with Control + Space or Caps Lock."
+        echo ""
+        exit 0
+    fi
+
+    # ----------------------------------------------------
+    # Linux Remote Installation
+    # ----------------------------------------------------
     echo "=================================================="
     echo "           Bongo Linux Installation               "
     echo "=================================================="
@@ -257,6 +375,8 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
             exit 1
             ;;
     esac
+
+    BONGO_VERSION="${BONGO_VERSION:-1.2.0}"
 
     # Determine sudo prefix if not root
     SUDO=""
@@ -281,8 +401,8 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
     if command -v apt-get >/dev/null 2>&1 || command -v apt >/dev/null 2>&1 || command -v dpkg >/dev/null 2>&1; then
         echo "--> Detected Debian / Ubuntu based system (${DEB_ARCH})"
         TMP_DEB="/tmp/bongo_${DEB_ARCH}.deb"
-        DEB_URL="https://github.com/mehedishakeel/Bongo/releases/latest/download/bongo_1.1.0_${DEB_ARCH}.deb"
-        FALLBACK_URL="https://github.com/mehedishakeel/Bongo/releases/download/v1.1.0/bongo_1.1.0_${DEB_ARCH}.deb"
+        DEB_URL="https://github.com/mehedishakeel/Bongo/releases/latest/download/bongo_${BONGO_VERSION}_${DEB_ARCH}.deb"
+        FALLBACK_URL="https://github.com/mehedishakeel/Bongo/releases/download/v${BONGO_VERSION}/bongo_${BONGO_VERSION}_${DEB_ARCH}.deb"
 
         DOWNLOADED=false
         echo "--> Downloading ${DEB_URL}..."
@@ -362,9 +482,9 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
 
     if [[ -n "${TARBALL_ARCH}" ]]; then
         echo "--> Checking for prebuilt universal release (${TARBALL_ARCH})..."
-        TARBALL_NAME="Bongo-1.1.0-linux-${TARBALL_ARCH}.tar.gz"
+        TARBALL_NAME="Bongo-${BONGO_VERSION}-linux-${TARBALL_ARCH}.tar.gz"
         TARBALL_URL="https://github.com/mehedishakeel/Bongo/releases/latest/download/${TARBALL_NAME}"
-        FALLBACK_TARBALL_URL="https://github.com/mehedishakeel/Bongo/releases/download/v1.1.0/${TARBALL_NAME}"
+        FALLBACK_TARBALL_URL="https://github.com/mehedishakeel/Bongo/releases/download/v${BONGO_VERSION}/${TARBALL_NAME}"
         TMP_DIR="$(mktemp -d /tmp/bongo-tar-XXXXXX)"
         TMP_TAR="${TMP_DIR}/${TARBALL_NAME}"
 
@@ -378,7 +498,7 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
         if [[ "${DOWNLOADED}" == "true" && -s "${TMP_TAR}" ]]; then
             echo "--> Extracting ${TARBALL_NAME}..."
             if tar -xzf "${TMP_TAR}" -C "${TMP_DIR}"; then
-                EXTRACTED_DIR="${TMP_DIR}/Bongo-1.1.0-linux-${TARBALL_ARCH}"
+                EXTRACTED_DIR="${TMP_DIR}/Bongo-${BONGO_VERSION}-linux-${TARBALL_ARCH}"
                 if [[ -d "${EXTRACTED_DIR}" && -f "${EXTRACTED_DIR}/install.sh" ]]; then
                     echo "--> Installing via prebuilt bundle..."
                     if (cd "${EXTRACTED_DIR}" && ${SUDO} bash install.sh --prebuilt); then

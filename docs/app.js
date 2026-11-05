@@ -630,12 +630,12 @@ function initDownloadHub() {
         });
     }
 
-    // Copy macOS Homebrew command button
+    // Copy macOS install command button
     const copyMacBtn = document.getElementById('copyMacBrewCmd');
     const copyMacText = document.getElementById('copyMacCmdText');
     if (copyMacBtn && copyMacText) {
         copyMacBtn.addEventListener('click', async () => {
-            const cmd = 'brew install --cask mehedishakeel/bongo/bongo';
+            const cmd = 'curl -fsSL https://getbongo.app/install.sh | bash';
             try {
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     await navigator.clipboard.writeText(cmd);
@@ -688,8 +688,8 @@ function initDownloadHub() {
    ======================================================== */
 function initDirectDownload() {
     const GITHUB_REPO = 'mehedishakeel/Bongo';
-    const CACHE_KEY = 'bongo_latest_assets_v1_1_0';
-    const CACHE_TIME_KEY = 'bongo_latest_assets_time_v1_1_0';
+    const CACHE_KEY = 'bongo_latest_assets_v1_2_0';
+    const CACHE_TIME_KEY = 'bongo_latest_assets_time_v1_2_0';
     const ONE_HOUR = 60 * 60 * 1000;
 
     function applyAssetUrls(assets) {
