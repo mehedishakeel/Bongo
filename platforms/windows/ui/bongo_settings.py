@@ -1106,6 +1106,49 @@ class BongoSettingsApp:
         )
         em_cb.pack(side=tk.RIGHT)
 
+        # Section: SYSTEM STARTUP
+        self.make_section_label(container, "System Startup")
+
+        su_card = self.make_card(container)
+        su_row = tk.Frame(su_card, bg=BG_CARD)
+        su_row.pack(fill=tk.X)
+
+        su_info = tk.Frame(su_row, bg=BG_CARD)
+        su_info.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        su_lbl = tk.Label(
+            su_info,
+            text="Start Bongo automatically on system startup",
+            font=("Segoe UI", 10, "bold"),
+            fg=TEXT_PRIMARY,
+            bg=BG_CARD
+        )
+        su_lbl.pack(anchor="w")
+
+        su_desc = tk.Label(
+            su_info,
+            text="Automatically launches Bongo in the background when your computer boots up.",
+            font=("Segoe UI", 9),
+            fg=TEXT_SECONDARY,
+            bg=BG_CARD
+        )
+        su_desc.pack(anchor="w", pady=(2, 0))
+
+        self.autostart_var = tk.BooleanVar(value=self.settings.get("autostart", True))
+        su_cb = tk.Checkbutton(
+            su_row,
+            text="Enabled",
+            font=("Segoe UI", 9),
+            fg=TEXT_PRIMARY,
+            variable=self.autostart_var,
+            command=self.on_autostart_changed,
+            bg=BG_CARD,
+            selectcolor=BG_DARK,
+            activebackground=BG_CARD,
+            activeforeground=ACCENT_LIGHT
+        )
+        su_cb.pack(side=tk.RIGHT)
+
         # Section: UPDATES & SYSTEM
         self.make_section_label(container, "Updates & System")
 
@@ -1127,35 +1170,10 @@ class BongoSettingsApp:
         upd_btn = self.make_button(s_row, "Check for Updates... ↗", lambda: webbrowser.open("https://getbongo.app"))
         upd_btn.pack(side=tk.RIGHT)
 
-        # Windows Integration Card: Autostart & Shortcut
+        # Windows Integration Card: Shortcut & Mode
         win_card = self.make_card(container)
 
-        # Row 1: Autostart
-        as_row = tk.Frame(win_card, bg=BG_CARD)
-        as_row.pack(fill=tk.X, pady=(0, 12))
-
-        as_lbl = tk.Label(
-            as_row,
-            text="Start Bongo automatically when Windows starts",
-            font=("Segoe UI", 10),
-            fg=TEXT_PRIMARY,
-            bg=BG_CARD
-        )
-        as_lbl.pack(side=tk.LEFT)
-
-        self.autostart_var = tk.BooleanVar(value=self.settings.get("autostart", True))
-        as_cb = tk.Checkbutton(
-            as_row,
-            variable=self.autostart_var,
-            command=self.on_autostart_changed,
-            bg=BG_CARD,
-            selectcolor=BG_DARK,
-            activebackground=BG_CARD,
-            activeforeground=ACCENT_LIGHT
-        )
-        as_cb.pack(side=tk.RIGHT)
-
-        # Row 2: Toggle Hotkey
+        # Row 1: Toggle Hotkey
         hk_row = tk.Frame(win_card, bg=BG_CARD)
         hk_row.pack(fill=tk.X)
 

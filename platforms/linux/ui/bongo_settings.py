@@ -52,7 +52,37 @@ DEFAULT_SETTINGS = {
     "suggest_emoji": True,
     "candidate_font": "Noto Sans Bengali",
     "candidate_font_size": 16,
+    "autostart": True,
 }
+
+
+def set_linux_autostart(enabled: bool):
+    """Configures Linux XDG autostart entry (~/.config/autostart)."""
+    try:
+        autostart_dir = Path.home() / ".config" / "autostart"
+        desktop_file = autostart_dir / "app.getbongo.Bongo.desktop"
+        if enabled:
+            autostart_dir.mkdir(parents=True, exist_ok=True)
+            content = """[Desktop Entry]
+Type=Application
+Name=Bongo
+GenericName=Bengali Input Method
+Comment=Start Bongo Input Method on login
+Exec=bongo-settings --daemon
+Icon=bongo
+Terminal=false
+Categories=Utility;
+X-GNOME-Autostart-enabled=true
+"""
+            desktop_file.write_text(content, encoding="utf-8")
+        else:
+            if desktop_file.is_file():
+                try:
+                    desktop_file.unlink()
+                except Exception:
+                    pass
+    except Exception as e:
+        sys.stderr.write(f"Warning: Could not configure Linux autostart: {e}\n")
 
 
 def find_app_icon():
@@ -1055,6 +1085,37 @@ class BongoSettingsApp:
         self.set_card_content(pref_card, pref_box)
         self.append_widget(box, pref_card)
 
+        # System Startup Section
+        self.append_widget(box, self.make_section_label("System Startup"))
+
+        startup_card = self.make_card()
+        su_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=14)
+
+        su_info = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        su_info.set_hexpand(True)
+
+        su_title = Gtk.Label()
+        su_title.set_markup("<b>Start Bongo automatically on system startup</b>")
+        su_title.set_xalign(0)
+
+        su_desc = Gtk.Label(label="Automatically launches Bongo in the background when your computer boots up.")
+        su_desc.set_wrap(True)
+        su_desc.set_xalign(0)
+        if gtk_version != '4.0':
+            su_desc.get_style_context().add_class("dim-label")
+
+        self.append_widget(su_info, su_title)
+        self.append_widget(su_info, su_desc)
+
+        self.autostart_check = Gtk.CheckButton(label="Enabled")
+        self.autostart_check.set_active(self.settings.get("autostart", True))
+        self.autostart_check.connect("toggled", self.on_autostart_toggled)
+
+        self.append_widget(su_box, su_info)
+        self.append_widget(su_box, self.autostart_check)
+        self.set_card_content(startup_card, su_box)
+        self.append_widget(box, startup_card)
+
         # Updates & System Section
         self.append_widget(box, self.make_section_label("Updates & System"))
 
@@ -1238,6 +1299,12 @@ class BongoSettingsApp:
     def on_emoji_toggled(self, switch, state):
         self.settings["suggest_emoji"] = state
         save_settings(self.settings)
+
+    def on_autostart_toggled(self, widget):
+        val = widget.get_active()
+        self.settings["autostart"] = val
+        save_settings(self.settings)
+        set_linux_autostart(val)
 
     def open_website(self, _btn):
         import webbrowser

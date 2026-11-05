@@ -40,6 +40,10 @@ class BongoInputController: IMKInputController {
     /// Absent means on.
     static let showEmojiKey = "BongoShowEmoji"
 
+    /// UserDefaults bool key: launch Bongo automatically at system startup.
+    /// Absent means on.
+    static let autostartKey = "BongoAutostart"
+
     static func currentKeyboardLayout() -> KeyboardLayout {
         let defaults = UserDefaults.standard
         if let raw = defaults.string(forKey: keyboardLayoutKey),
@@ -65,6 +69,10 @@ class BongoInputController: IMKInputController {
 
     static func currentShowEmoji() -> Bool {
         return UserDefaults.standard.object(forKey: showEmojiKey) as? Bool ?? true
+    }
+
+    static func currentAutostart() -> Bool {
+        return UserDefaults.standard.object(forKey: autostartKey) as? Bool ?? true
     }
 
     // MARK: - Session state

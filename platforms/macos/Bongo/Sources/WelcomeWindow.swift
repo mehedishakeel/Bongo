@@ -1,6 +1,7 @@
 import Cocoa
 import CoreText
 import WebKit
+import ServiceManagement
 
 // MARK: - Window Controller (Singleton)
 
@@ -1230,6 +1231,7 @@ class SettingsView: NSView {
     private var cards: [ModeCard] = []
     private let emojiSwitch = NSSwitch()
     private let emojiTitle = NSTextField(labelWithString: "Show emoji in suggestions")
+    private let startupCheckbox = NSButton(checkboxWithTitle: "Enabled", target: nil, action: nil)
 
     override init(frame: NSRect) {
         super.init(frame: frame)
@@ -1335,6 +1337,40 @@ class SettingsView: NSView {
         stack.addArrangedSubview(prefCard)
         prefCard.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
 
+        // System Startup Section
+        let startupHeader = WelcomeUI.sectionHeader("System Startup")
+        stack.addArrangedSubview(startupHeader)
+
+        let suTitle = NSTextField(labelWithString: "Start Bongo automatically on system startup")
+        suTitle.font = .systemFont(ofSize: 13, weight: .semibold)
+
+        let suDesc = NSTextField(wrappingLabelWithString: "Automatically launches Bongo in the background when your computer boots up.")
+        suDesc.font = .systemFont(ofSize: 11.5)
+        suDesc.textColor = .secondaryLabelColor
+
+        let suTextStack = NSStackView(views: [suTitle, suDesc])
+        suTextStack.orientation = .vertical
+        suTextStack.alignment = .leading
+        suTextStack.spacing = 3
+        suTextStack.setContentHuggingPriority(.defaultLow, for: .horizontal)
+
+        let isAutostart = BongoInputController.currentAutostart()
+        startupCheckbox.title = "Enabled"
+        startupCheckbox.font = .systemFont(ofSize: 13)
+        startupCheckbox.target = self
+        startupCheckbox.action = #selector(startupToggled(_:))
+        startupCheckbox.state = isAutostart ? .on : .off
+        startupCheckbox.setContentHuggingPriority(.required, for: .horizontal)
+
+        let suRow = NSStackView(views: [suTextStack, startupCheckbox])
+        suRow.orientation = .horizontal
+        suRow.spacing = 16
+        suRow.alignment = .centerY
+
+        let startupCard = CardContainer(content: suRow)
+        stack.addArrangedSubview(startupCard)
+        startupCard.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+
         // Updates & System Info
         let sysHeader = WelcomeUI.sectionHeader("Updates & System")
         stack.addArrangedSubview(sysHeader)
@@ -1374,6 +1410,23 @@ class SettingsView: NSView {
         let on = (emojiSwitch.state == .on)
         UserDefaults.standard.set(on, forKey: BongoInputController.showEmojiKey)
         NotificationCenter.default.post(name: .bongoEmojiSettingChanged, object: nil)
+    }
+
+    @objc private func startupToggled(_ sender: NSButton) {
+        let enabled = (sender.state == .on)
+        UserDefaults.standard.set(enabled, forKey: BongoInputController.autostartKey)
+        NotificationCenter.default.post(name: .bongoAutostartChanged, object: nil)
+        if #available(macOS 13.0, *) {
+            do {
+                if enabled {
+                    try SMAppService.mainApp.register()
+                } else {
+                    try SMAppService.mainApp.unregister()
+                }
+            } catch {
+                NSLog("Bongo: autostart status update error: \(error)")
+            }
+        }
     }
 
     @objc private func checkUpdates() {
