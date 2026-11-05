@@ -165,3 +165,21 @@ jobs:
       - name: Test Windows Packaging Audit
         run: |
           python platforms/windows/scripts/package_windows.py
+
+  android:
+    name: Android Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+      - name: Assemble Android APK
+        run: |
+          cd platforms/android
+          chmod +x ./gradlew
+          ./gradlew assembleRelease
+
