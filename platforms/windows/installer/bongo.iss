@@ -2,7 +2,7 @@
 ; Builds professional standalone setup installer (Bongo-Setup-1.1.0.exe)
 
 #define MyAppName "Bongo"
-#define MyAppVersion "1.1.0"
+#define MyAppVersion "1.2.0"
 #define MyAppPublisher "Bongo Team"
 #define MyAppURL "https://getbongo.app"
 #define MyAppExeName "bongo.exe"

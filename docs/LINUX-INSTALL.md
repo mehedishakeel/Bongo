@@ -24,14 +24,14 @@ packages include both frontends rather than forcing either one.
 
 ## Option 1: Universal Tarball (any distribution)
 
-Download `Bongo-1.1.0-linux-x86_64.tar.gz` for a 64-bit PC or
-`Bongo-1.1.0-linux-aarch64.tar.gz` for ARM64 from the
+Download `Bongo-1.2.0-linux-x86_64.tar.gz` for a 64-bit PC or
+`Bongo-1.2.0-linux-aarch64.tar.gz` for ARM64 from the
 [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then
 extract and install:
 
 ```bash
-tar -xzf Bongo-1.1.0-linux-x86_64.tar.gz
-cd Bongo-1.1.0-linux-x86_64
+tar -xzf Bongo-1.2.0-linux-x86_64.tar.gz
+cd Bongo-1.2.0-linux-x86_64
 
 # System-wide install (requires root):
 sudo bash install.sh --prebuilt
@@ -77,30 +77,30 @@ makepkg -si
 
 ## Option 3: AppImage (SteamOS, Bazzite, Fedora Silverblue, Immutable Distros)
 
-For immutable operating systems with read-only root filesystems, download `Bongo-1.1.0-linux-x86_64.AppImage` (or `aarch64`):
+For immutable operating systems with read-only root filesystems, download `Bongo-1.2.0-linux-x86_64.AppImage` (or `aarch64`):
 
 ```bash
-chmod +x Bongo-1.1.0-linux-x86_64.AppImage
+chmod +x Bongo-1.2.0-linux-x86_64.AppImage
 
 # Integrate Bongo IME and Settings into ~/.local (no root required!):
-./Bongo-1.1.0-linux-x86_64.AppImage --install-user
+./Bongo-1.2.0-linux-x86_64.AppImage --install-user
 
 # Launch Bongo Settings & Layout Viewer directly:
-./Bongo-1.1.0-linux-x86_64.AppImage
+./Bongo-1.2.0-linux-x86_64.AppImage
 
 # Check status or uninstall anytime:
-./Bongo-1.1.0-linux-x86_64.AppImage --status
-./Bongo-1.1.0-linux-x86_64.AppImage --uninstall
+./Bongo-1.2.0-linux-x86_64.AppImage --status
+./Bongo-1.2.0-linux-x86_64.AppImage --uninstall
 ```
 
 ---
 
 ## Option 4: Debian / Ubuntu package
 
-Download `bongo_1.1.0_amd64.deb` (or `bongo_1.1.0_arm64.deb`) from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then install via terminal:
+Download `bongo_1.2.0_amd64.deb` (or `bongo_1.2.0_arm64.deb`) from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then install via terminal:
 
 ```bash
-sudo apt install ./bongo_1.1.0_amd64.deb
+sudo apt install ./bongo_1.2.0_amd64.deb
 ```
 
 The package installs the engine and settings app, and includes the fcitx5 addon
