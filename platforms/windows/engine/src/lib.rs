@@ -34,6 +34,28 @@ pub struct BongoWindowsEngine {
     layout: KeyboardLayout,
     show_emoji: bool,
     current_phonetic: Option<String>,
+    user_dir: Option<std::path::PathBuf>,
+}
+
+fn get_default_windows_user_dir() -> std::path::PathBuf {
+    if let Ok(dir) = std::env::var("BONGO_USER_DIR") {
+        if !dir.is_empty() {
+            let p = std::path::PathBuf::from(dir);
+            let _ = std::fs::create_dir_all(&p);
+            return p;
+        }
+    }
+    if let Ok(appdata) = std::env::var("APPDATA") {
+        let p = std::path::PathBuf::from(appdata).join("Bongo");
+        let _ = std::fs::create_dir_all(&p);
+        p
+    } else if let Ok(home) = std::env::var("USERPROFILE") {
+        let p = std::path::PathBuf::from(home).join(".config").join("bongo");
+        let _ = std::fs::create_dir_all(&p);
+        p
+    } else {
+        std::path::PathBuf::from(".config/bongo")
+    }
 }
 
 /// Convert a Unicode character codepoint to a riti keycode.
@@ -141,15 +163,22 @@ pub extern "C" fn avro_keycode_for_char(ch: u32) -> u16 {
 /// Creates a new BongoWindowsEngine instance with default configuration.
 #[no_mangle]
 pub extern "C" fn bongo_engine_new() -> *mut BongoWindowsEngine {
+    let user_dir = get_default_windows_user_dir();
     let mut config = Config::default();
     config.set_layout_file_path("avro_phonetic");
     config.set_phonetic_suggestion(true);
+    if let Some(s) = user_dir.to_str() {
+        config.set_user_dir(s);
+    }
 
     let main_ctx = RitiContext::new_with_config(&config);
 
     let mut shadow_config = Config::default();
     shadow_config.set_layout_file_path("avro_phonetic");
     shadow_config.set_phonetic_suggestion(false);
+    if let Some(s) = user_dir.to_str() {
+        shadow_config.set_user_dir(s);
+    }
     let shadow_ctx = Some(RitiContext::new_with_config(&shadow_config));
 
     let engine = BongoWindowsEngine {
@@ -159,6 +188,7 @@ pub extern "C" fn bongo_engine_new() -> *mut BongoWindowsEngine {
         layout: KeyboardLayout::AvroPhonetic,
         show_emoji: true,
         current_phonetic: None,
+        user_dir: Some(user_dir),
     };
 
     Box::into_raw(Box::new(engine))
@@ -214,11 +244,63 @@ pub extern "C" fn bongo_engine_set_layout(engine: *mut BongoWindowsEngine, layou
             config.set_phonetic_suggestion(true);
         }
     }
+    if let Some(ref u) = eng.user_dir {
+        if let Some(s) = u.to_str() {
+            config.set_user_dir(s);
+        }
+    }
     eng.main_ctx.update_engine(&config);
     if let Some(ref mut shadow) = eng.shadow_ctx {
         let mut shadow_config = config.clone();
         shadow_config.set_phonetic_suggestion(false);
         shadow.update_engine(&shadow_config);
+    }
+}
+
+/// Sets the user specific data directory path (where autocorrect.json is stored).
+#[no_mangle]
+pub extern "C" fn bongo_engine_set_user_dir(engine: *mut BongoWindowsEngine, path: *const c_char) {
+    if engine.is_null() || path.is_null() { return; }
+    let eng = unsafe { &mut *engine };
+    let c_str = unsafe { std::ffi::CStr::from_ptr(path) };
+    if let Ok(s) = c_str.to_str() {
+        let p = std::path::PathBuf::from(s);
+        let _ = std::fs::create_dir_all(&p);
+        let mut config = Config::default();
+        match eng.layout {
+            KeyboardLayout::National => {
+                config.set_layout_file_path("national");
+                config.set_fixed_automatic_vowel(true);
+                config.set_fixed_old_kar_order(true);
+                config.set_fixed_traditional_kar(true);
+                config.set_fixed_old_reph(true);
+                config.set_fixed_automatic_chandra(true);
+                config.set_fixed_numpad(true);
+                config.set_fixed_suggestion(false);
+            }
+            KeyboardLayout::Borno => {
+                config.set_layout_file_path("borno");
+                config.set_fixed_automatic_vowel(true);
+                config.set_fixed_old_kar_order(true);
+                config.set_fixed_traditional_kar(true);
+                config.set_fixed_old_reph(true);
+                config.set_fixed_automatic_chandra(true);
+                config.set_fixed_numpad(true);
+                config.set_fixed_suggestion(false);
+            }
+            KeyboardLayout::AvroPhonetic => {
+                config.set_layout_file_path("avro_phonetic");
+                config.set_phonetic_suggestion(true);
+            }
+        }
+        config.set_user_dir(s);
+        eng.main_ctx.update_engine(&config);
+        if let Some(ref mut shadow) = eng.shadow_ctx {
+            let mut shadow_config = config.clone();
+            shadow_config.set_phonetic_suggestion(false);
+            shadow.update_engine(&shadow_config);
+        }
+        eng.user_dir = Some(p);
     }
 }
 

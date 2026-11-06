@@ -223,7 +223,11 @@ impl PhoneticSuggestion {
 
             // Auto Correct item.
             if let Some(correct) = self.search_corrected(string.word(), data) {
-                let corrected = self.phonetic.convert(correct);
+                let corrected = if correct.chars().any(|c| ('\u{0980}'..='\u{09FF}').contains(&c)) {
+                    correct.to_string()
+                } else {
+                    self.phonetic.convert(correct)
+                };
                 // Treat it as the first priority.
                 suggestions.push(Rank::first_ranked(corrected));
             }

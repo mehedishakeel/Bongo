@@ -38,6 +38,27 @@ pub struct BongoLinuxEngine {
     current_phonetic: Option<String>,
 }
 
+fn get_default_linux_user_dir() -> std::path::PathBuf {
+    if let Ok(dir) = std::env::var("BONGO_USER_DIR") {
+        if !dir.is_empty() {
+            let p = std::path::PathBuf::from(dir);
+            let _ = std::fs::create_dir_all(&p);
+            return p;
+        }
+    }
+    if let Ok(config_home) = std::env::var("XDG_CONFIG_HOME") {
+        let p = std::path::PathBuf::from(config_home).join("bongo");
+        let _ = std::fs::create_dir_all(&p);
+        p
+    } else if let Ok(home) = std::env::var("HOME") {
+        let p = std::path::PathBuf::from(home).join(".config").join("bongo");
+        let _ = std::fs::create_dir_all(&p);
+        p
+    } else {
+        std::path::PathBuf::from(".config/bongo")
+    }
+}
+
 fn configs_for(mode: TypingMode, layout: KeyboardLayout, show_emoji: bool) -> (Config, Config) {
     let mut main_config = Config::default();
     match layout {
@@ -95,6 +116,12 @@ fn configs_for(mode: TypingMode, layout: KeyboardLayout, show_emoji: bool) -> (C
             shadow_config.set_phonetic_suggestion(false);
             shadow_config.set_include_emoji(false);
         }
+    }
+
+    let user_dir = get_default_linux_user_dir();
+    if let Some(s) = user_dir.to_str() {
+        main_config.set_user_dir(s);
+        shadow_config.set_user_dir(s);
     }
 
     (main_config, shadow_config)

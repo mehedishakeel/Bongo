@@ -48,6 +48,36 @@ GITHUB_REPO = "mehedishakeel/Bongo"
 # Configuration path (XDG Base Directory compliant)
 CONFIG_DIR = Path.home() / ".config" / "bongo"
 CONFIG_FILE = CONFIG_DIR / "settings.json"
+AUTOCORRECT_FILE = CONFIG_DIR / "autocorrect.json"
+
+DEFAULT_SHORTCUTS = {
+    "fb": "ফেসবুক",
+    "gm": "শুভ সকাল",
+    "gn": "শুভ রাত্রি",
+    "yt": "ইউটিউব",
+    "thx": "ধন্যবাদ",
+    "bd": "বাংলাদেশ",
+    "dhaka": "ঢাকা",
+}
+
+def load_user_shortcuts():
+    if AUTOCORRECT_FILE.is_file():
+        try:
+            with open(AUTOCORRECT_FILE, "r", encoding="utf-8") as f:
+                d = json.load(f)
+                if isinstance(d, dict):
+                    return d
+        except Exception:
+            pass
+    return {}
+
+def save_user_shortcuts(shortcuts: dict):
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        with open(AUTOCORRECT_FILE, "w", encoding="utf-8") as f:
+            json.dump(shortcuts, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        sys.stderr.write(f"Warning: Could not save shortcuts: {e}\n")
 
 DEFAULT_SETTINGS = {
     "keyboard_layout": 0,     # 0: Avro Phonetic, 1: National (Bijoy), 2: Borno (SafeWorks)
@@ -573,6 +603,7 @@ class BongoSettingsApp:
             ("⌨️  Bongo Layout", 1),
             ("⚙️  Settings", 2),
             ("🔤  Fonts", 3),
+            ("⚡  Shortcuts", 4),
         ]
         for label_text, index in tab_names:
             btn = Gtk.Button()
@@ -674,11 +705,13 @@ class BongoSettingsApp:
         self.view_cheatsheet = self.create_cheatsheet_view()
         self.view_settings = self.create_settings_view()
         self.view_fonts = self.create_fonts_view()
+        self.view_shortcuts = self.create_shortcuts_view()
 
         self.stack.add_named(self.view_getting_started, "getting_started")
         self.stack.add_named(self.view_cheatsheet, "cheatsheet")
         self.stack.add_named(self.view_settings, "settings")
         self.stack.add_named(self.view_fonts, "fonts")
+        self.stack.add_named(self.view_shortcuts, "shortcuts")
 
         if gtk_version == '4.0':
             self.scrolled_window.set_child(self.stack)
@@ -691,9 +724,10 @@ class BongoSettingsApp:
             ("Getting Started", "Everything you need to begin typing in Bangla."),
             ("Bongo Layout", "The complete phonetic key map at a glance."),
             ("Settings", "Choose how Bongo behaves while you type."),
-            ("Fonts", "Make the suggestion popup comfortable to read.")
+            ("Fonts", "Make the suggestion popup comfortable to read."),
+            ("Shortcuts", "Define personal text expansions and custom word mappings.")
         ]
-        page_names = ["getting_started", "cheatsheet", "settings", "fonts"]
+        page_names = ["getting_started", "cheatsheet", "settings", "fonts", "shortcuts"]
 
         title, subtitle = titles[index]
         self.heading_label.set_text(title)
@@ -1642,6 +1676,159 @@ class BongoSettingsApp:
                 return
             except FileNotFoundError:
                 continue
+
+    # -------------------------------------------------------------
+    # 5. Shortcuts & User Dictionary Tab
+    # -------------------------------------------------------------
+    def create_shortcuts_view(self):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+        self.user_shortcuts = load_user_shortcuts()
+
+        # Section 1: Add Custom Shortcut
+        self.append_widget(box, self.make_section_label("Add Custom Shortcut"))
+        add_card = self.make_card()
+        add_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+
+        self.sc_entry = Gtk.Entry()
+        self.sc_entry.set_placeholder_text("Shortcut (e.g. fb)")
+        self.sc_entry.set_width_chars(12)
+
+        arrow_lbl = Gtk.Label(label="➔")
+
+        self.exp_entry = Gtk.Entry()
+        self.exp_entry.set_placeholder_text("Expansion in Bangla or English (e.g. ফেসবুক)")
+        self.exp_entry.set_hexpand(True)
+
+        add_btn = Gtk.Button(label="+ Add")
+        add_btn.connect("clicked", self.add_shortcut)
+
+        self.append_widget(row, self.sc_entry)
+        self.append_widget(row, arrow_lbl)
+        self.append_widget(row, self.exp_entry)
+        self.append_widget(row, add_btn)
+        self.append_widget(add_box, row)
+
+        # Tools row (Presets, Export, Import)
+        tools_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        preset_btn = Gtk.Button(label="Load Common Presets")
+        preset_btn.connect("clicked", self.load_preset_shortcuts)
+
+        export_btn = Gtk.Button(label="Export JSON…")
+        export_btn.connect("clicked", self.export_shortcuts)
+
+        import_btn = Gtk.Button(label="Import JSON…")
+        import_btn.connect("clicked", self.import_shortcuts)
+
+        self.append_widget(tools_row, preset_btn)
+        self.append_widget(tools_row, export_btn)
+        self.append_widget(tools_row, import_btn)
+        self.append_widget(add_box, tools_row)
+
+        self.set_card_content(add_card, add_box)
+        self.append_widget(box, add_card)
+
+        # Section 2: Active Shortcuts
+        self.append_widget(box, self.make_section_label("Active Shortcuts"))
+        self.shortcuts_card = self.make_card()
+        self.shortcuts_list_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        self.set_card_content(self.shortcuts_card, self.shortcuts_list_box)
+        self.append_widget(box, self.shortcuts_card)
+
+        self.refresh_shortcuts_list()
+        return box
+
+    def refresh_shortcuts_list(self):
+        # Clear previous children
+        if gtk_version == '4.0':
+            while child := self.shortcuts_list_box.get_first_child():
+                self.shortcuts_list_box.remove(child)
+        else:
+            for child in self.shortcuts_list_box.get_children():
+                self.shortcuts_list_box.remove(child)
+
+        if not self.user_shortcuts:
+            empty_lbl = Gtk.Label(label="No custom shortcuts defined yet. Type a code above or load common presets!")
+            if gtk_version != '4.0':
+                empty_lbl.get_style_context().add_class("dim-label")
+            self.append_widget(self.shortcuts_list_box, empty_lbl)
+            return
+
+        for k, v in sorted(self.user_shortcuts.items()):
+            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+
+            k_lbl = Gtk.Label(label=k)
+            k_lbl.set_width_chars(10)
+            k_lbl.set_xalign(0)
+            if gtk_version == '4.0':
+                k_lbl.add_css_class("bongo-key-chip")
+            else:
+                k_lbl.get_style_context().add_class("bongo-key-chip")
+
+            arrow = Gtk.Label(label="→")
+
+            v_lbl = Gtk.Label(label=v)
+            v_lbl.set_hexpand(True)
+            v_lbl.set_xalign(0)
+
+            del_btn = Gtk.Button(label="✕")
+            del_btn.connect("clicked", lambda _b, key=k: self.delete_shortcut(key))
+
+            self.append_widget(row, k_lbl)
+            self.append_widget(row, arrow)
+            self.append_widget(row, v_lbl)
+            self.append_widget(row, del_btn)
+
+            self.append_widget(self.shortcuts_list_box, row)
+
+    def add_shortcut(self, _btn=None):
+        k = self.sc_entry.get_text().strip().lower()
+        v = self.exp_entry.get_text().strip()
+        if not k or not v:
+            self.show_dialog("Incomplete", "Please enter both shortcut and expansion.")
+            return
+        self.user_shortcuts[k] = v
+        save_user_shortcuts(self.user_shortcuts)
+        self.sc_entry.set_text("")
+        self.exp_entry.set_text("")
+        self.refresh_shortcuts_list()
+
+    def delete_shortcut(self, key):
+        if key in self.user_shortcuts:
+            del self.user_shortcuts[key]
+            save_user_shortcuts(self.user_shortcuts)
+            self.refresh_shortcuts_list()
+
+    def load_preset_shortcuts(self, _btn=None):
+        self.user_shortcuts.update(DEFAULT_SHORTCUTS)
+        save_user_shortcuts(self.user_shortcuts)
+        self.refresh_shortcuts_list()
+
+    def export_shortcuts(self, _btn=None):
+        export_path = CONFIG_DIR / "bongo_shortcuts.json"
+        try:
+            with open(export_path, "w", encoding="utf-8") as f:
+                json.dump(self.user_shortcuts, f, ensure_ascii=False, indent=2)
+            self.show_dialog("Export Successful", f"Shortcuts saved to {export_path}")
+        except Exception as e:
+            self.show_dialog("Export Failed", str(e))
+
+    def import_shortcuts(self, _btn=None):
+        import_path = CONFIG_DIR / "bongo_shortcuts.json"
+        if import_path.is_file():
+            try:
+                with open(import_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        self.user_shortcuts.update({str(k).lower(): str(v) for k, v in data.items()})
+                        save_user_shortcuts(self.user_shortcuts)
+                        self.refresh_shortcuts_list()
+                        self.show_dialog("Import Successful", f"Imported {len(data)} shortcuts.")
+            except Exception as e:
+                self.show_dialog("Import Failed", str(e))
+        else:
+            self.show_dialog("File Not Found", f"Place your bongo_shortcuts.json in {CONFIG_DIR} and try again.")
 
     # -------------------------------------------------------------
     # Shared UI Helpers

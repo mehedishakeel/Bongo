@@ -243,6 +243,18 @@ class AvroPhoneticEngine:
         self.patterns = AVRO_PATTERNS_DATA
         self.dictionary = AVRO_DICTIONARY_DATA
 
+    def get_user_shortcuts(self) -> dict:
+        try:
+            autocorrect_file = CONFIG_DIR / "autocorrect.json"
+            if autocorrect_file.is_file():
+                with open(autocorrect_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        return {k.lower(): v for k, v in data.items() if isinstance(k, str) and isinstance(v, str)}
+        except Exception:
+            pass
+        return {}
+
     @lru_cache(maxsize=4096)
     def convert_word(self, raw: str) -> str:
         if not raw:
@@ -292,6 +304,21 @@ class AvroPhoneticEngine:
             if c and c not in seen:
                 seen.add(c)
                 cands.append(c)
+
+        # 2.5 User Defined Shortcuts & Custom Dictionary (autocorrect.json)
+        user_shortcuts = self.get_user_shortcuts()
+        if lower in user_shortcuts:
+            custom_val = user_shortcuts[lower]
+            if any('\u0980' <= c <= '\u09ff' for c in custom_val):
+                add(custom_val)
+            else:
+                add(self.convert_word(custom_val))
+        elif stem in user_shortcuts:
+            custom_val = user_shortcuts[stem]
+            if any('\u0980' <= c <= '\u09ff' for c in custom_val):
+                add(custom_val)
+            else:
+                add(self.convert_word(custom_val))
 
         # 3. Curated Dictionary lookup
         if lower in self.dictionary:

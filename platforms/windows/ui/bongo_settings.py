@@ -33,6 +33,36 @@ def get_config_dir():
 
 CONFIG_DIR = get_config_dir()
 CONFIG_FILE = CONFIG_DIR / "settings.json"
+AUTOCORRECT_FILE = CONFIG_DIR / "autocorrect.json"
+
+DEFAULT_SHORTCUTS = {
+    "fb": "ফেসবুক",
+    "gm": "শুভ সকাল",
+    "gn": "শুভ রাত্রি",
+    "yt": "ইউটিউব",
+    "thx": "ধন্যবাদ",
+    "bd": "বাংলাদেশ",
+    "dhaka": "ঢাকা",
+}
+
+def load_user_shortcuts():
+    if AUTOCORRECT_FILE.is_file():
+        try:
+            with open(AUTOCORRECT_FILE, "r", encoding="utf-8") as f:
+                d = json.load(f)
+                if isinstance(d, dict):
+                    return d
+        except Exception:
+            pass
+    return {}
+
+def save_user_shortcuts(shortcuts: dict):
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        with open(AUTOCORRECT_FILE, "w", encoding="utf-8") as f:
+            json.dump(shortcuts, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        sys.stderr.write(f"Warning: Could not save shortcuts: {e}\n")
 
 DEFAULT_SETTINGS = {
     "keyboard_layout": 0,     # 0: Avro Phonetic, 1: National (Bijoy), 2: Borno (SafeWorks)
@@ -393,6 +423,7 @@ class BongoSettingsApp:
             ("⌨  Bongo Layout", 1),
             ("⚙  Settings", 2),
             ("Aa  Fonts", 3),
+            ("⚡  Shortcuts", 4),
         ]
 
         nav_frame = tk.Frame(self.sidebar, bg=BG_SIDEBAR)
@@ -563,12 +594,13 @@ class BongoSettingsApp:
 
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(32, 4), pady=(0, 20))
 
-        # Create the 4 views
+        # Create the views
         self.pages = [
             self.create_getting_started_view(self.scrollable_frame),
             self.create_layout_view(self.scrollable_frame),
             self.create_settings_view(self.scrollable_frame),
             self.create_fonts_view(self.scrollable_frame),
+            self.create_shortcuts_view(self.scrollable_frame),
         ]
 
     def select_tab(self, idx):
@@ -579,6 +611,7 @@ class BongoSettingsApp:
             ("Bongo Layout", "The complete phonetic key map at a glance."),
             ("Settings", "Choose how Bongo behaves while you type."),
             ("Fonts", "Make the suggestion popup comfortable to read."),
+            ("Shortcuts", "Define personal text expansions and custom word mappings."),
         ]
 
         title, subtitle = tab_headers[idx]
@@ -1663,6 +1696,223 @@ class BongoSettingsApp:
     def refresh_fonts(self):
         self.bengali_fonts = scan_bengali_fonts()
         self.font_combo["values"] = self.bengali_fonts
+
+    # -------------------------------------------------------------
+    # 5. Shortcuts & User Dictionary Tab
+    # -------------------------------------------------------------
+    def create_shortcuts_view(self, parent):
+        container = tk.Frame(parent, bg=BG_DARK)
+        container.pack(fill=tk.BOTH, expand=True)
+
+        self.user_shortcuts = load_user_shortcuts()
+
+        # Section 1: Quick Add Shortcut Card
+        self.make_section_label(container, "Add Custom Shortcut")
+        add_card = self.make_card(container)
+
+        form_row = tk.Frame(add_card, bg=BG_CARD)
+        form_row.pack(fill=tk.X, pady=(0, 10))
+
+        # Shortcut key input
+        sc_col = tk.Frame(form_row, bg=BG_CARD)
+        sc_col.pack(side=tk.LEFT, padx=(0, 16))
+        tk.Label(
+            sc_col,
+            text="Shortcut Code:",
+            font=("Segoe UI", 9, "bold"),
+            fg=TEXT_SECONDARY,
+            bg=BG_CARD
+        ).pack(anchor="w", pady=(0, 4))
+        self.sc_entry = tk.Entry(
+            sc_col,
+            font=("Segoe UI", 11),
+            bg=BG_HOVER,
+            fg=TEXT_PRIMARY,
+            insertbackground=TEXT_PRIMARY,
+            relief=tk.FLAT,
+            width=14
+        )
+        self.sc_entry.pack(anchor="w")
+
+        # Arrow indicator
+        tk.Label(
+            form_row,
+            text="➔",
+            font=("Segoe UI", 14),
+            fg=ACCENT_LIGHT,
+            bg=BG_CARD
+        ).pack(side=tk.LEFT, padx=(0, 16), pady=(18, 0))
+
+        # Expansion input
+        exp_col = tk.Frame(form_row, bg=BG_CARD)
+        exp_col.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 16))
+        tk.Label(
+            exp_col,
+            text="Expansion (Bangla or English):",
+            font=("Segoe UI", 9, "bold"),
+            fg=TEXT_SECONDARY,
+            bg=BG_CARD
+        ).pack(anchor="w", pady=(0, 4))
+        self.exp_entry = tk.Entry(
+            exp_col,
+            font=("Segoe UI", 11),
+            bg=BG_HOVER,
+            fg=TEXT_PRIMARY,
+            insertbackground=TEXT_PRIMARY,
+            relief=tk.FLAT
+        )
+        self.exp_entry.pack(fill=tk.X)
+
+        # Add button
+        btn_col = tk.Frame(form_row, bg=BG_CARD)
+        btn_col.pack(side=tk.RIGHT, pady=(18, 0))
+        add_btn = self.make_button(btn_col, "+ Add", self.add_shortcut)
+        add_btn.pack()
+
+        # Tools row: Load Presets, Export, Import
+        tools_row = tk.Frame(add_card, bg=BG_CARD)
+        tools_row.pack(fill=tk.X, pady=(8, 0))
+
+        preset_btn = self.make_button(tools_row, "Load Common Presets", self.load_preset_shortcuts)
+        preset_btn.pack(side=tk.LEFT, padx=(0, 8))
+
+        export_btn = self.make_button(tools_row, "Export JSON…", self.export_shortcuts)
+        export_btn.pack(side=tk.LEFT, padx=(0, 8))
+
+        import_btn = self.make_button(tools_row, "Import JSON…", self.import_shortcuts)
+        import_btn.pack(side=tk.LEFT)
+
+        # Section 2: Active Shortcuts List
+        self.make_section_label(container, "Active Shortcuts")
+        self.shortcuts_card = self.make_card(container)
+        self.shortcuts_list_frame = tk.Frame(self.shortcuts_card, bg=BG_CARD)
+        self.shortcuts_list_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.refresh_shortcuts_list()
+
+        return container
+
+    def refresh_shortcuts_list(self):
+        for widget in self.shortcuts_list_frame.winfo_children():
+            widget.destroy()
+
+        if not self.user_shortcuts:
+            empty_lbl = tk.Label(
+                self.shortcuts_list_frame,
+                text="No custom shortcuts defined yet. Type a code above or load common presets!",
+                font=("Segoe UI", 10),
+                fg=TEXT_MUTED,
+                bg=BG_CARD,
+                pady=16
+            )
+            empty_lbl.pack()
+            return
+
+        for k, v in sorted(self.user_shortcuts.items()):
+            row = tk.Frame(self.shortcuts_list_frame, bg=BG_CARD)
+            row.pack(fill=tk.X, pady=4)
+
+            k_lbl = tk.Label(
+                row,
+                text=k,
+                font=("Segoe UI", 10, "bold"),
+                fg=ACCENT_LIGHT,
+                bg=BG_HOVER,
+                padx=8,
+                pady=3,
+                width=10,
+                anchor="w"
+            )
+            k_lbl.pack(side=tk.LEFT, padx=(0, 12))
+
+            arrow_lbl = tk.Label(
+                row,
+                text="→",
+                font=("Segoe UI", 10),
+                fg=TEXT_MUTED,
+                bg=BG_CARD
+            )
+            arrow_lbl.pack(side=tk.LEFT, padx=(0, 12))
+
+            v_lbl = tk.Label(
+                row,
+                text=v,
+                font=("Segoe UI", 11),
+                fg=TEXT_PRIMARY,
+                bg=BG_CARD,
+                anchor="w"
+            )
+            v_lbl.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+            del_btn = tk.Button(
+                row,
+                text="✕",
+                font=("Segoe UI", 9, "bold"),
+                fg="#ef4444",
+                bg=BG_CARD,
+                activebackground="#ef4444",
+                activeforeground="#ffffff",
+                relief=tk.FLAT,
+                bd=0,
+                cursor="hand2",
+                command=lambda key=k: self.delete_shortcut(key)
+            )
+            del_btn.pack(side=tk.RIGHT, padx=4)
+
+    def add_shortcut(self):
+        k = self.sc_entry.get().strip().lower()
+        v = self.exp_entry.get().strip()
+        if not k or not v:
+            messagebox.showwarning("Incomplete", "Please enter both shortcut and expansion.")
+            return
+        self.user_shortcuts[k] = v
+        save_user_shortcuts(self.user_shortcuts)
+        self.sc_entry.delete(0, tk.END)
+        self.exp_entry.delete(0, tk.END)
+        self.refresh_shortcuts_list()
+
+    def delete_shortcut(self, key):
+        if key in self.user_shortcuts:
+            del self.user_shortcuts[key]
+            save_user_shortcuts(self.user_shortcuts)
+            self.refresh_shortcuts_list()
+
+    def load_preset_shortcuts(self):
+        self.user_shortcuts.update(DEFAULT_SHORTCUTS)
+        save_user_shortcuts(self.user_shortcuts)
+        self.refresh_shortcuts_list()
+
+    def export_shortcuts(self):
+        from tkinter import filedialog
+        path = filedialog.asksaveasfilename(
+            defaultextension=".json",
+            filetypes=[("JSON Files", "*.json")],
+            initialfile="bongo_shortcuts.json"
+        )
+        if path:
+            try:
+                with open(path, "w", encoding="utf-8") as f:
+                    json.dump(self.user_shortcuts, f, ensure_ascii=False, indent=2)
+                messagebox.showinfo("Export Successful", f"Shortcuts exported to {path}")
+            except Exception as e:
+                messagebox.showerror("Export Failed", str(e))
+
+    def import_shortcuts(self):
+        from tkinter import filedialog
+        path = filedialog.askopenfilename(
+            filetypes=[("JSON Files", "*.json")]
+        )
+        if path and Path(path).is_file():
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        self.user_shortcuts.update({str(k).lower(): str(v) for k, v in data.items()})
+                        save_user_shortcuts(self.user_shortcuts)
+                        self.refresh_shortcuts_list()
+                        messagebox.showinfo("Import Successful", f"Imported {len(data)} shortcuts.")
+            except Exception as e:
+                messagebox.showerror("Import Failed", str(e))
 
     def open_system_fonts(self):
         try:

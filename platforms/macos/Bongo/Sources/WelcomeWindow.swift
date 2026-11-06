@@ -2,6 +2,7 @@ import Cocoa
 import CoreText
 import WebKit
 import ServiceManagement
+import UniformTypeIdentifiers
 
 // MARK: - Window Controller (Singleton)
 
@@ -213,12 +214,13 @@ class WelcomeTabView: NSView {
     private var buttons: [SidebarNavigationButton] = []
     private let heading = NSTextField(labelWithString: "Getting Started")
     private let subtitle = NSTextField(labelWithString: "Everything you need to begin typing in Bangla.")
-    private let titles = ["Getting Started", "Bongo Layout", "Settings", "Fonts"]
+    private let titles = ["Getting Started", "Bongo Layout", "Settings", "Fonts", "Shortcuts"]
     private let subtitles = [
         "Everything you need to begin typing in Bangla.",
         "The complete phonetic key map at a glance.",
         "Choose how Bongo behaves while you type.",
         "Make the suggestion popup comfortable to read.",
+        "Define personal text expansions and custom word mappings.",
     ]
 
     override init(frame: NSRect) {
@@ -287,8 +289,8 @@ class WelcomeTabView: NSView {
         nav.translatesAutoresizingMaskIntoConstraints = false
         sidebar.addSubview(nav)
 
-        let labels = ["Getting Started", "Bongo Layout", "Settings", "Fonts"]
-        let symbols = ["sparkles", "keyboard.fill", "slider.horizontal.3", "textformat"]
+        let labels = ["Getting Started", "Bongo Layout", "Settings", "Fonts", "Shortcuts"]
+        let symbols = ["sparkles", "keyboard.fill", "slider.horizontal.3", "textformat", "text.badge.plus"]
         for i in 0..<labels.count {
             let button = SidebarNavigationButton(
                 title: labels[i], symbol: symbols[i], target: self, action: #selector(navigate(_:)))
@@ -332,6 +334,7 @@ class WelcomeTabView: NSView {
             (1, LayoutWebView()),
             (2, BongoScrollView.wrap(contentView: SettingsView())),
             (3, BongoScrollView.wrap(contentView: FontsView())),
+            (4, BongoScrollView.wrap(contentView: ShortcutsView())),
         ]
         for (index, view) in views {
             let item = NSTabViewItem(identifier: index)
@@ -1710,6 +1713,253 @@ final class FontsView: NSView {
     @objc private func openFontBook() {
         if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.FontBook") {
             NSWorkspace.shared.open(url)
+        }
+    }
+}
+
+// MARK: - Shortcuts & User Dictionary Tab
+
+final class ShortcutsView: NSView {
+    override var isFlipped: Bool { true }
+    private let stack = NSStackView()
+    private let listStack = NSStackView()
+    private let shortcutField = NSTextField()
+    private let expansionField = NSTextField()
+    private var shortcuts: [String: String] = [:]
+
+    private var autocorrectURL: URL {
+        let dir = URL(fileURLWithPath: Engine.userDataDir(), isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("autocorrect.json")
+    }
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        loadShortcuts()
+        setupUI()
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    private func setupUI() {
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = 16
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(stack)
+
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+            stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: WelcomeUI.pageInset),
+            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -WelcomeUI.pageInset),
+            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -32),
+        ])
+
+        // Section 1: Add Shortcut
+        let addHeader = WelcomeUI.sectionHeader("Add Custom Shortcut")
+        stack.addArrangedSubview(addHeader)
+
+        let addCardContent = NSStackView()
+        addCardContent.orientation = .vertical
+        addCardContent.alignment = .leading
+        addCardContent.spacing = 12
+
+        let inputRow = NSStackView()
+        inputRow.orientation = .horizontal
+        inputRow.spacing = 12
+        inputRow.alignment = .centerY
+
+        shortcutField.placeholderString = "Shortcut (e.g. fb)"
+        shortcutField.font = .systemFont(ofSize: 13)
+        shortcutField.widthAnchor.constraint(equalToConstant: 130).isActive = true
+
+        let arrow = NSTextField(labelWithString: "➔")
+        arrow.textColor = WelcomeUI.accent
+        arrow.font = .systemFont(ofSize: 14, weight: .bold)
+
+        expansionField.placeholderString = "Expansion (e.g. ফেসবুক)"
+        expansionField.font = .systemFont(ofSize: 13)
+        expansionField.widthAnchor.constraint(greaterThanOrEqualToConstant: 240).isActive = true
+
+        let addBtn = NSButton(title: "+ Add", target: self, action: #selector(addShortcutClicked))
+        addBtn.bezelStyle = .rounded
+
+        inputRow.addArrangedSubview(shortcutField)
+        inputRow.addArrangedSubview(arrow)
+        inputRow.addArrangedSubview(expansionField)
+        inputRow.addArrangedSubview(addBtn)
+
+        // Preset & file buttons
+        let btnRow = NSStackView()
+        btnRow.orientation = .horizontal
+        btnRow.spacing = 10
+
+        let presetsBtn = NSButton(title: "Load Common Presets", target: self, action: #selector(loadPresetsClicked))
+        presetsBtn.bezelStyle = .rounded
+
+        let exportBtn = NSButton(title: "Export JSON…", target: self, action: #selector(exportClicked))
+        exportBtn.bezelStyle = .rounded
+
+        let importBtn = NSButton(title: "Import JSON…", target: self, action: #selector(importClicked))
+        importBtn.bezelStyle = .rounded
+
+        btnRow.addArrangedSubview(presetsBtn)
+        btnRow.addArrangedSubview(exportBtn)
+        btnRow.addArrangedSubview(importBtn)
+
+        addCardContent.addArrangedSubview(inputRow)
+        addCardContent.addArrangedSubview(btnRow)
+
+        let addCard = CardContainer(content: addCardContent)
+        stack.addArrangedSubview(addCard)
+        addCard.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+
+        // Section 2: Active Shortcuts
+        let listHeader = WelcomeUI.sectionHeader("Active Shortcuts")
+        stack.addArrangedSubview(listHeader)
+
+        listStack.orientation = .vertical
+        listStack.alignment = .leading
+        listStack.spacing = 8
+        listStack.translatesAutoresizingMaskIntoConstraints = false
+
+        let listCard = CardContainer(content: listStack)
+        stack.addArrangedSubview(listCard)
+        listCard.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+
+        renderShortcutsList()
+    }
+
+    private func renderShortcutsList() {
+        for view in listStack.arrangedSubviews {
+            listStack.removeArrangedSubview(view)
+            view.removeFromSuperview()
+        }
+
+        if shortcuts.isEmpty {
+            let empty = NSTextField(labelWithString: "No custom shortcuts defined yet. Type a code above or load common presets!")
+            empty.textColor = .secondaryLabelColor
+            empty.font = .systemFont(ofSize: 13)
+            listStack.addArrangedSubview(empty)
+            return
+        }
+
+        for (k, v) in shortcuts.sorted(by: { $0.key < $1.key }) {
+            let row = NSStackView()
+            row.orientation = .horizontal
+            row.spacing = 12
+            row.alignment = .centerY
+
+            let codeLabel = NSTextField(labelWithString: k)
+            codeLabel.font = .monospacedSystemFont(ofSize: 12.5, weight: .bold)
+            codeLabel.textColor = WelcomeUI.accent
+            codeLabel.widthAnchor.constraint(equalToConstant: 90).isActive = true
+
+            let arrow = NSTextField(labelWithString: "→")
+            arrow.textColor = .tertiaryLabelColor
+            arrow.font = .systemFont(ofSize: 12)
+
+            let expLabel = NSTextField(labelWithString: v)
+            expLabel.font = .systemFont(ofSize: 13)
+            expLabel.textColor = .labelColor
+            expLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 240).isActive = true
+
+            let delBtn = NSButton(title: "✕", target: self, action: #selector(deleteClicked(_:)))
+            delBtn.bezelStyle = .inline
+            delBtn.isBordered = false
+            delBtn.contentTintColor = .systemRed
+            delBtn.identifier = NSUserInterfaceItemIdentifier(k)
+
+            row.addArrangedSubview(codeLabel)
+            row.addArrangedSubview(arrow)
+            row.addArrangedSubview(expLabel)
+            row.addArrangedSubview(delBtn)
+
+            listStack.addArrangedSubview(row)
+        }
+    }
+
+    private func loadShortcuts() {
+        if let data = try? Data(contentsOf: autocorrectURL),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: String] {
+            shortcuts = json
+        } else {
+            shortcuts = [:]
+        }
+    }
+
+    private func saveShortcuts() {
+        if let data = try? JSONSerialization.data(withJSONObject: shortcuts, options: [.prettyPrinted, .sortedKeys]) {
+            try? data.write(to: autocorrectURL)
+        }
+    }
+
+    @objc private func addShortcutClicked() {
+        let k = shortcutField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let v = expansionField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !k.isEmpty, !v.isEmpty else { return }
+        shortcuts[k] = v
+        saveShortcuts()
+        shortcutField.stringValue = ""
+        expansionField.stringValue = ""
+        renderShortcutsList()
+    }
+
+    @objc private func deleteClicked(_ sender: NSButton) {
+        guard let k = sender.identifier?.rawValue else { return }
+        shortcuts.removeValue(forKey: k)
+        saveShortcuts()
+        renderShortcutsList()
+    }
+
+    @objc private func loadPresetsClicked() {
+        let presets: [String: String] = [
+            "fb": "ফেসবুক",
+            "gm": "শুভ সকাল",
+            "gn": "শুভ রাত্রি",
+            "yt": "ইউটিউব",
+            "thx": "ধন্যবাদ",
+            "bd": "বাংলাদেশ",
+            "dhaka": "ঢাকা",
+        ]
+        for (k, v) in presets {
+            shortcuts[k] = v
+        }
+        saveShortcuts()
+        renderShortcutsList()
+    }
+
+    @objc private func exportClicked() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "bongo_shortcuts.json"
+        if #available(macOS 11.0, *) {
+            panel.allowedContentTypes = [.json]
+        } else {
+            panel.allowedFileTypes = ["json"]
+        }
+        if panel.runModal() == .OK, let url = panel.url {
+            if let data = try? JSONSerialization.data(withJSONObject: shortcuts, options: [.prettyPrinted, .sortedKeys]) {
+                try? data.write(to: url)
+            }
+        }
+    }
+
+    @objc private func importClicked() {
+        let panel = NSOpenPanel()
+        if #available(macOS 11.0, *) {
+            panel.allowedContentTypes = [.json]
+        } else {
+            panel.allowedFileTypes = ["json"]
+        }
+        panel.allowsMultipleSelection = false
+        if panel.runModal() == .OK, let url = panel.url {
+            if let data = try? Data(contentsOf: url),
+               let json = try? JSONSerialization.jsonObject(with: data) as? [String: String] {
+                for (k, v) in json {
+                    shortcuts[k.lowercased()] = v
+                }
+                saveShortcuts()
+                renderShortcutsList()
+            }
         }
     }
 }

@@ -276,6 +276,30 @@ class DistributionTests(unittest.TestCase):
         self.assertIn('releases?per_page=1', linux)
         self.assertIn('No newer release is published yet', linux)
 
+    def test_custom_shortcuts_and_user_dictionary(self):
+        """Verify custom shortcuts and user dictionary manager across all desktop platforms."""
+        # Check macOS
+        mac = (ROOT / 'platforms/macos/Bongo/Sources/WelcomeWindow.swift').read_text(encoding='utf-8')
+        self.assertIn('ShortcutsView', mac)
+        self.assertIn('autocorrect.json', mac)
+        self.assertIn('Add Custom Shortcut', mac)
+
+        # Check Windows
+        win = (ROOT / 'platforms/windows/ui/bongo_settings.py').read_text(encoding='utf-8')
+        self.assertIn('create_shortcuts_view', win)
+        self.assertIn('autocorrect.json', win)
+        self.assertIn('DEFAULT_SHORTCUTS', win)
+
+        # Check Linux
+        linux = (ROOT / 'platforms/linux/ui/bongo_settings.py').read_text(encoding='utf-8')
+        self.assertIn('create_shortcuts_view', linux)
+        self.assertIn('autocorrect.json', linux)
+        self.assertIn('DEFAULT_SHORTCUTS', linux)
+
+        # Check Core Engine (riti) supports Unicode in autocorrect
+        sugg = (ROOT / 'vendor/rust/riti/src/phonetic/suggestion.rs').read_text(encoding='utf-8')
+        self.assertIn(r"'\u{0980}'..='\u{09FF}'", sugg)
+
     def test_phonetic_engine_accuracy(self):
         import importlib.util
 
