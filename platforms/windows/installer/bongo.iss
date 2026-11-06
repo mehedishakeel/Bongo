@@ -48,15 +48,15 @@ Source: "..\..\..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\..\THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppSettingsExeName}"; IconFilename: "{app}\data\bongo.ico"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppSettingsExeName}"; IconFilename: "{app}\data\bongo.ico"; Tasks: desktopicon
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppSettingsExeName}"; IconFilename: "{app}\data\bongo.ico"
-Name: "{group}\{#MyAppName} Settings"; Filename: "{app}\{#MyAppSettingsExeName}"; IconFilename: "{app}\data\bongo.ico"
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppSettingsExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\data\bongo.ico"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppSettingsExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\data\bongo.ico"; Tasks: desktopicon
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppSettingsExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\data\bongo.ico"
+Name: "{group}\{#MyAppName} Settings"; Filename: "{app}\{#MyAppSettingsExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\data\bongo.ico"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 
 [Registry]
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "Bongo"; ValueData: """{app}\{#MyAppExeName}"" --daemon"; Tasks: autostart; Flags: uninsdeletevalue
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Parameters: "--daemon"; Flags: nowait runhidden
-Filename: "{app}\{#MyAppSettingsExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--daemon"; WorkingDir: "{app}"; Flags: nowait runhidden
+Filename: "{app}\{#MyAppSettingsExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; WorkingDir: "{app}"; Flags: nowait postinstall skipifsilent

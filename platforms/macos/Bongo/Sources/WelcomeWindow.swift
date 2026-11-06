@@ -190,7 +190,7 @@ final class BongoScrollView: NSScrollView {
         scrollView.borderType = .noBorder
         scrollView.drawsBackground = false
         scrollView.scrollerStyle = .overlay
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.autoresizingMask = [.width, .height]
         scrollView.contentView.drawsBackground = false
         scrollView.documentView = contentView
 

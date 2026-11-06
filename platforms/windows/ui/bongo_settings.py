@@ -48,6 +48,7 @@ BG_CARD_ACTIVE_BORDER = "#6366f1"
 BG_HOVER = "#27272a"
 ACCENT_COLOR = "#6366f1"
 ACCENT_LIGHT = "#818cf8"
+ACCENT_HOVER = "#4f46e5"
 ACCENT_BG = "#232338"
 ACCENT = ACCENT_COLOR
 TEXT_PRIMARY = "#ffffff"
@@ -340,8 +341,12 @@ class BongoSettingsApp:
         # Try loading app icon
         self.logo_img = None
         candidates = [
+            Path(sys.executable).parent / "data" / "bongo_32.png",
+            Path(sys.executable).parent / "data" / "bongo.png",
             Path(__file__).resolve().parent.parent / "data" / "bongo_32.png",
             Path(__file__).resolve().parent.parent / "data" / "bongo.png",
+            Path(sys.executable).parent / "bongo_32.png",
+            Path(sys.executable).parent / "bongo.png",
         ]
         for p in candidates:
             if p.is_file():
