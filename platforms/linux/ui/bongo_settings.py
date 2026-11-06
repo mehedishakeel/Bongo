@@ -365,6 +365,49 @@ headerbar button:hover, .bongo-headerbar button:hover {
     color: #ffffff;
     font-weight: 700;
 }
+
+/* Sleek, Modern Minimalist Overlay Scrollbar */
+scrolledwindow {
+    background-color: transparent;
+    border: none;
+}
+
+scrollbar {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    -GtkScrollbar-has-backward-stepper: false;
+    -GtkScrollbar-has-forward-stepper: false;
+}
+
+scrollbar trough {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+}
+
+scrollbar slider {
+    background-color: rgba(255, 255, 255, 0.16);
+    background-image: none;
+    border-radius: 6px;
+    min-width: 6px;
+    min-height: 28px;
+    border: none;
+    box-shadow: none;
+    margin: 2px;
+    transition: all 180ms ease;
+}
+
+scrollbar slider:hover {
+    background-color: rgba(99, 102, 241, 0.6);
+    min-width: 8px;
+}
+
+scrollbar slider:active {
+    background-color: #6366f1;
+}
 """
 
 
@@ -606,6 +649,12 @@ class BongoSettingsApp:
         # Scrolled View for main pages
         self.scrolled_window = Gtk.ScrolledWindow()
         self.scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        if hasattr(self.scrolled_window, "set_overlay_scrolling"):
+            self.scrolled_window.set_overlay_scrolling(True)
+        if hasattr(self.scrolled_window, "set_propagate_natural_width"):
+            self.scrolled_window.set_propagate_natural_width(True)
+        if hasattr(self.scrolled_window, "set_propagate_natural_height"):
+            self.scrolled_window.set_propagate_natural_height(True)
         self.scrolled_window.set_hexpand(True)
         self.scrolled_window.set_vexpand(True)
 

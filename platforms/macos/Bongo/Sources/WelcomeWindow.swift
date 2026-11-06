@@ -179,6 +179,33 @@ final class FlippedVisualEffectView: NSVisualEffectView {
     override var isFlipped: Bool { true }
 }
 
+final class BongoScrollView: NSScrollView {
+    override var isFlipped: Bool { true }
+
+    static func wrap(contentView: NSView) -> NSScrollView {
+        let scrollView = BongoScrollView()
+        scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = false
+        scrollView.autohidesScrollers = true
+        scrollView.borderType = .noBorder
+        scrollView.drawsBackground = false
+        scrollView.scrollerStyle = .overlay
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.contentView.drawsBackground = false
+        scrollView.documentView = contentView
+
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            contentView.leadingAnchor.constraint(equalTo: scrollView.contentView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.contentView.trailingAnchor),
+            contentView.topAnchor.constraint(equalTo: scrollView.contentView.topAnchor),
+            contentView.widthAnchor.constraint(equalTo: scrollView.contentView.widthAnchor),
+        ])
+
+        return scrollView
+    }
+}
+
 class WelcomeTabView: NSView {
     override var isFlipped: Bool { true }
 
@@ -300,7 +327,13 @@ class WelcomeTabView: NSView {
         tabView.wantsLayer = true
         tabView.translatesAutoresizingMaskIntoConstraints = false
 
-        for (index, view) in [GettingStartedView(), LayoutWebView(), SettingsView(), FontsView()].enumerated() {
+        let views: [(Int, NSView)] = [
+            (0, BongoScrollView.wrap(contentView: GettingStartedView())),
+            (1, LayoutWebView()),
+            (2, BongoScrollView.wrap(contentView: SettingsView())),
+            (3, BongoScrollView.wrap(contentView: FontsView())),
+        ]
+        for (index, view) in views {
             let item = NSTabViewItem(identifier: index)
             item.view = view
             tabView.addTabViewItem(item)
@@ -508,6 +541,7 @@ final class GettingStartedView: NSView {
             stack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
             stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: WelcomeUI.pageInset),
             stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -WelcomeUI.pageInset),
+            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -32),
         ])
 
         // Step 1 Card: Enable in Settings
@@ -1251,6 +1285,7 @@ class SettingsView: NSView {
             stack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
             stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: WelcomeUI.pageInset),
             stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -WelcomeUI.pageInset),
+            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -32),
         ])
 
         // Keyboard Layout Section
@@ -1474,6 +1509,7 @@ final class FontsView: NSView {
             stack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
             stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: WelcomeUI.pageInset),
             stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -WelcomeUI.pageInset),
+            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -32),
         ])
 
         let fontHeader = WelcomeUI.sectionHeader("Candidate popup typography")

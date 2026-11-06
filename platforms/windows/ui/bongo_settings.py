@@ -485,29 +485,72 @@ class BongoSettingsApp:
         body_container = tk.Frame(self.content_frame, bg=BG_DARK)
         body_container.pack(fill=tk.BOTH, expand=True)
 
+        # Configure modern minimalist dark scrollbar style
+        self.style = ttk.Style()
+        try:
+            self.style.theme_use("clam")
+        except tk.TclError:
+            pass
+        self.style.configure(
+            "Dark.Vertical.TScrollbar",
+            gripcount=0,
+            background="#2e2e34",
+            darkcolor="#18181b",
+            lightcolor="#18181b",
+            troughcolor="#18181b",
+            bordercolor="#18181b",
+            arrowcolor="#71717a",
+            arrowsize=9,
+            width=8,
+        )
+        self.style.map(
+            "Dark.Vertical.TScrollbar",
+            background=[("active", ACCENT_COLOR), ("pressed", ACCENT_HOVER)],
+            arrowcolor=[("active", "#ffffff")],
+        )
+
         self.canvas = tk.Canvas(body_container, bg=BG_DARK, bd=0, highlightthickness=0)
-        self.scrollbar = tk.Scrollbar(body_container, orient=tk.VERTICAL, command=self.canvas.yview)
+        self.scrollbar = ttk.Scrollbar(
+            body_container,
+            orient=tk.VERTICAL,
+            command=self.canvas.yview,
+            style="Dark.Vertical.TScrollbar"
+        )
         self.scrollable_frame = tk.Frame(self.canvas, bg=BG_DARK)
 
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        )
+        def update_scrollregion(event=None):
+            self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+        self.scrollable_frame.bind("<Configure>", update_scrollregion)
         self.canvas_window = self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        def on_yscroll(first, last):
+            self.scrollbar.set(first, last)
+            # Autohide scrollbar when the entire view fits on screen
+            if float(first) <= 0.0 and float(last) >= 1.0:
+                if self.scrollbar.winfo_ismapped():
+                    self.scrollbar.pack_forget()
+            else:
+                if not self.scrollbar.winfo_ismapped():
+                    self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y, pady=(0, 20), padx=(0, 2))
+
+        self.canvas.configure(yscrollcommand=on_yscroll)
 
         # Keep frame width tied to canvas width
         def on_canvas_configure(event):
             self.canvas.itemconfig(self.canvas_window, width=event.width)
+            self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         self.canvas.bind("<Configure>", on_canvas_configure)
 
-        # Mousewheel scrolling
+        # Smooth mousewheel scrolling
         def on_mousewheel(event):
-            self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            bbox = self.canvas.bbox("all")
+            canvas_h = self.canvas.winfo_height()
+            if bbox and canvas_h > 1 and (bbox[3] - bbox[1]) > canvas_h:
+                self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
         self.canvas.bind_all("<MouseWheel>", on_mousewheel)
 
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(32, 4), pady=(0, 20))
-        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y, pady=(0, 20))
 
         # Create the 4 views
         self.pages = [
