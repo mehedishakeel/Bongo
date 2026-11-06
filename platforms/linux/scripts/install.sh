@@ -415,9 +415,28 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
         if [[ "${DOWNLOADED}" == "true" && -s "${TMP_DEB}" ]]; then
             echo "--> Installing Bongo and resolving dependencies..."
             INSTALLED=false
+
+            # Select only the input method framework required for the running desktop:
+            # - GNOME natively uses IBus (do not install fcitx5 on GNOME).
+            # - KDE Plasma and tiling Wayland compositors (Hyprland, Sway) natively use Fcitx5.
+            TARGET_DEPS=()
+            if [[ "${DESKTOP_KIND}" == "gnome" ]]; then
+                echo "--> Detected GNOME desktop: configuring IBus input method (skipping fcitx5)"
+                TARGET_DEPS=(ibus gir1.2-ibus-1.0)
+            elif [[ "${DESKTOP_KIND}" == "kde" || "${DESKTOP_KIND}" == "wlwm" ]]; then
+                echo "--> Detected KDE / Wayland desktop: configuring Fcitx5 input method (skipping ibus)"
+                TARGET_DEPS=(fcitx5)
+            elif command -v ibus >/dev/null 2>&1; then
+                TARGET_DEPS=(ibus gir1.2-ibus-1.0)
+            elif command -v fcitx5 >/dev/null 2>&1; then
+                TARGET_DEPS=(fcitx5)
+            else
+                TARGET_DEPS=(ibus gir1.2-ibus-1.0)
+            fi
+
             if command -v apt >/dev/null 2>&1; then
                 ${SUDO} apt update -qq || true
-                if ${SUDO} apt install -y "${TMP_DEB}"; then
+                if ${SUDO} apt install -y --no-install-recommends "${TMP_DEB}" "${TARGET_DEPS[@]}"; then
                     INSTALLED=true
                 fi
             fi
@@ -426,7 +445,7 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
                 echo "--> Installing via dpkg and fixing dependencies..."
                 ${SUDO} dpkg -i "${TMP_DEB}" || true
                 if command -v apt-get >/dev/null 2>&1; then
-                    ${SUDO} apt-get install -f -y || true
+                    ${SUDO} apt-get install -f -y --no-install-recommends || true
                 fi
             fi
             rm -f "${TMP_DEB}"
@@ -438,6 +457,11 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
             fi
             if [[ "${DESKTOP_KIND}" == "gnome" ]]; then
                 bongo_enable_gnome_source || true
+            elif [[ "${DESKTOP_KIND}" == "kde" || "${DESKTOP_KIND}" == "wlwm" ]]; then
+                if command -v bongo-fcitx5-setup >/dev/null 2>&1; then
+                    echo "--> Configuring Bongo in fcitx5 profile..."
+                    bongo_as_user bongo-fcitx5-setup 2>/dev/null || true
+                fi
             fi
 
             echo "=================================================="
@@ -445,10 +469,14 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
             echo "=================================================="
             echo ""
             echo "Next Steps:"
-            if [[ "${IBUS_SOURCE_ENABLED}" == "true" ]]; then
+            if [[ "${DESKTOP_KIND}" == "gnome" && "${IBUS_SOURCE_ENABLED}" == "true" ]]; then
                 echo "1. Bongo has been added to your input sources."
                 echo "2. Switch input methods with Super + Space."
                 echo "3. If it is missing, open GNOME Settings -> Keyboard -> Input Sources."
+            elif [[ "${DESKTOP_KIND}" == "kde" || "${DESKTOP_KIND}" == "wlwm" ]]; then
+                echo "1. Bongo has been configured for Fcitx5."
+                echo "2. Switch input methods with Control + Space."
+                echo "3. If needed, configure in fcitx5-configtool."
             else
                 echo "1. Open GNOME / KDE Settings -> Keyboard -> Input Sources."
                 echo "2. Add 'Bengali (Bongo)' to your active keyboards."
@@ -465,12 +493,32 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
     # Ensure runtime dependencies are installed if package manager is present
     if command -v dnf >/dev/null 2>&1; then
         echo "--> Detected Fedora / RHEL system (${ARCH})"
-        echo "--> Ensuring runtime dependencies are installed via dnf..."
-        ${SUDO} dnf install -y ibus python3 python3-gobject gobject-introspection gtk4 tar || true
+        echo "--> Checking runtime dependencies..."
+        FEDORA_DEPS=(python3 python3-gobject gobject-introspection gtk4 tar)
+        if [[ "${DESKTOP_KIND}" == "kde" || "${DESKTOP_KIND}" == "wlwm" ]]; then
+            if ! command -v fcitx5 >/dev/null 2>&1; then
+                FEDORA_DEPS+=(fcitx5 fcitx5-autostart)
+            fi
+        else
+            if ! command -v ibus >/dev/null 2>&1; then
+                FEDORA_DEPS+=(ibus)
+            fi
+        fi
+        ${SUDO} dnf install -y "${FEDORA_DEPS[@]}" || true
     elif command -v pacman >/dev/null 2>&1; then
         echo "--> Detected Arch Linux system (${ARCH})"
-        echo "--> Ensuring runtime dependencies are installed via pacman..."
-        ${SUDO} pacman -S --needed --noconfirm ibus python-gobject gtk4 tar || true
+        echo "--> Checking runtime dependencies..."
+        ARCH_DEPS=(python-gobject gtk4 tar)
+        if [[ "${DESKTOP_KIND}" == "kde" || "${DESKTOP_KIND}" == "wlwm" ]]; then
+            if ! command -v fcitx5 >/dev/null 2>&1; then
+                ARCH_DEPS+=(fcitx5)
+            fi
+        else
+            if ! command -v ibus >/dev/null 2>&1; then
+                ARCH_DEPS+=(ibus)
+            fi
+        fi
+        ${SUDO} pacman -S --needed --noconfirm "${ARCH_DEPS[@]}" || true
     fi
 
     # For non-Debian distributions or if deb was skipped, try the prebuilt universal tarball
@@ -515,10 +563,21 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
     # Prepare package managers on other distributions for source build
     if command -v dnf >/dev/null 2>&1; then
         echo "--> Ensuring build dependencies are installed via dnf..."
-        ${SUDO} dnf install -y cargo rust ibus-devel git || true
+        BUILD_DEPS=(git)
+        if ! command -v cargo >/dev/null 2>&1; then
+            BUILD_DEPS+=(cargo rust)
+        fi
+        if [[ "${DESKTOP_KIND}" == "gnome" ]] && ! pkg-config --exists ibus-1.0 2>/dev/null; then
+            BUILD_DEPS+=(ibus-devel)
+        fi
+        ${SUDO} dnf install -y "${BUILD_DEPS[@]}" || true
     elif command -v pacman >/dev/null 2>&1; then
         echo "--> Ensuring build dependencies are installed via pacman..."
-        ${SUDO} pacman -S --needed --noconfirm rust cargo git || true
+        BUILD_DEPS=(git)
+        if ! command -v cargo >/dev/null 2>&1; then
+            BUILD_DEPS+=(rust cargo)
+        fi
+        ${SUDO} pacman -S --needed --noconfirm "${BUILD_DEPS[@]}" || true
     fi
 
     # On non-Debian distributions or fallback: clone/extract source and run installer
