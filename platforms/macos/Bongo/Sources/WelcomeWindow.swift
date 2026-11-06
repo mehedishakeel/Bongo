@@ -2,7 +2,6 @@ import Cocoa
 import CoreText
 import WebKit
 import ServiceManagement
-import UniformTypeIdentifiers
 
 // MARK: - Window Controller (Singleton)
 
@@ -1728,7 +1727,7 @@ final class ShortcutsView: NSView {
     private var shortcuts: [String: String] = [:]
 
     private var autocorrectURL: URL {
-        let dir = URL(fileURLWithPath: Engine.userDataDir(), isDirectory: true)
+        let dir = URL(fileURLWithPath: BongoEngine.userDataDir(), isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("autocorrect.json")
     }
@@ -1931,11 +1930,7 @@ final class ShortcutsView: NSView {
     @objc private func exportClicked() {
         let panel = NSSavePanel()
         panel.nameFieldStringValue = "bongo_shortcuts.json"
-        if #available(macOS 11.0, *) {
-            panel.allowedContentTypes = [.json]
-        } else {
-            panel.allowedFileTypes = ["json"]
-        }
+        panel.allowedFileTypes = ["json"]
         if panel.runModal() == .OK, let url = panel.url {
             if let data = try? JSONSerialization.data(withJSONObject: shortcuts, options: [.prettyPrinted, .sortedKeys]) {
                 try? data.write(to: url)
@@ -1945,11 +1940,7 @@ final class ShortcutsView: NSView {
 
     @objc private func importClicked() {
         let panel = NSOpenPanel()
-        if #available(macOS 11.0, *) {
-            panel.allowedContentTypes = [.json]
-        } else {
-            panel.allowedFileTypes = ["json"]
-        }
+        panel.allowedFileTypes = ["json"]
         panel.allowsMultipleSelection = false
         if panel.runModal() == .OK, let url = panel.url {
             if let data = try? Data(contentsOf: url),
