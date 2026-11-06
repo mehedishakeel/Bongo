@@ -72,8 +72,13 @@ class SettingsActivity : Activity() {
             typeface = Typeface.DEFAULT_BOLD
             setTextColor(Color.WHITE)
         }
+        val verName = try {
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "1.2.0"
+        } catch (_: Exception) {
+            "1.2.0"
+        }
         val versionTag = TextView(this).apply {
-            text = "Bengali Phonetic Keyboard • v0.3.0"
+            text = "Bengali Phonetic Keyboard • v$verName"
             textSize = 12f
             setTextColor(Color.parseColor("#8e8e93"))
         }

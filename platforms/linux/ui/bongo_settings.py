@@ -42,6 +42,9 @@ except ImportError:
 GLib.set_prgname("app.getbongo.Bongo")
 GLib.set_application_name("Bongo")
 
+APP_VERSION = "1.2.0"
+GITHUB_REPO = "mehedishakeel/Bongo"
+
 # Configuration path (XDG Base Directory compliant)
 CONFIG_DIR = Path.home() / ".config" / "bongo"
 CONFIG_FILE = CONFIG_DIR / "settings.json"
@@ -597,7 +600,7 @@ class BongoSettingsApp:
         bottom_box.set_valign(Gtk.Align.END)
         bottom_box.set_vexpand(True)
 
-        ver_label = Gtk.Label(label="v1.2.0 · linux")
+        ver_label = Gtk.Label(label=f"v{APP_VERSION} · linux")
         ver_label.set_xalign(0)
         ver_label.get_style_context().add_class("dim-label") if gtk_version != '4.0' else None
 
@@ -1179,8 +1182,8 @@ class BongoSettingsApp:
         sys_label.set_xalign(0)
         sys_label.set_hexpand(True)
 
-        update_btn = Gtk.Button(label="Check for Updates...")
-        update_btn.connect("clicked", self.open_website)
+        update_btn = Gtk.Button(label="Check for Updates…")
+        update_btn.connect("clicked", self.check_updates)
 
         self.append_widget(sys_box, sys_label)
         self.append_widget(sys_box, update_btn)
@@ -1355,7 +1358,114 @@ class BongoSettingsApp:
         save_settings(self.settings)
         set_linux_autostart(val)
 
-    def open_website(self, _btn):
+    def check_updates(self, _btn=None):
+        import urllib.request
+        import threading
+        import re
+
+        def _worker():
+            try:
+                url = f"https://api.github.com/repos/{GITHUB_REPO}/releases?per_page=1"
+                req = urllib.request.Request(
+                    url,
+                    headers={
+                        "Accept": "application/vnd.github+json",
+                        "User-Agent": "Bongo-Linux"
+                    }
+                )
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    status_code = getattr(resp, "status", getattr(resp, "code", 200))
+                    if status_code == 404:
+                        GLib.idle_add(
+                            self.show_dialog,
+                            "No public release information",
+                            f"Bongo {APP_VERSION} is installed. The release feed is not public yet."
+                        )
+                        return
+                    data = json.loads(resp.read().decode("utf-8"))
+                    if not data or not isinstance(data, list):
+                        GLib.idle_add(
+                            self.show_dialog,
+                            "Bongo is up to date",
+                            f"You’re using version {APP_VERSION}. No newer release is published yet."
+                        )
+                        return
+                    latest_obj = data[0]
+                    tag = latest_obj.get("tag_name", "").lstrip("vV")
+                    page = latest_obj.get("html_url", f"https://github.com/{GITHUB_REPO}/releases")
+
+                    def parse_ver(v):
+                        return tuple(int(x) for x in re.findall(r"\d+", v))
+
+                    if parse_ver(tag) > parse_ver(APP_VERSION):
+                        GLib.idle_add(
+                            self.show_dialog,
+                            f"Bongo {tag} is available",
+                            f"A newer version (v{tag}) is available.\n\nOpen the release page to download the update for your system?",
+                            True,
+                            page
+                        )
+                    else:
+                        GLib.idle_add(
+                            self.show_dialog,
+                            "Bongo is up to date",
+                            f"You’re using version {APP_VERSION}."
+                        )
+            except Exception:
+                GLib.idle_add(
+                    self.show_dialog,
+                    "Couldn’t check for updates",
+                    "Check your internet connection and try again."
+                )
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def show_dialog(self, title, message, is_update=False, release_url=None):
+        import webbrowser
+        try:
+            if gtk_version == '4.0' and hasattr(Gtk, 'AlertDialog'):
+                dialog = Gtk.AlertDialog()
+                dialog.set_message(title)
+                dialog.set_detail(message)
+                if is_update and release_url:
+                    dialog.set_buttons(["Open Release", "Later"])
+                    dialog.set_default_button(0)
+                    dialog.set_cancel_button(1)
+                    def _on_choose(_d, res):
+                        try:
+                            if _d.choose_finish(res) == 0:
+                                webbrowser.open(release_url)
+                        except Exception:
+                            pass
+                    dialog.choose(self.window, None, _on_choose)
+                else:
+                    dialog.set_buttons(["OK"])
+                    dialog.show(self.window)
+                return
+        except Exception:
+            pass
+
+        try:
+            buttons = Gtk.ButtonsType.OK_CANCEL if is_update else Gtk.ButtonsType.OK
+            dialog = Gtk.MessageDialog(
+                transient_for=self.window,
+                modal=True,
+                message_type=Gtk.MessageType.INFO,
+                buttons=buttons,
+                text=title,
+            )
+            dialog.format_secondary_text(message)
+            def _response(d, r):
+                if is_update and r in (Gtk.ResponseType.OK, Gtk.ResponseType.YES, 1):
+                    webbrowser.open(release_url)
+                d.destroy()
+            dialog.connect("response", _response)
+            dialog.show()
+        except Exception:
+            if is_update and release_url:
+                webbrowser.open(release_url)
+
+    def open_website(self, _btn=None):
         import webbrowser
         webbrowser.open("https://getbongo.app")
 

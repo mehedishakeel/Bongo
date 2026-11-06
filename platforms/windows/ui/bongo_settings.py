@@ -14,9 +14,15 @@ import sys
 import json
 import webbrowser
 import subprocess
+import urllib.request
+import threading
+import re
 import tkinter as tk
-from tkinter import ttk, font as tkfont
+from tkinter import ttk, messagebox, font as tkfont
 from pathlib import Path
+
+APP_VERSION = "1.2.0"
+GITHUB_REPO = "mehedishakeel/Bongo"
 
 # Configuration path (Windows APPDATA compliant)
 def get_config_dir():
@@ -444,7 +450,7 @@ class BongoSettingsApp:
 
         ver_label = tk.Label(
             footer_frame,
-            text="v1.2.0 · windows",
+            text=f"v{APP_VERSION} · windows",
             font=("Segoe UI", 8),
             fg=TEXT_MUTED,
             bg=BG_SIDEBAR
@@ -1215,7 +1221,7 @@ class BongoSettingsApp:
         )
         sys_lbl.pack(side=tk.LEFT)
 
-        upd_btn = self.make_button(s_row, "Check for Updates... ↗", lambda: webbrowser.open("https://getbongo.app"))
+        upd_btn = self.make_button(s_row, "Check for Updates…", self.check_updates)
         upd_btn.pack(side=tk.RIGHT)
 
         # Windows Integration Card: Shortcut & Mode
@@ -1666,6 +1672,63 @@ class BongoSettingsApp:
                 webbrowser.open("https://getbongo.app")
         except Exception:
             pass
+
+    def check_updates(self):
+        def _worker():
+            try:
+                url = f"https://api.github.com/repos/{GITHUB_REPO}/releases?per_page=1"
+                req = urllib.request.Request(
+                    url,
+                    headers={
+                        "Accept": "application/vnd.github+json",
+                        "User-Agent": "Bongo-Windows"
+                    }
+                )
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    status_code = getattr(resp, "status", getattr(resp, "code", 200))
+                    if status_code == 404:
+                        self.root.after(0, lambda: messagebox.showinfo(
+                            "No public release information",
+                            f"Bongo {APP_VERSION} is installed. The release feed is not public yet."
+                        ))
+                        return
+                    data = json.loads(resp.read().decode("utf-8"))
+                    if not data or not isinstance(data, list):
+                        self.root.after(0, lambda: messagebox.showinfo(
+                            "Bongo is up to date",
+                            f"You’re using version {APP_VERSION}. No newer release is published yet."
+                        ))
+                        return
+                    latest_obj = data[0]
+                    tag = latest_obj.get("tag_name", "").lstrip("vV")
+                    page = latest_obj.get("html_url", f"https://github.com/{GITHUB_REPO}/releases")
+
+                    def parse_ver(v):
+                        return tuple(int(x) for x in re.findall(r"\d+", v))
+
+                    if parse_ver(tag) > parse_ver(APP_VERSION):
+                        self.root.after(0, lambda: self._show_update_available(tag, page))
+                    else:
+                        self.root.after(0, lambda: messagebox.showinfo(
+                            "Bongo is up to date",
+                            f"You’re using version {APP_VERSION}."
+                        ))
+            except Exception:
+                self.root.after(0, lambda: messagebox.showwarning(
+                    "Couldn’t check for updates",
+                    "Check your internet connection and try again."
+                ))
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _show_update_available(self, latest_ver, release_url):
+        ans = messagebox.askyesno(
+            f"Bongo {latest_ver} is available",
+            f"A newer version (v{latest_ver}) is available.\n\nOpen the release page to download the update for your system?",
+            icon="info"
+        )
+        if ans:
+            webbrowser.open(release_url)
 
 
 def main():

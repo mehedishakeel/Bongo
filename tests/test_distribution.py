@@ -266,6 +266,16 @@ class DistributionTests(unittest.TestCase):
         self.assertNotIn('openbangla.github.io', mac)
         self.assertNotIn('omicronlab.com/download/liveupdate', mac)
 
+        win = (ROOT / 'platforms/windows/ui/bongo_settings.py').read_text(encoding='utf-8')
+        self.assertIn('api.github.com/repos/', win)
+        self.assertIn('releases?per_page=1', win)
+        self.assertIn('No newer release is published yet', win)
+
+        linux = (ROOT / 'platforms/linux/ui/bongo_settings.py').read_text(encoding='utf-8')
+        self.assertIn('api.github.com/repos/', linux)
+        self.assertIn('releases?per_page=1', linux)
+        self.assertIn('No newer release is published yet', linux)
+
     def test_phonetic_engine_accuracy(self):
         import importlib.util
 
