@@ -491,7 +491,19 @@ class DistributionTests(unittest.TestCase):
         for f in ime_files:
             self.assertTrue((android_dir / f).is_file(), f"Missing Android source file: {f}")
 
-        # 5. Gradle build infrastructure & launcher assets
+        # 5. Slash and Backslash key handling verification
+        keyboard_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/ui/BongoKeyboardView.kt').read_text(encoding='utf-8')
+        self.assertIn('"/" -> \'/\'', keyboard_kt)
+        self.assertIn("'/' to '" + chr(92) + chr(92) + "'", keyboard_kt)
+        self.assertNotIn('",", "/" -> if (isUriInput)', keyboard_kt)
+
+        service_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/BongoInputMethodService.kt').read_text(encoding='utf-8')
+        self.assertIn("ch == '/' || ch == '\\\\'", service_kt)
+
+        engine_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/engine/AvroPhoneticEngine.kt').read_text(encoding='utf-8')
+        self.assertIn(r':\\]+)', engine_kt)
+
+        # 6. Gradle build infrastructure & launcher assets
         self.assertTrue((android_dir / 'build.gradle.kts').is_file())
         self.assertTrue((android_dir / 'settings.gradle.kts').is_file())
         self.assertTrue((android_dir / 'app/build.gradle.kts').is_file())

@@ -458,7 +458,7 @@ class BongoInputMethodService : InputMethodService() {
                     return
                 }
 
-                if (ch == ',' || ch == '।' || (!isBanglaMode && ch == '.')) {
+                if (ch == '/' || ch == '\\' || ch == ',' || ch == '।' || (!isBanglaMode && ch == '.')) {
                     commitOngoingComposition()
                     ic.commitText(ch.toString(), 1)
                     return

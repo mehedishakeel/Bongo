@@ -146,7 +146,7 @@ class BongoKeyboardView @JvmOverloads constructor(
         val ROW1_HINTS_BN = mapOf('q' to '১', 'w' to '২', 'e' to '৩', 'r' to '৪', 't' to '৫', 'y' to '৬', 'u' to '৭', 'i' to '৮', 'o' to '৯', 'p' to '০')
         val ROW2_HINTS = mapOf('a' to '@', 's' to '#', 'd' to '&', 'f' to '*', 'g' to '-', 'h' to '!', 'j' to '?', 'k' to '(', 'l' to ')')
         val ROW3_HINTS = mapOf('z' to '"', 'b' to '\'', 'n' to ':', 'm' to '/')
-        val SYM2_HINTS = mapOf('৳' to '$', '*' to '★', '-' to '_', '(' to '<', ')' to '>')
+        val SYM2_HINTS = mapOf('৳' to '$', '*' to '★', '-' to '_', '(' to '<', ')' to '>', '/' to '\\')
         val SYM3_HINTS = mapOf(':' to 'ঁ')
     }
 
@@ -970,8 +970,7 @@ class BongoKeyboardView @JvmOverloads constructor(
         key in listOf(
             "SHIFT", "BACKSPACE", "RETURN", "ACTION",
             "?123", "ABC", "=\\<", "EMOJI",
-            "TAB", "↕", "ESC", "CTRL",
-            ",", "/"
+            "TAB", "↕", "ESC", "CTRL"
         )
 
     private fun createKeyBackground(key: String): StateListDrawable {
@@ -1030,8 +1029,10 @@ class BongoKeyboardView @JvmOverloads constructor(
             }
             else -> {
                 val ch = when (key) {
-                    ".", "।" -> if (isBangla) '।' else '.'
-                    ",", "/" -> if (isUriInput) '/' else ','
+                    "." -> if (isBangla) '।' else '.'
+                    "।" -> '।'
+                    "," -> ','
+                    "/" -> '/'
                     else -> if (isShifted) key.uppercase().first() else key.first()
                 }
                 onKeyClickListener?.invoke(KeyAction.CharacterKey(ch))
