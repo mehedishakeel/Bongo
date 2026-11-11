@@ -40,7 +40,7 @@ Layout=
 def manual_steps() -> str:
     return """Add Bongo to fcitx5 manually:
 
-1. Run: fcitx5-configtool
+1. Install the fcitx5-configtool package, then run: fcitx5-config-qt
 2. Open the Input Method tab.
 3. Click "+" and choose Bongo.
 4. Apply the change and restart fcitx5:

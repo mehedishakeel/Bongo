@@ -73,7 +73,7 @@ fcitx5. Switch with <kbd>Ctrl + Space</kbd>.
 To configure it by hand instead:
 
 ```bash
-fcitx5-configtool
+fcitx5-config-qt
 ```
 
 Add **Bongo** under **Input Method**, apply, and restart fcitx5:
