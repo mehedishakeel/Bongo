@@ -11,7 +11,7 @@ a GNOME session or manual interaction.
 
 ```bash
 fcitx5-remote -n
-fcitx5-configtool
+fcitx5-config-qt
 ```
 
 - [x] `Bongo` appears in the input method list (`fcitx5-remote -m bongo`).

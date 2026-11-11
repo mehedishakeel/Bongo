@@ -133,7 +133,7 @@ chmod +x Bongo-1.2.0-linux-x86_64.AppImage
    sudo apt install ./bongo_1.2.0_amd64.deb
    ```
    These packages use the same glibc 2.39+ floor (Ubuntu 24.04+, Debian 13+).
-3. **Activate**: Add **Bengali (Bongo)** under **Settings -> Keyboard -> Input Sources** (GNOME), or run `fcitx5-configtool` and add **Bongo** (KDE / Hyprland / Omarchy).
+3. **Activate**: Add **Bengali (Bongo)** under **Settings -> Keyboard -> Input Sources** (GNOME), or run `fcitx5-config-qt` (from the `fcitx5-configtool` package) and add **Bongo** (KDE / Hyprland / Omarchy).
 
 #### Option 5: Build from source
 For older distributions or development:

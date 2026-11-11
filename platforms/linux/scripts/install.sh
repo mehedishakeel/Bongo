@@ -476,7 +476,7 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
             elif [[ "${DESKTOP_KIND}" == "kde" || "${DESKTOP_KIND}" == "wlwm" ]]; then
                 echo "1. Bongo has been configured for Fcitx5."
                 echo "2. Switch input methods with Control + Space."
-                echo "3. If needed, configure in fcitx5-configtool."
+                echo "3. If needed, configure in fcitx5-config-qt."
             else
                 echo "1. Open GNOME / KDE Settings -> Keyboard -> Input Sources."
                 echo "2. Add 'Bengali (Bongo)' to your active keyboards."
@@ -1304,7 +1304,7 @@ if [[ "${IM_FRAMEWORK}" == "fcitx5" ]]; then
             echo "     sway:     exec fcitx5 -d"
         fi
     else
-        echo "1. Run: fcitx5-configtool"
+        echo "1. Install the fcitx5-configtool package, then run: fcitx5-config-qt"
         echo "2. Open Input Method -> add 'Bongo'."
         echo "3. Apply and restart fcitx5, then switch with Ctrl+Space."
         echo "4. Launch 'bongo-settings' to customize typing modes and fonts."

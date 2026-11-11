@@ -122,7 +122,8 @@ sudo apt install ./bongo_1.2.0_amd64.deb
 
 The package ships both frontends and uses the same glibc 2.39+ floor as the
 tarball (Ubuntu 24.04+, Debian 13+). On GNOME, add **Bengali (Bongo)** under
-IBus. On KDE, Hyprland, or Omarchy, add **Bongo** in `fcitx5-configtool`.
+IBus. On KDE, Hyprland, or Omarchy, add **Bongo** in `fcitx5-config-qt`
+(provided by the `fcitx5-configtool` package).
 
 ### Option 3: Build & Install from Source
 
@@ -165,7 +166,7 @@ bongo-fcitx5-setup        # add Bongo to the profile
 fcitx5 -d                 # start fcitx5 again
 ```
 
-or add Bongo manually in `fcitx5-configtool`.
+or add Bongo manually in `fcitx5-config-qt`.
 
 Switch input methods with <kbd>Ctrl + Space</kbd>. On Wayland, make sure your
 desktop session exports the usual fcitx5 variables (`GTK_IM_MODULE`,
@@ -187,7 +188,7 @@ do this.
 
 ### KDE Plasma / Hyprland / Omarchy / fcitx5
 
-1. Run `fcitx5-configtool`.
+1. Install the `fcitx5-configtool` package, then run `fcitx5-config-qt`.
 2. Open **Input Method** and click **+**.
 3. Add **Bongo** and apply.
 4. Restart fcitx5 with `fcitx5-remote -r`, then switch with
