@@ -42,6 +42,7 @@ class BongoInputMethodService : InputMethodService() {
 
     private lateinit var bongoEngine: BongoEngine
     private lateinit var userPrefs: UserPreferences
+    private lateinit var userDictionary: app.getbongo.ime.model.UserDictionaryManager
     private var keyboardView: BongoKeyboardView? = null
     private var emojiKeyboardView: EmojiKeyboardView? = null
     private var candidateStripView: CandidateStripView? = null
@@ -53,6 +54,12 @@ class BongoInputMethodService : InputMethodService() {
     private var isCtrlActive = false
     private var lastSpaceTime = 0L
 
+    private val clipboardHistory = mutableListOf<String>()
+    private var clipboardManager: ClipboardManager? = null
+    private val clipListener = ClipboardManager.OnPrimaryClipChangedListener {
+        updateLatestClip()
+    }
+
     private val prefChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         handlePreferenceChange(key)
     }
@@ -61,8 +68,33 @@ class BongoInputMethodService : InputMethodService() {
         super.onCreate()
         bongoEngine = BongoEngine()
         userPrefs = UserPreferences(this)
+        userDictionary = app.getbongo.ime.model.UserDictionaryManager(this)
+        bongoEngine.customShortcuts = userDictionary.getShortcuts()
         bongoEngine.setLayout(userPrefs.keyboardLayout)
         userPrefs.registerListener(prefChangeListener)
+
+        try {
+            val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            clipboardManager = cm
+            cm?.addPrimaryClipChangedListener(clipListener)
+            updateLatestClip()
+        } catch (_: Exception) {}
+    }
+
+    private fun updateLatestClip() {
+        try {
+            val clip = clipboardManager?.primaryClip
+            if (clip != null && clip.itemCount > 0) {
+                val text = clip.getItemAt(0)?.coerceToText(this)?.toString()?.trim()
+                if (!text.isNullOrEmpty()) {
+                    clipboardHistory.remove(text)
+                    clipboardHistory.add(0, text)
+                    if (clipboardHistory.size > 10) {
+                        clipboardHistory.removeAt(clipboardHistory.size - 1)
+                    }
+                }
+            }
+        } catch (_: Exception) {}
     }
 
     override fun onCreateInputView(): View {
@@ -161,6 +193,8 @@ class BongoInputMethodService : InputMethodService() {
         super.onStartInputView(info, restarting)
         showKeyboard()
         resetComposition()
+        bongoEngine.customShortcuts = userDictionary.getShortcuts()
+        updateLatestClip()
 
         // Sync theme and height changes from settings
         val palette = ThemePalette.getPalette(userPrefs.theme)
@@ -269,18 +303,14 @@ class BongoInputMethodService : InputMethodService() {
     }
 
     private fun handleClipboardAction() {
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-        val clip = clipboard?.primaryClip
-        if (clip != null && clip.itemCount > 0) {
-            val text = clip.getItemAt(0)?.coerceToText(this)?.toString()
-            if (!text.isNullOrEmpty()) {
-                candidateStripView?.showClipboardPreview(text) { toPaste ->
-                    currentInputConnection?.commitText(toPaste, 1)
-                }
-                return
+        updateLatestClip()
+        if (clipboardHistory.isNotEmpty()) {
+            candidateStripView?.showClipboardHistory(clipboardHistory.toList()) { toPaste ->
+                currentInputConnection?.commitText(toPaste, 1)
             }
+        } else {
+            currentInputConnection?.performContextMenuAction(android.R.id.paste)
         }
-        currentInputConnection?.performContextMenuAction(android.R.id.paste)
     }
 
     private fun handleVoiceInputAction() {
@@ -654,6 +684,9 @@ class BongoInputMethodService : InputMethodService() {
     }
 
     override fun onDestroy() {
+        try {
+            clipboardManager?.removePrimaryClipChangedListener(clipListener)
+        } catch (_: Exception) {}
         stopVoiceListening()
         speechRecognizer?.destroy()
         speechRecognizer = null

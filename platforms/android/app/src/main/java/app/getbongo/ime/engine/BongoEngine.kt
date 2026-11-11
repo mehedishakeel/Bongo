@@ -20,6 +20,12 @@ class BongoEngine {
     var preedit = ""
         private set
 
+    var customShortcuts: Map<String, String> = emptyMap()
+        set(value) {
+            field = value
+            fallbackEngine.customShortcuts = value
+        }
+
     init {
         if (BongoNative.isLoaded) {
             try {
@@ -69,7 +75,20 @@ class BongoEngine {
         // Built-in Kotlin fallback
         candidates = fallbackEngine.getCandidates(buffer)
         preedit = candidates.firstOrNull() ?: buffer
+        applyCustomShortcuts()
         return true
+    }
+
+    private fun applyCustomShortcuts() {
+        val shortcut = customShortcuts[buffer.lowercase()]
+        if (shortcut != null) {
+            val list = mutableListOf(shortcut)
+            for (c in candidates) {
+                if (c != shortcut) list.add(c)
+            }
+            candidates = list
+            preedit = shortcut
+        }
     }
 
     private fun updateNativeSuggestions(suggPtr: Long) {
@@ -83,6 +102,7 @@ class BongoEngine {
         }
         candidates = cands
         preedit = BongoNative.suggestionGetPreview(suggPtr) ?: candidates.firstOrNull() ?: ""
+        applyCustomShortcuts()
     }
 
     fun handleBackspace(): Boolean {

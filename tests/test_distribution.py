@@ -482,11 +482,13 @@ class DistributionTests(unittest.TestCase):
             'app/src/main/java/app/getbongo/ime/engine/AvroPhoneticEngine.kt',
             'app/src/main/java/app/getbongo/ime/engine/BijoyConverter.kt',
             'app/src/main/java/app/getbongo/ime/model/UserPreferences.kt',
+            'app/src/main/java/app/getbongo/ime/model/UserDictionaryManager.kt',
             'app/src/main/java/app/getbongo/ime/model/ThemePalette.kt',
             'app/src/main/java/app/getbongo/ime/ui/BongoKeyboardView.kt',
             'app/src/main/java/app/getbongo/ime/ui/CandidateStripView.kt',
             'app/src/main/java/app/getbongo/ime/ui/EmojiKeyboardView.kt',
             'app/src/main/java/app/getbongo/ime/ui/SettingsActivity.kt',
+            'app/src/main/java/app/getbongo/ime/util/BengaliNumberToWords.kt',
         ]
         for f in ime_files:
             self.assertTrue((android_dir / f).is_file(), f"Missing Android source file: {f}")
@@ -499,9 +501,17 @@ class DistributionTests(unittest.TestCase):
 
         service_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/BongoInputMethodService.kt').read_text(encoding='utf-8')
         self.assertIn("ch == '/' || ch == '\\\\'", service_kt)
+        self.assertIn("userDictionary.getShortcuts()", service_kt)
+        self.assertIn("showClipboardHistory", service_kt)
 
         engine_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/engine/AvroPhoneticEngine.kt').read_text(encoding='utf-8')
         self.assertIn(r':\\]+)', engine_kt)
+        self.assertIn('customShortcuts[lower]', engine_kt)
+
+        settings_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/ui/SettingsActivity.kt').read_text(encoding='utf-8')
+        self.assertIn("SHORTCUTS & TEXT EXPANSION", settings_kt)
+        self.assertIn("LINGUISTIC TOOLS", settings_kt)
+        self.assertIn("BengaliNumberToWords", settings_kt)
 
         # 6. Gradle build infrastructure & launcher assets
         self.assertTrue((android_dir / 'build.gradle.kts').is_file())

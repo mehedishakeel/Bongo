@@ -134,7 +134,7 @@ class CandidateStripView @JvmOverloads constructor(
         scrollTo(0, 0)
     }
 
-    fun showClipboardPreview(clipText: String, onPaste: (String) -> Unit) {
+    fun showClipboardHistory(clips: List<String>, onPaste: (String) -> Unit) {
         isShowingCandidates = false
         container.removeAllViews()
         ctrlTextView = null
@@ -150,28 +150,46 @@ class CandidateStripView @JvmOverloads constructor(
         }
         container.addView(closeBtn)
 
-        val snippet = if (clipText.length > 35) clipText.take(35) + "…" else clipText
-        val clipPill = TextView(context).apply {
-            text = "📋 $snippet"
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(palette.stripPrimaryText)
-            setPadding(dp(14), dp(6), dp(14), dp(6))
-            gravity = Gravity.CENTER
-            background = createCandidateBackground(true)
-            val lp = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(dp(4), 0, dp(4), 0)
+        if (clips.isEmpty()) {
+            val emptyTv = TextView(context).apply {
+                text = "Clipboard empty"
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                setTextColor(palette.stripSecondaryText)
+                setPadding(dp(12), dp(6), dp(12), dp(6))
+                gravity = Gravity.CENTER
             }
-            layoutParams = lp
-            setOnClickListener {
-                onPaste(clipText)
-                showShortcuts()
-            }
+            container.addView(emptyTv)
+            return
         }
-        container.addView(clipPill)
+
+        for (clip in clips) {
+            val snippet = if (clip.length > 25) clip.take(25).replace("\n", " ") + "…" else clip.replace("\n", " ")
+            val clipPill = TextView(context).apply {
+                text = "📋 $snippet"
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13.5f)
+                typeface = Typeface.DEFAULT_BOLD
+                setTextColor(palette.stripPrimaryText)
+                setPadding(dp(12), dp(6), dp(12), dp(6))
+                gravity = Gravity.CENTER
+                background = createCandidateBackground(true)
+                val lp = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    setMargins(dp(3), 0, dp(3), 0)
+                }
+                layoutParams = lp
+                setOnClickListener {
+                    onPaste(clip)
+                    showShortcuts()
+                }
+            }
+            container.addView(clipPill)
+        }
+    }
+
+    fun showClipboardPreview(clipText: String, onPaste: (String) -> Unit) {
+        showClipboardHistory(listOf(clipText), onPaste)
     }
 
     fun clear() {

@@ -293,6 +293,315 @@ class SettingsActivity : Activity() {
         container.addView(feedbackCard)
         container.addView(createSpacer(dp(22)))
 
+        // --- Shortcuts & User Dictionary Card ---
+        container.addView(createSectionHeader("⚡ SHORTCUTS & TEXT EXPANSION"))
+        val shortcutsCard = createGroupCard()
+        shortcutsCard.addView(createSettingTitle("Custom Text Shortcuts", "Type shortcut abbreviations to expand into full Bengali phrases"))
+
+        val userDict = app.getbongo.ime.model.UserDictionaryManager(this)
+        val shortcutsListContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+
+        fun refreshShortcutsList() {
+            shortcutsListContainer.removeAllViews()
+            val shortcuts = userDict.getShortcuts()
+            if (shortcuts.isEmpty()) {
+                val emptyTv = TextView(this).apply {
+                    text = "No custom shortcuts yet. Add one below or load starter presets!"
+                    textSize = 12f
+                    setTextColor(Color.parseColor("#71717a"))
+                    setPadding(0, dp(6), 0, dp(10))
+                }
+                shortcutsListContainer.addView(emptyTv)
+                return
+            }
+
+            for ((k, v) in shortcuts) {
+                val itemRow = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = Gravity.CENTER_VERTICAL
+                    setPadding(0, dp(6), 0, dp(6))
+                }
+
+                val keyBadge = TextView(this).apply {
+                    text = k
+                    textSize = 12f
+                    typeface = Typeface.DEFAULT_BOLD
+                    setTextColor(Color.parseColor("#818cf8"))
+                    background = GradientDrawable().apply {
+                        cornerRadius = dp(6).toFloat()
+                        setColor(Color.parseColor("#1f1f2e"))
+                        setStroke(dp(1), Color.parseColor("#3730a3"))
+                    }
+                    setPadding(dp(8), dp(3), dp(8), dp(3))
+                }
+
+                val arrow = TextView(this).apply {
+                    text = "➔"
+                    textSize = 12f
+                    setTextColor(Color.parseColor("#6366f1"))
+                    setPadding(dp(8), 0, dp(8), 0)
+                }
+
+                val valText = TextView(this).apply {
+                    text = v
+                    textSize = 13f
+                    typeface = Typeface.DEFAULT_BOLD
+                    setTextColor(Color.WHITE)
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                }
+
+                val deleteBtn = TextView(this).apply {
+                    text = "✕"
+                    textSize = 13f
+                    setTextColor(Color.parseColor("#ef4444"))
+                    setPadding(dp(10), dp(6), dp(10), dp(6))
+                    isClickable = true
+                    isFocusable = true
+                    setOnClickListener {
+                        userDict.deleteShortcut(k)
+                        refreshShortcutsList()
+                    }
+                }
+
+                itemRow.addView(keyBadge)
+                itemRow.addView(arrow)
+                itemRow.addView(valText)
+                itemRow.addView(deleteBtn)
+                shortcutsListContainer.addView(itemRow)
+            }
+        }
+
+        refreshShortcutsList()
+        shortcutsCard.addView(shortcutsListContainer)
+        shortcutsCard.addView(createDivider())
+
+        // Add Shortcut input row
+        val addRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dp(4), 0, dp(8))
+        }
+
+        val shortcutInput = EditText(this).apply {
+            hint = "Shortcut (e.g. fb)"
+            setHintTextColor(Color.parseColor("#71717a"))
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            background = GradientDrawable().apply {
+                cornerRadius = dp(8).toFloat()
+                setColor(Color.parseColor("#1c1c24"))
+                setStroke(dp(1), Color.parseColor("#2a2b36"))
+            }
+            setPadding(dp(10), dp(8), dp(10), dp(8))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                setMargins(0, 0, dp(6), 0)
+            }
+        }
+
+        val expansionInput = EditText(this).apply {
+            hint = "Phrase (e.g. ফেসবুক)"
+            setHintTextColor(Color.parseColor("#71717a"))
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+            background = GradientDrawable().apply {
+                cornerRadius = dp(8).toFloat()
+                setColor(Color.parseColor("#1c1c24"))
+                setStroke(dp(1), Color.parseColor("#2a2b36"))
+            }
+            setPadding(dp(10), dp(8), dp(10), dp(8))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.4f).apply {
+                setMargins(0, 0, dp(6), 0)
+            }
+        }
+
+        val addBtn = Button(this).apply {
+            text = "Add"
+            textSize = 12f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.WHITE)
+            background = GradientDrawable().apply {
+                cornerRadius = dp(8).toFloat()
+                setColor(Color.parseColor("#4f46e5"))
+            }
+            setOnClickListener {
+                val sc = shortcutInput.text?.toString() ?: ""
+                val ex = expansionInput.text?.toString() ?: ""
+                if (userDict.addShortcut(sc, ex)) {
+                    shortcutInput.setText("")
+                    expansionInput.setText("")
+                    refreshShortcutsList()
+                }
+            }
+        }
+
+        addRow.addView(shortcutInput)
+        addRow.addView(expansionInput)
+        addRow.addView(addBtn)
+        shortcutsCard.addView(addRow)
+
+        // Preset and Import/Export row
+        val actionsRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, dp(4), 0, dp(4))
+        }
+
+        val presetsBtn = Button(this).apply {
+            text = "Load Starter Presets"
+            textSize = 11f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.WHITE)
+            background = GradientDrawable().apply {
+                cornerRadius = dp(8).toFloat()
+                setColor(Color.parseColor("#1f1f26"))
+                setStroke(dp(1), Color.parseColor("#3730a3"))
+            }
+            layoutParams = LinearLayout.LayoutParams(0, dp(36), 1.2f).apply {
+                setMargins(0, 0, dp(4), 0)
+            }
+            setOnClickListener {
+                userDict.loadPresets()
+                refreshShortcutsList()
+            }
+        }
+
+        val exportBtn = Button(this).apply {
+            text = "Copy JSON"
+            textSize = 11f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.parseColor("#9ca3af"))
+            background = GradientDrawable().apply {
+                cornerRadius = dp(8).toFloat()
+                setColor(Color.parseColor("#1f1f26"))
+                setStroke(dp(1), Color.parseColor("#2d2d38"))
+            }
+            layoutParams = LinearLayout.LayoutParams(0, dp(36), 0.8f).apply {
+                setMargins(dp(4), 0, 0, 0)
+            }
+            setOnClickListener {
+                val json = userDict.exportToJson()
+                val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                cm?.setPrimaryClip(android.content.ClipData.newPlainText("Bongo Shortcuts", json))
+                android.widget.Toast.makeText(this@SettingsActivity, "Shortcuts JSON copied to clipboard!", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        actionsRow.addView(presetsBtn)
+        actionsRow.addView(exportBtn)
+        shortcutsCard.addView(actionsRow)
+
+        container.addView(shortcutsCard)
+        container.addView(createSpacer(dp(22)))
+
+        // --- Linguistic Tools Card ---
+        container.addView(createSectionHeader("LINGUISTIC TOOLS"))
+        val toolsCard = createGroupCard()
+        toolsCard.addView(createSettingTitle("Number to Bengali Words Converter", "Convert digits (1250 / ১২৫০) into full spoken Bengali text"))
+
+        val numInput = EditText(this).apply {
+            hint = "Enter number (e.g. 1250 or ১২৫০)"
+            setHintTextColor(Color.parseColor("#71717a"))
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_CLASS_TEXT
+            background = GradientDrawable().apply {
+                cornerRadius = dp(8).toFloat()
+                setColor(Color.parseColor("#1c1c24"))
+                setStroke(dp(1), Color.parseColor("#2a2b36"))
+            }
+            setPadding(dp(12), dp(10), dp(12), dp(10))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, dp(4), 0, dp(10))
+            }
+        }
+
+        val resultBox = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            background = GradientDrawable().apply {
+                cornerRadius = dp(8).toFloat()
+                setColor(Color.parseColor("#181820"))
+                setStroke(dp(1), Color.parseColor("#2e2e3d"))
+            }
+            setPadding(dp(14), dp(12), dp(10), dp(12))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val resultText = TextView(this).apply {
+            text = "এক হাজার দুইশত পঞ্চাশ"
+            textSize = 14f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.parseColor("#34d399"))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        val copyResultBtn = TextView(this).apply {
+            text = "📋 Copy"
+            textSize = 12f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.parseColor("#818cf8"))
+            setPadding(dp(8), dp(4), dp(8), dp(4))
+            isClickable = true
+            isFocusable = true
+        }
+
+        resultBox.addView(resultText)
+        resultBox.addView(copyResultBtn)
+
+        var asCurrency = false
+        fun updateConversion() {
+            val q = numInput.text?.toString() ?: ""
+            if (q.isBlank()) {
+                resultText.text = "Enter a number above..."
+                resultText.setTextColor(Color.parseColor("#71717a"))
+            } else {
+                val words = app.getbongo.ime.util.BengaliNumberToWords.convert(q, asCurrency)
+                resultText.text = words
+                resultText.setTextColor(Color.parseColor("#34d399"))
+            }
+        }
+
+        numInput.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                updateConversion()
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+
+        copyResultBtn.setOnClickListener {
+            val txt = resultText.text?.toString() ?: ""
+            if (txt.isNotEmpty() && !txt.startsWith("Enter")) {
+                val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                cm?.setPrimaryClip(android.content.ClipData.newPlainText("Bengali Words", txt))
+                android.widget.Toast.makeText(this@SettingsActivity, "Copied: $txt", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        toolsCard.addView(numInput)
+        toolsCard.addView(resultBox)
+        toolsCard.addView(createSpacer(dp(8)))
+
+        val currencySwitch = createSwitchRow(
+            "Taka Currency Format",
+            "Append 'টাকা মাত্র' to the spoken result",
+            false
+        ) {
+            asCurrency = it
+            updateConversion()
+        }
+        toolsCard.addView(currencySwitch)
+
+        container.addView(toolsCard)
+        container.addView(createSpacer(dp(22)))
+
         // --- Core Engine Status Badge ---
         container.addView(createSectionHeader("CORE ENGINE"))
         val statusCard = createGroupCard()
