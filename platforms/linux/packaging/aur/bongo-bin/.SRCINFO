@@ -8,11 +8,12 @@ pkgbase = bongo-bin
 	arch = aarch64
 	license = MPL-2.0
 	depends = glibc>=2.39
+	depends = fcitx5
+	depends = fcitx5-configtool
 	depends = gtk4
 	depends = python
 	depends = python-gobject
 	depends = hicolor-icon-theme
-	optdepends = fcitx5: Native Fcitx5 input method addon (recommended for KDE, Hyprland, Omarchy, Sway)
 	optdepends = ibus: IBus input method engine (recommended for GNOME)
 	provides = bongo
 	provides = fcitx5-bongo

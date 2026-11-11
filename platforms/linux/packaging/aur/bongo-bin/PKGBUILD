@@ -8,13 +8,14 @@ url="https://getbongo.app"
 license=('MPL-2.0')
 depends=(
     'glibc>=2.39'
+    'fcitx5'
+    'fcitx5-configtool'
     'gtk4'
     'python'
     'python-gobject'
     'hicolor-icon-theme'
 )
 optdepends=(
-    'fcitx5: Native Fcitx5 input method addon (recommended for KDE, Hyprland, Omarchy, Sway)'
     'ibus: IBus input method engine (recommended for GNOME)'
 )
 provides=('bongo' 'fcitx5-bongo' 'ibus-bongo')
