@@ -1,6 +1,6 @@
 # Maintainer: Mehedi Shakeel <contact@getbongo.app>
 pkgname=bongo-bin
-pkgver=1.2.0
+pkgver=1.2.1
 pkgrel=1
 pkgdesc="Modern Bangla phonetic & Bijoy keyboard with native Fcitx5 and IBus support"
 arch=('x86_64' 'aarch64')

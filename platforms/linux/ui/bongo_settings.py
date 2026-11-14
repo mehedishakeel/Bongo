@@ -58,7 +58,7 @@ except ImportError:
 GLib.set_prgname("app.getbongo.Bongo")
 GLib.set_application_name("Bongo")
 
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.2.1"
 GITHUB_REPO = "mehedishakeel/Bongo"
 
 # Configuration path (XDG Base Directory compliant)

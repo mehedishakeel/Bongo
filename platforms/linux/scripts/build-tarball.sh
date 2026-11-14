@@ -12,7 +12,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LINUX_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 DIST_DIR="${LINUX_ROOT}/release"
-VERSION="${VERSION:-1.2.0}"
+VERSION="${VERSION:-1.2.1}"
 
 ARCH="$(uname -m)"
 case "${ARCH}" in

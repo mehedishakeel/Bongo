@@ -99,7 +99,7 @@ class DistributionTests(unittest.TestCase):
 
         pkgbuild = pkgbuild_file.read_text(encoding='utf-8')
         self.assertIn("pkgname=bongo-bin", pkgbuild)
-        self.assertIn("pkgver=1.2.0", pkgbuild)
+        self.assertIn("pkgver=1.2.1", pkgbuild)
         self.assertIn("arch=('x86_64' 'aarch64')", pkgbuild)
         self.assertIn("license=('MPL-2.0')", pkgbuild)
         self.assertIn("fcitx5-bongo", pkgbuild)
@@ -116,7 +116,7 @@ class DistributionTests(unittest.TestCase):
         srcinfo = srcinfo_file.read_text(encoding='utf-8')
         self.assertIn("pkgbase = bongo-bin", srcinfo)
         self.assertIn("pkgname = bongo-bin", srcinfo)
-        self.assertIn("pkgver = 1.2.0", srcinfo)
+        self.assertIn("pkgver = 1.2.1", srcinfo)
         self.assertIn("arch = x86_64", srcinfo)
         self.assertIn("arch = aarch64", srcinfo)
 

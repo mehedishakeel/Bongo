@@ -37,7 +37,7 @@ except ImportError:
     def bijoy_to_unicode(s: str) -> str: return s
     def bengali_number_to_words(s, as_currency: bool = False) -> str: return str(s)
 
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.2.1"
 GITHUB_REPO = "mehedishakeel/Bongo"
 
 # Configuration path (Windows APPDATA compliant)

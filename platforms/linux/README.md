@@ -91,14 +91,14 @@ the package recommends it rather than forcing it.
 
 ### Option 1: Universal Tarball (any distribution)
 
-Download `Bongo-1.2.0-linux-x86_64.tar.gz` (64-bit PC) or
-`Bongo-1.2.0-linux-aarch64.tar.gz` (ARM64) from the
+Download `Bongo-1.2.1-linux-x86_64.tar.gz` (64-bit PC) or
+`Bongo-1.2.1-linux-aarch64.tar.gz` (ARM64) from the
 [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page, then
 install the prebuilt payload:
 
 ```bash
-tar -xzf Bongo-1.2.0-linux-x86_64.tar.gz
-cd Bongo-1.2.0-linux-x86_64
+tar -xzf Bongo-1.2.1-linux-x86_64.tar.gz
+cd Bongo-1.2.1-linux-x86_64
 sudo bash install.sh --prebuilt
 ```
 
@@ -114,10 +114,10 @@ sudo bash install.sh --uninstall
 
 ### Option 2: Debian / Ubuntu Package
 
-Download `bongo_1.2.0_amd64.deb` (or `bongo_1.2.0_arm64.deb`) from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page:
+Download `bongo_1.2.1_amd64.deb` (or `bongo_1.2.1_arm64.deb`) from the [Releases](https://github.com/mehedishakeel/Bongo/releases/latest) page:
 
 ```bash
-sudo apt install ./bongo_1.2.0_amd64.deb
+sudo apt install ./bongo_1.2.1_amd64.deb
 ```
 
 The package ships both frontends and uses the same glibc 2.39+ floor as the

@@ -73,9 +73,9 @@ class SettingsActivity : Activity() {
             setTextColor(Color.WHITE)
         }
         val verName = try {
-            packageManager.getPackageInfo(packageName, 0).versionName ?: "1.2.0"
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "1.2.1"
         } catch (_: Exception) {
-            "1.2.0"
+            "1.2.1"
         }
         val versionTag = TextView(this).apply {
             text = "Bengali Phonetic Keyboard • v$verName"

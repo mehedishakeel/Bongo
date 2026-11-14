@@ -29,6 +29,11 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.2.1" date="2026-11-14">
+      <description>
+        <p>Adds Tools and Converters for Bijoy to Unicode, Bengali Number-to-Words converter, user dictionary manager, and expanded phonetic autocorrect rules.</p>
+      </description>
+    </release>
     <release version="1.2.0" date="2026-11-06">
       <description>
         <p>Adds Borno / SafeWorks layout, native Arch AUR package, standalone AppImage for immutable distros, system startup autostart management, and Fcitx5 composition fixes.</p>

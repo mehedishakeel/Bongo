@@ -192,7 +192,7 @@ jobs:
           TAG_NAME="${GITHUB_REF#refs/tags/}"
           VERSION="${TAG_NAME#v}"
           if [ -z "$VERSION" ] || [ "$VERSION" = "$GITHUB_REF" ]; then
-            VERSION="1.2.0"
+            VERSION="1.2.1"
           fi
           cp app/build/outputs/apk/release/app-release.apk "release/Bongo-${VERSION}-android.apk"
           cd release
@@ -232,7 +232,9 @@ jobs:
           else
             echo "body_path=" >> $GITHUB_OUTPUT
           fi
-          if [ "$TAG_NAME" = "v1.2.0" ]; then
+          if [ "$TAG_NAME" = "v1.2.1" ]; then
+            echo "title=Bongo v1.2.1 — Linguistic Converters, User Dictionary & Engine Parity" >> $GITHUB_OUTPUT
+          elif [ "$TAG_NAME" = "v1.2.0" ]; then
             echo "title=Bongo v1.2.0 — Borno Layout, Windows Tray & System Startup" >> $GITHUB_OUTPUT
           elif [ "$TAG_NAME" = "v1.1.0" ]; then
             echo "title=Bongo v1.1.0 — National (Bijoy) Layout & Native Fcitx5 Frontend" >> $GITHUB_OUTPUT

@@ -273,7 +273,7 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
                 ;;
         esac
 
-        BONGO_VERSION="${BONGO_VERSION:-1.2.0}"
+        BONGO_VERSION="${BONGO_VERSION:-1.2.1}"
         DMG_NAME="Bongo-${BONGO_VERSION}-macos-${MAC_ARCH}.dmg"
         DMG_URL="https://github.com/mehedishakeel/Bongo/releases/latest/download/${DMG_NAME}"
         FALLBACK_URL="https://github.com/mehedishakeel/Bongo/releases/download/v${BONGO_VERSION}/${DMG_NAME}"
@@ -376,7 +376,7 @@ if [[ "${IS_LOCAL}" != "true" ]]; then
             ;;
     esac
 
-    BONGO_VERSION="${BONGO_VERSION:-1.2.0}"
+    BONGO_VERSION="${BONGO_VERSION:-1.2.1}"
 
     # Determine sudo prefix if not root
     SUDO=""
