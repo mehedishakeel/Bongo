@@ -42,12 +42,14 @@ python -m pip install pyinstaller --quiet
 
 python -m PyInstaller --noconfirm --clean --onefile --noconsole ^
     --name bongo ^
+    --paths "%PROJECT_ROOT%\platforms\common" ^
     --icon "%WINDOWS_ROOT%\data\bongo.ico" ^
     --distpath "%BUILD_DIR%" ^
     "%WINDOWS_ROOT%\service\bongo_service.py"
 
 python -m PyInstaller --noconfirm --clean --onefile --noconsole ^
     --name bongo-settings ^
+    --paths "%PROJECT_ROOT%\platforms\common" ^
     --icon "%WINDOWS_ROOT%\data\bongo.ico" ^
     --distpath "%BUILD_DIR%" ^
     "%WINDOWS_ROOT%\ui\bongo_settings.py"

@@ -213,13 +213,14 @@ class WelcomeTabView: NSView {
     private var buttons: [SidebarNavigationButton] = []
     private let heading = NSTextField(labelWithString: "Getting Started")
     private let subtitle = NSTextField(labelWithString: "Everything you need to begin typing in Bangla.")
-    private let titles = ["Getting Started", "Bongo Layout", "Settings", "Fonts", "Shortcuts"]
+    private let titles = ["Getting Started", "Bongo Layout", "Settings", "Fonts", "Shortcuts", "Converters"]
     private let subtitles = [
         "Everything you need to begin typing in Bangla.",
         "The complete phonetic key map at a glance.",
         "Choose how Bongo behaves while you type.",
         "Make the suggestion popup comfortable to read.",
         "Define personal text expansions and custom word mappings.",
+        "Convert Bijoy ⇄ Unicode text and Bengali numbers to words.",
     ]
 
     override init(frame: NSRect) {
@@ -288,8 +289,8 @@ class WelcomeTabView: NSView {
         nav.translatesAutoresizingMaskIntoConstraints = false
         sidebar.addSubview(nav)
 
-        let labels = ["Getting Started", "Bongo Layout", "Settings", "Fonts", "Shortcuts"]
-        let symbols = ["sparkles", "keyboard.fill", "slider.horizontal.3", "textformat", "text.badge.plus"]
+        let labels = ["Getting Started", "Bongo Layout", "Settings", "Fonts", "Shortcuts", "Converters"]
+        let symbols = ["sparkles", "keyboard.fill", "slider.horizontal.3", "textformat", "text.badge.plus", "arrow.left.arrow.right"]
         for i in 0..<labels.count {
             let button = SidebarNavigationButton(
                 title: labels[i], symbol: symbols[i], target: self, action: #selector(navigate(_:)))
@@ -334,6 +335,7 @@ class WelcomeTabView: NSView {
             (2, BongoScrollView.wrap(contentView: SettingsView())),
             (3, BongoScrollView.wrap(contentView: FontsView())),
             (4, BongoScrollView.wrap(contentView: ShortcutsView())),
+            (5, BongoScrollView.wrap(contentView: ConvertersView())),
         ]
         for (index, view) in views {
             let item = NSTabViewItem(identifier: index)
@@ -1952,6 +1954,341 @@ final class ShortcutsView: NSView {
                 renderShortcutsList()
             }
         }
+    }
+}
+
+// MARK: - Linguistic Converters & Tools Tab
+
+enum BengaliConverter {
+    private static let digitMap: [Character: Character] = [
+        "০": "0", "১": "1", "২": "2", "৩": "3", "৪": "4",
+        "৫": "5", "৬": "6", "৭": "7", "৮": "8", "৯": "9"
+    ]
+
+    private static let numbers0To99: [String] = [
+        "শূন্য", "এক", "দুই", "তিন", "চার", "পাঁচ", "ছয়", "সাত", "আট", "নয়", "দশ",
+        "এগারো", "বারো", "তেরো", "চৌদ্দ", "পনেরো", "ষোলো", "সতেরো", "আঠারো", "উনিশ", "বিশ",
+        "একুশ", "বাইশ", "তেইশ", "চব্বিশ", "পঁচিশ", "ছাব্বিশ", "সাতাশ", "আঠাশ", "উনত্রিশ", "ত্রিশ",
+        "একত্রিশ", "বত্রিশ", "তেত্রিশ", "চৌত্রিশ", "পঁয়ত্রিশ", "ছত্রিশ", "সাঁয়ত্রিশ", "আটত্রিশ", "উনচল্লিশ", "চল্লিশ",
+        "একচল্লিশ", "বিয়াল্লিশ", "তেতাল্লিশ", "চুয়াল্লিশ", "পঁয়তাল্লিশ", "ছেচল্লিশ", "সাতচল্লিশ", "আটচল্লিশ", "উনপঞ্চাশ", "পঞ্চাশ",
+        "একান্ন", "বায়ান্ন", "তিপ্পান্ন", "চুয়ান্ন", "পঞ্চান্ন", "ছাপ্পান্ন", "সাতান্ন", "আটান্ন", "উনষাট", "ষাট",
+        "একষট্টি", "বাষট্টি", "তেষট্টি", "চৌষট্টি", "পঁয়ষট্টি", "ছেষট্টি", "সাতষট্টি", "আটষট্টি", "উনসত্তর", "সত্তর",
+        "একাত্তর", "বাহাত্তর", "তিয়াত্তর", "চুয়াত্তর", "পঁচাত্তর", "ছিয়াত্তর", "সাতাত্তর", "আটাত্তর", "উনআশি", "আশি",
+        "একাশি", "বিরাশি", "তিরাশি", "চুরাশি", "পঁচাশি", "ছিয়াশি", "সাতাশি", "আটাশি", "ঊননব্বই", "নব্বই",
+        "একানব্বই", "বিরানব্বই", "তিরানব্বই", "চুরানব্বই", "পঁচানব্বই", "ছিয়ানব্বই", "সাতানব্বই", "আটানব্বই", "নিরানব্বই"
+    ]
+
+    static func normalizeDigits(_ input: String) -> String {
+        var res = ""
+        for c in input {
+            if c >= "0" && c <= "9" {
+                res.append(c)
+            } else if let d = digitMap[c] {
+                res.append(d)
+            }
+        }
+        return res
+    }
+
+    static func numberToWords(_ input: String, asCurrency: Bool = false) -> String {
+        var norm = normalizeDigits(input)
+        while norm.hasPrefix("0") {
+            norm.removeFirst()
+        }
+        if norm.isEmpty {
+            return asCurrency ? "শূন্য টাকা মাত্র" : "শূন্য"
+        }
+        guard let num = Int64(norm) else {
+            return "অত্যধিক বড় সংখ্যা"
+        }
+        let words = convertToWords(num)
+        return asCurrency ? "\(words) টাকা মাত্র" : words
+    }
+
+    private static func convertToWords(_ n: Int64) -> String {
+        if n == 0 { return numbers0To99[0] }
+        if n < 100 { return numbers0To99[Int(n)] }
+
+        var parts: [String] = []
+        var rem = n
+
+        let crore = rem / 10000000
+        if crore > 0 {
+            parts.append("\(convertToWords(crore)) কোটি")
+            rem %= 10000000
+        }
+
+        let lakh = rem / 100000
+        if lakh > 0 {
+            parts.append("\(numbers0To99[Int(lakh)]) লক্ষ")
+            rem %= 100000
+        }
+
+        let thousand = rem / 1000
+        if thousand > 0 {
+            parts.append("\(numbers0To99[Int(thousand)]) হাজার")
+            rem %= 1000
+        }
+
+        let hundred = rem / 100
+        if hundred > 0 {
+            parts.append("\(numbers0To99[Int(hundred)]) শত")
+            rem %= 100
+        }
+
+        if rem > 0 {
+            parts.append(numbers0To99[Int(rem)])
+        }
+
+        return parts.joined(separator: " ")
+    }
+
+    static func runConverterCLI(cmd: String, text: String, completion: @escaping (String) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let proc = Process()
+            proc.executableURL = URL(fileURLWithPath: "/usr/bin/python3")
+
+            var scriptPath = Bundle.main.path(forResource: "converter", ofType: "py")
+            if scriptPath == nil {
+                let candidates = [
+                    "platforms/common/converter.py",
+                    "../common/converter.py",
+                    "/Applications/Bongo.app/Contents/Resources/converter.py"
+                ]
+                for c in candidates where FileManager.default.fileExists(atPath: c) {
+                    scriptPath = c
+                    break
+                }
+            }
+            guard let script = scriptPath else {
+                DispatchQueue.main.async { completion(text) }
+                return
+            }
+            proc.arguments = [script, cmd, text]
+            let pipe = Pipe()
+            proc.standardOutput = pipe
+            do {
+                try proc.run()
+                proc.waitUntilExit()
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .newlines) ?? text
+                DispatchQueue.main.async { completion(output) }
+            } catch {
+                DispatchQueue.main.async { completion(text) }
+            }
+        }
+    }
+}
+
+final class ConvertersView: NSView, NSTextFieldDelegate {
+    override var isFlipped: Bool { true }
+
+    private let stack = NSStackView()
+    private let convInput = NSTextField()
+    private let convOutput = NSTextField()
+    private let numInput = NSTextField()
+    private let currencyCheckbox = NSButton(checkboxWithTitle: "Format as Taka currency (টাকা মাত্র)", target: nil, action: nil)
+    private let numResultLabel = NSTextField(labelWithString: "শূন্য টাকা মাত্র")
+
+    init() {
+        super.init(frame: .zero)
+        setupUI()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    private func setupUI() {
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = 16
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(stack)
+
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+            stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: WelcomeUI.pageInset),
+            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -WelcomeUI.pageInset),
+            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -32),
+        ])
+
+        // Section 1: Bijoy ⇄ Unicode Converter
+        let convHeader = WelcomeUI.sectionHeader("Bijoy (ANSI) ⇄ Unicode Converter")
+        stack.addArrangedSubview(convHeader)
+
+        let convCardContent = NSStackView()
+        convCardContent.orientation = .vertical
+        convCardContent.alignment = .leading
+        convCardContent.spacing = 10
+
+        let inLabel = NSTextField(labelWithString: "Input Text:")
+        inLabel.font = .systemFont(ofSize: 12, weight: .bold)
+        inLabel.textColor = .secondaryLabelColor
+
+        convInput.placeholderString = "Paste or type Unicode or Bijoy text here..."
+        convInput.font = .systemFont(ofSize: 13)
+        convInput.isEditable = true
+        convInput.isBordered = true
+        convInput.bezelStyle = .roundedBezel
+
+        let btnRow = NSStackView()
+        btnRow.orientation = .horizontal
+        btnRow.spacing = 10
+
+        let u2bBtn = NSButton(title: "⇄ Unicode to Bijoy", target: self, action: #selector(u2bClicked))
+        u2bBtn.bezelStyle = .rounded
+
+        let b2uBtn = NSButton(title: "⇄ Bijoy to Unicode", target: self, action: #selector(b2uClicked))
+        b2uBtn.bezelStyle = .rounded
+
+        let copyBtn = NSButton(title: "📋 Copy Output", target: self, action: #selector(copyOutputClicked))
+        copyBtn.bezelStyle = .rounded
+
+        let clearBtn = NSButton(title: "✕ Clear", target: self, action: #selector(clearClicked))
+        clearBtn.bezelStyle = .rounded
+
+        btnRow.addArrangedSubview(u2bBtn)
+        btnRow.addArrangedSubview(b2uBtn)
+        btnRow.addArrangedSubview(copyBtn)
+        btnRow.addArrangedSubview(clearBtn)
+
+        let outLabel = NSTextField(labelWithString: "Converted Output:")
+        outLabel.font = .systemFont(ofSize: 12, weight: .bold)
+        outLabel.textColor = .secondaryLabelColor
+
+        convOutput.placeholderString = "Converted result will appear here..."
+        convOutput.font = .systemFont(ofSize: 13)
+        convOutput.isEditable = false
+        convOutput.isSelectable = true
+        convOutput.isBordered = true
+        convOutput.bezelStyle = .roundedBezel
+
+        convCardContent.addArrangedSubview(inLabel)
+        convCardContent.addArrangedSubview(convInput)
+        convCardContent.addArrangedSubview(btnRow)
+        convCardContent.addArrangedSubview(outLabel)
+        convCardContent.addArrangedSubview(convOutput)
+
+        convInput.widthAnchor.constraint(equalTo: convCardContent.widthAnchor).isActive = true
+        convOutput.widthAnchor.constraint(equalTo: convCardContent.widthAnchor).isActive = true
+
+        let convCard = RoundedTintView(
+            cornerRadius: 10,
+            fill: { NSColor.controlBackgroundColor.withAlphaComponent(0.4) },
+            border: { NSColor.separatorColor.withAlphaComponent(0.4) })
+        convCard.addSubview(convCardContent)
+        convCardContent.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            convCardContent.topAnchor.constraint(equalTo: convCard.topAnchor, constant: 14),
+            convCardContent.leadingAnchor.constraint(equalTo: convCard.leadingAnchor, constant: 16),
+            convCardContent.trailingAnchor.constraint(equalTo: convCard.trailingAnchor, constant: -16),
+            convCardContent.bottomAnchor.constraint(equalTo: convCard.bottomAnchor, constant: -14),
+        ])
+        stack.addArrangedSubview(convCard)
+        convCard.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+
+        // Section 2: Bengali Number-to-Words Converter
+        let numHeader = WelcomeUI.sectionHeader("Bengali Number-to-Words Converter")
+        stack.addArrangedSubview(numHeader)
+
+        let numCardContent = NSStackView()
+        numCardContent.orientation = .vertical
+        numCardContent.alignment = .leading
+        numCardContent.spacing = 10
+
+        let numInputRow = NSStackView()
+        numInputRow.orientation = .horizontal
+        numInputRow.spacing = 12
+        numInputRow.alignment = .centerY
+
+        let numPrompt = NSTextField(labelWithString: "Enter Digits (0-9 or ০-৯):")
+        numPrompt.font = .systemFont(ofSize: 12, weight: .bold)
+        numPrompt.textColor = .secondaryLabelColor
+
+        numInput.placeholderString = "e.g. 12500 or ১২৫০০"
+        numInput.font = .systemFont(ofSize: 13)
+        numInput.widthAnchor.constraint(equalToConstant: 160).isActive = true
+        numInput.delegate = self
+
+        currencyCheckbox.state = .on
+        currencyCheckbox.target = self
+        currencyCheckbox.action = #selector(updateWords)
+
+        numInputRow.addArrangedSubview(numPrompt)
+        numInputRow.addArrangedSubview(numInput)
+        numInputRow.addArrangedSubview(currencyCheckbox)
+
+        // Result display
+        numResultLabel.font = .systemFont(ofSize: 14, weight: .bold)
+        numResultLabel.textColor = WelcomeUI.accent
+        numResultLabel.lineBreakMode = .byWordWrapping
+
+        let copyWordsBtn = NSButton(title: "📋 Copy Words", target: self, action: #selector(copyWordsClicked))
+        copyWordsBtn.bezelStyle = .rounded
+
+        numCardContent.addArrangedSubview(numInputRow)
+        numCardContent.addArrangedSubview(numResultLabel)
+        numCardContent.addArrangedSubview(copyWordsBtn)
+
+        let numCard = RoundedTintView(
+            cornerRadius: 10,
+            fill: { NSColor.controlBackgroundColor.withAlphaComponent(0.4) },
+            border: { NSColor.separatorColor.withAlphaComponent(0.4) })
+        numCard.addSubview(numCardContent)
+        numCardContent.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            numCardContent.topAnchor.constraint(equalTo: numCard.topAnchor, constant: 14),
+            numCardContent.leadingAnchor.constraint(equalTo: numCard.leadingAnchor, constant: 16),
+            numCardContent.trailingAnchor.constraint(equalTo: numCard.trailingAnchor, constant: -16),
+            numCardContent.bottomAnchor.constraint(equalTo: numCard.bottomAnchor, constant: -14),
+        ])
+        stack.addArrangedSubview(numCard)
+        numCard.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+    }
+
+    func controlTextDidChange(_ obj: Notification) {
+        updateWords()
+    }
+
+    @objc private func updateWords() {
+        let val = numInput.stringValue
+        let asCurr = currencyCheckbox.state == .on
+        let words = BengaliConverter.numberToWords(val, asCurrency: asCurr)
+        numResultLabel.stringValue = words
+    }
+
+    @objc private func copyWordsClicked() {
+        let w = numResultLabel.stringValue
+        if !w.isEmpty {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(w, forType: .string)
+        }
+    }
+
+    @objc private func u2bClicked() {
+        let text = convInput.stringValue
+        BengaliConverter.runConverterCLI(cmd: "u2b", text: text) { [weak self] res in
+            self?.convOutput.stringValue = res
+        }
+    }
+
+    @objc private func b2uClicked() {
+        let text = convInput.stringValue
+        BengaliConverter.runConverterCLI(cmd: "b2u", text: text) { [weak self] res in
+            self?.convOutput.stringValue = res
+        }
+    }
+
+    @objc private func copyOutputClicked() {
+        let text = convOutput.stringValue
+        if !text.isEmpty {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(text, forType: .string)
+        }
+    }
+
+    @objc private func clearClicked() {
+        convInput.stringValue = ""
+        convOutput.stringValue = ""
     }
 }
 

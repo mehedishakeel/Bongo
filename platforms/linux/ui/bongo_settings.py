@@ -38,6 +38,22 @@ try:
 except ImportError:
     GdkPixbuf = None
 
+# Add platforms/common to path for linguistic converter module
+COMMON_DIR = Path(__file__).resolve().parent.parent.parent / "common"
+if COMMON_DIR.is_dir() and str(COMMON_DIR) not in sys.path:
+    sys.path.insert(0, str(COMMON_DIR))
+
+try:
+    from converter import (
+        unicode_to_bijoy,
+        bijoy_to_unicode,
+        bengali_number_to_words,
+    )
+except ImportError:
+    def unicode_to_bijoy(s: str) -> str: return s
+    def bijoy_to_unicode(s: str) -> str: return s
+    def bengali_number_to_words(s, as_currency: bool = False) -> str: return str(s)
+
 # Set application ID and name early for desktop environment integration and dock icon matching
 GLib.set_prgname("app.getbongo.Bongo")
 GLib.set_application_name("Bongo")
@@ -604,6 +620,7 @@ class BongoSettingsApp:
             ("⚙️  Settings", 2),
             ("🔤  Fonts", 3),
             ("⚡  Shortcuts", 4),
+            ("⇄  Converters", 5),
         ]
         for label_text, index in tab_names:
             btn = Gtk.Button()
@@ -706,12 +723,14 @@ class BongoSettingsApp:
         self.view_settings = self.create_settings_view()
         self.view_fonts = self.create_fonts_view()
         self.view_shortcuts = self.create_shortcuts_view()
+        self.view_converters = self.create_converters_view()
 
         self.stack.add_named(self.view_getting_started, "getting_started")
         self.stack.add_named(self.view_cheatsheet, "cheatsheet")
         self.stack.add_named(self.view_settings, "settings")
         self.stack.add_named(self.view_fonts, "fonts")
         self.stack.add_named(self.view_shortcuts, "shortcuts")
+        self.stack.add_named(self.view_converters, "converters")
 
         if gtk_version == '4.0':
             self.scrolled_window.set_child(self.stack)
@@ -725,9 +744,10 @@ class BongoSettingsApp:
             ("Bongo Layout", "The complete phonetic key map at a glance."),
             ("Settings", "Choose how Bongo behaves while you type."),
             ("Fonts", "Make the suggestion popup comfortable to read."),
-            ("Shortcuts", "Define personal text expansions and custom word mappings.")
+            ("Shortcuts", "Define personal text expansions and custom word mappings."),
+            ("Tools & Converters", "Convert Bijoy ⇄ Unicode text and Bengali numbers to words."),
         ]
-        page_names = ["getting_started", "cheatsheet", "settings", "fonts", "shortcuts"]
+        page_names = ["getting_started", "cheatsheet", "settings", "fonts", "shortcuts", "converters"]
 
         title, subtitle = titles[index]
         self.heading_label.set_text(title)
@@ -1829,6 +1849,153 @@ class BongoSettingsApp:
                 self.show_dialog("Import Failed", str(e))
         else:
             self.show_dialog("File Not Found", f"Place your bongo_shortcuts.json in {CONFIG_DIR} and try again.")
+
+    # -------------------------------------------------------------
+    # 6. Tools & Converters Tab
+    # -------------------------------------------------------------
+    def create_converters_view(self):
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
+
+        # Section 1: Bijoy (ANSI) ⇄ Unicode Converter
+        self.append_widget(box, self.make_section_label("Bijoy (ANSI) ⇄ Unicode Converter"))
+        card1 = self.make_card()
+        card1_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+
+        in_lbl = Gtk.Label(label="Input Text:")
+        in_lbl.set_xalign(0.0)
+        self.append_widget(card1_box, in_lbl)
+
+        in_scroll = Gtk.ScrolledWindow()
+        in_scroll.set_min_content_height(90)
+        self.conv_in_tv = Gtk.TextView()
+        self.conv_in_tv.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+        if gtk_version == '4.0':
+            in_scroll.set_child(self.conv_in_tv)
+        else:
+            in_scroll.add(self.conv_in_tv)
+        self.append_widget(card1_box, in_scroll)
+
+        btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        u2b_btn = Gtk.Button(label="⇄ Unicode to Bijoy")
+        b2u_btn = Gtk.Button(label="⇄ Bijoy to Unicode")
+        copy_btn = Gtk.Button(label="📋 Copy Output")
+        clear_btn = Gtk.Button(label="✕ Clear")
+
+        out_scroll = Gtk.ScrolledWindow()
+        out_scroll.set_min_content_height(90)
+        self.conv_out_tv = Gtk.TextView()
+        self.conv_out_tv.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+        if gtk_version == '4.0':
+            out_scroll.set_child(self.conv_out_tv)
+        else:
+            out_scroll.add(self.conv_out_tv)
+
+        def get_in_text():
+            buf = self.conv_in_tv.get_buffer()
+            return buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True)
+
+        def set_out_text(txt):
+            buf = self.conv_out_tv.get_buffer()
+            buf.set_text(txt)
+
+        def on_u2b(b):
+            set_out_text(unicode_to_bijoy(get_in_text()))
+
+        def on_b2u(b):
+            set_out_text(bijoy_to_unicode(get_in_text()))
+
+        def on_copy_out(b):
+            buf = self.conv_out_tv.get_buffer()
+            txt = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True)
+            if txt:
+                self.copy_to_clipboard(txt)
+                self.show_dialog("Copied", "Converted text copied to clipboard!")
+
+        def on_clear(b):
+            self.conv_in_tv.get_buffer().set_text("")
+            self.conv_out_tv.get_buffer().set_text("")
+
+        u2b_btn.connect("clicked", on_u2b)
+        b2u_btn.connect("clicked", on_b2u)
+        copy_btn.connect("clicked", on_copy_out)
+        clear_btn.connect("clicked", on_clear)
+
+        self.append_widget(btn_row, u2b_btn)
+        self.append_widget(btn_row, b2u_btn)
+        self.append_widget(btn_row, copy_btn)
+        self.append_widget(btn_row, clear_btn)
+        self.append_widget(card1_box, btn_row)
+
+        out_lbl = Gtk.Label(label="Converted Output:")
+        out_lbl.set_xalign(0.0)
+        self.append_widget(card1_box, out_lbl)
+        self.append_widget(card1_box, out_scroll)
+
+        self.set_card_content(card1, card1_box)
+        self.append_widget(box, card1)
+
+        # Section 2: Bengali Number-to-Words Converter
+        self.append_widget(box, self.make_section_label("Bengali Number-to-Words Converter"))
+        card2 = self.make_card()
+        card2_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+
+        num_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        num_prompt = Gtk.Label(label="Enter Digits (0-9 or ০-৯):")
+        self.num_input = Gtk.Entry()
+        self.num_input.set_placeholder_text("e.g. 12500 or ১২৫০০")
+        self.num_input.set_width_chars(18)
+
+        self.currency_chk = Gtk.CheckButton(label="Format as Taka currency (টাকা মাত্র)")
+        self.currency_chk.set_active(True)
+
+        self.append_widget(num_row, num_prompt)
+        self.append_widget(num_row, self.num_input)
+        self.append_widget(num_row, self.currency_chk)
+        self.append_widget(card2_box, num_row)
+
+        res_card = self.make_card()
+        res_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        self.num_words_disp = Gtk.Label(label="শূন্য টাকা মাত্র")
+        self.num_words_disp.set_xalign(0.0)
+        self.num_words_disp.set_line_wrap(True)
+        self.append_widget(res_box, self.num_words_disp)
+        self.set_card_content(res_card, res_box)
+        self.append_widget(card2_box, res_card)
+
+        def update_words(*args):
+            val = self.num_input.get_text()
+            as_curr = self.currency_chk.get_active()
+            w = bengali_number_to_words(val, as_currency=as_curr)
+            self.num_words_disp.set_text(w)
+
+        self.num_input.connect("changed", update_words)
+        self.currency_chk.connect("toggled", update_words)
+
+        def on_copy_num(b):
+            txt = self.num_words_disp.get_text()
+            if txt:
+                self.copy_to_clipboard(txt)
+                self.show_dialog("Copied", "Bengali words copied to clipboard!")
+
+        copy_words_btn = Gtk.Button(label="📋 Copy Words")
+        copy_words_btn.connect("clicked", on_copy_num)
+        self.append_widget(card2_box, copy_words_btn)
+
+        self.set_card_content(card2, card2_box)
+        self.append_widget(box, card2)
+
+        return box
+
+    def copy_to_clipboard(self, text):
+        try:
+            if gtk_version == '4.0':
+                cb = self.window.get_clipboard()
+                cb.set(text)
+            else:
+                cb = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+                cb.set_text(text, -1)
+        except Exception:
+            pass
 
     # -------------------------------------------------------------
     # Shared UI Helpers

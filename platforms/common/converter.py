@@ -524,3 +524,107 @@ AUTOCORRECT_LOANWORDS: Dict[str, str] = {
     "dat": "দাঁত", "idur": "ইঁদুর", "katha": "কাঁথা", "kathal": "কাঁঠাল",
     "baka": "বাঁকা", "khocha": "খোঁচা", "radha": "রাঁধা", "tak": "টাঁক", "chuch": "ছুঁচ", "jak": "ঝাঁক",
 }
+
+
+# --- Bengali Number to Words Converter ---
+BENGALI_DIGIT_MAP = {
+    '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+    '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+}
+
+BENGALI_NUMBERS_0_TO_99 = [
+    "শূন্য", "এক", "দুই", "তিন", "চার", "পাঁচ", "ছয়", "সাত", "আট", "নয়", "দশ",
+    "এগারো", "বারো", "তেরো", "চৌদ্দ", "পনেরো", "ষোলো", "সতেরো", "আঠারো", "উনিশ", "বিশ",
+    "একুশ", "বাইশ", "তেইশ", "চব্বিশ", "পঁচিশ", "ছাব্বিশ", "সাতাশ", "আঠাশ", "উনত্রিশ", "ত্রিশ",
+    "একত্রিশ", "বত্রিশ", "তেত্রিশ", "চৌত্রিশ", "পঁয়ত্রিশ", "ছত্রিশ", "সাঁয়ত্রিশ", "আটত্রিশ", "উনচল্লিশ", "চল্লিশ",
+    "একচল্লিশ", "বিয়াল্লিশ", "তেতাল্লিশ", "চুয়াল্লিশ", "পঁয়তাল্লিশ", "ছেচল্লিশ", "সাতচল্লিশ", "আটচল্লিশ", "উনপঞ্চাশ", "পঞ্চাশ",
+    "একান্ন", "বায়ান্ন", "তিপ্পান্ন", "চুয়ান্ন", "পঞ্চান্ন", "ছাপ্পান্ন", "সাতান্ন", "আটান্ন", "উনষাট", "ষাট",
+    "একষট্টি", "বাষট্টি", "তেষট্টি", "চৌষট্টি", "পঁয়ষট্টি", "ছেষট্টি", "সাতষট্টি", "আটষট্টি", "উনসত্তর", "সত্তর",
+    "একাত্তর", "বাহাত্তর", "তিয়াত্তর", "চুয়াত্তর", "পঁচাত্তর", "ছিয়াত্তর", "সাতাত্তর", "আটাত্তর", "উনআশি", "আশি",
+    "একাশি", "বিরাশি", "তিরাশি", "চুরাশি", "পঁচাশি", "ছিয়াশি", "সাতাশি", "আটাশি", "ঊননব্বই", "নব্বই",
+    "একানব্বই", "বিরানব্বই", "তিরানব্বই", "চুরানব্বই", "পঁচানব্বই", "ছিয়ানব্বই", "সাতানব্বই", "আটানব্বই", "নিরানব্বই"
+]
+
+
+def normalize_bengali_digits(text: str) -> str:
+    """Extracts and normalizes English (0-9) and Bengali (০-৯) digits to standard ASCII digits."""
+    res = []
+    for ch in str(text or ""):
+        if '0' <= ch <= '9':
+            res.append(ch)
+        elif ch in BENGALI_DIGIT_MAP:
+            res.append(BENGALI_DIGIT_MAP[ch])
+    return "".join(res)
+
+
+def _convert_num_to_words(n: int) -> str:
+    if n == 0:
+        return BENGALI_NUMBERS_0_TO_99[0]
+    if n < 100:
+        return BENGALI_NUMBERS_0_TO_99[n]
+
+    parts = []
+    rem = n
+
+    # কোটি (Crore: 10,000,000)
+    crore = rem // 10000000
+    if crore > 0:
+        parts.append(f"{_convert_num_to_words(crore)} কোটি")
+        rem %= 10000000
+
+    # লক্ষ (Lakh: 100,000)
+    lakh = rem // 100000
+    if lakh > 0:
+        parts.append(f"{BENGALI_NUMBERS_0_TO_99[lakh]} লক্ষ")
+        rem %= 100000
+
+    # হাজার (Thousand: 1,000)
+    thousand = rem // 1000
+    if thousand > 0:
+        parts.append(f"{BENGALI_NUMBERS_0_TO_99[thousand]} হাজার")
+        rem %= 1000
+
+    # শত (Hundred: 100)
+    hundred = rem // 100
+    if hundred > 0:
+        parts.append(f"{BENGALI_NUMBERS_0_TO_99[hundred]} শত")
+        rem %= 100
+
+    if rem > 0:
+        parts.append(BENGALI_NUMBERS_0_TO_99[rem])
+
+    return " ".join(parts)
+
+
+def bengali_number_to_words(value: str | int, as_currency: bool = False) -> str:
+    """
+    Converts numeric strings or integers (English 0-9 or Bengali ০-৯ digits)
+    into colloquial Bengali spoken words.
+    Example: 12500 -> "বারো হাজার পাঁচ শত"
+    as_currency=True -> "বারো হাজার পাঁচ শত টাকা মাত্র"
+    """
+    normalized = normalize_bengali_digits(str(value)).lstrip('0')
+    if not normalized:
+        return "শূন্য টাকা মাত্র" if as_currency else "শূন্য"
+    try:
+        n = int(normalized)
+    except Exception:
+        return "অত্যধিক বড় সংখ্যা"
+    words = _convert_num_to_words(n)
+    return f"{words} টাকা মাত্র" if as_currency else words
+
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 2:
+        cmd = sys.argv[1]
+        text_arg = sys.argv[2]
+        if cmd == "u2b":
+            print(unicode_to_bijoy(text_arg))
+        elif cmd == "b2u":
+            print(bijoy_to_unicode(text_arg))
+        elif cmd == "num":
+            as_curr = "--currency" in sys.argv
+            print(bengali_number_to_words(text_arg, as_currency=as_curr))
+
+

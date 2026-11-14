@@ -21,6 +21,22 @@ import tkinter as tk
 from tkinter import ttk, messagebox, font as tkfont
 from pathlib import Path
 
+# Add platforms/common to path for linguistic converter module
+COMMON_DIR = Path(__file__).resolve().parent.parent.parent / "common"
+if COMMON_DIR.is_dir() and str(COMMON_DIR) not in sys.path:
+    sys.path.insert(0, str(COMMON_DIR))
+
+try:
+    from converter import (
+        unicode_to_bijoy,
+        bijoy_to_unicode,
+        bengali_number_to_words,
+    )
+except ImportError:
+    def unicode_to_bijoy(s: str) -> str: return s
+    def bijoy_to_unicode(s: str) -> str: return s
+    def bengali_number_to_words(s, as_currency: bool = False) -> str: return str(s)
+
 APP_VERSION = "1.2.0"
 GITHUB_REPO = "mehedishakeel/Bongo"
 
@@ -424,6 +440,7 @@ class BongoSettingsApp:
             ("⚙  Settings", 2),
             ("Aa  Fonts", 3),
             ("⚡  Shortcuts", 4),
+            ("⇄  Converters", 5),
         ]
 
         nav_frame = tk.Frame(self.sidebar, bg=BG_SIDEBAR)
@@ -601,6 +618,7 @@ class BongoSettingsApp:
             self.create_settings_view(self.scrollable_frame),
             self.create_fonts_view(self.scrollable_frame),
             self.create_shortcuts_view(self.scrollable_frame),
+            self.create_converters_view(self.scrollable_frame),
         ]
 
     def select_tab(self, idx):
@@ -612,6 +630,7 @@ class BongoSettingsApp:
             ("Settings", "Choose how Bongo behaves while you type."),
             ("Fonts", "Make the suggestion popup comfortable to read."),
             ("Shortcuts", "Define personal text expansions and custom word mappings."),
+            ("Tools & Converters", "Convert Bijoy ⇄ Unicode text and Bengali numbers to words."),
         ]
 
         title, subtitle = tab_headers[idx]
@@ -1913,6 +1932,203 @@ class BongoSettingsApp:
                         messagebox.showinfo("Import Successful", f"Imported {len(data)} shortcuts.")
             except Exception as e:
                 messagebox.showerror("Import Failed", str(e))
+
+    # -------------------------------------------------------------
+    # 6. Tools & Converters Tab
+    # -------------------------------------------------------------
+    def create_converters_view(self, parent):
+        container = tk.Frame(parent, bg=BG_DARK)
+        container.pack(fill=tk.BOTH, expand=True)
+
+        # Section 1: Bijoy ⇄ Unicode Converter
+        self.make_section_label(container, "Bijoy (ANSI) ⇄ Unicode Converter")
+        card1 = self.make_card(container)
+
+        tk.Label(
+            card1,
+            text="Input Text:",
+            font=("Segoe UI", 9, "bold"),
+            fg=TEXT_SECONDARY,
+            bg=BG_CARD
+        ).pack(anchor="w", pady=(0, 4))
+
+        self.conv_input = tk.Text(
+            card1,
+            font=("Segoe UI", 10),
+            bg=BG_HOVER,
+            fg=TEXT_PRIMARY,
+            insertbackground=TEXT_PRIMARY,
+            relief=tk.FLAT,
+            height=4,
+            wrap=tk.WORD,
+            padx=8,
+            pady=8
+        )
+        self.conv_input.pack(fill=tk.X, pady=(0, 10))
+
+        btn_row = tk.Frame(card1, bg=BG_CARD)
+        btn_row.pack(fill=tk.X, pady=(0, 10))
+
+        def do_u2b():
+            text = self.conv_input.get("1.0", tk.END).strip()
+            res = unicode_to_bijoy(text)
+            self.conv_output.delete("1.0", tk.END)
+            self.conv_output.insert("1.0", res)
+
+        def do_b2u():
+            text = self.conv_input.get("1.0", tk.END).strip()
+            res = bijoy_to_unicode(text)
+            self.conv_output.delete("1.0", tk.END)
+            self.conv_output.insert("1.0", res)
+
+        def do_copy_output():
+            res = self.conv_output.get("1.0", tk.END).strip()
+            if res:
+                self.root.clipboard_clear()
+                self.root.clipboard_append(res)
+                messagebox.showinfo("Copied", "Converted text copied to clipboard!")
+
+        def do_clear():
+            self.conv_input.delete("1.0", tk.END)
+            self.conv_output.delete("1.0", tk.END)
+
+        btn_u2b = tk.Button(
+            btn_row,
+            text="⇄ Unicode to Bijoy",
+            font=("Segoe UI", 9, "bold"),
+            fg="#ffffff",
+            bg=ACCENT_COLOR,
+            activebackground=ACCENT_HOVER,
+            activeforeground="#ffffff",
+            relief=tk.FLAT,
+            bd=0,
+            padx=12,
+            pady=6,
+            cursor="hand2",
+            command=do_u2b
+        )
+        btn_u2b.pack(side=tk.LEFT, padx=(0, 8))
+
+        btn_b2u = tk.Button(
+            btn_row,
+            text="⇄ Bijoy to Unicode",
+            font=("Segoe UI", 9, "bold"),
+            fg="#ffffff",
+            bg=ACCENT_COLOR,
+            activebackground=ACCENT_HOVER,
+            activeforeground="#ffffff",
+            relief=tk.FLAT,
+            bd=0,
+            padx=12,
+            pady=6,
+            cursor="hand2",
+            command=do_b2u
+        )
+        btn_b2u.pack(side=tk.LEFT, padx=(0, 8))
+
+        btn_copy = self.make_button(btn_row, "📋 Copy Output", do_copy_output)
+        btn_copy.pack(side=tk.LEFT, padx=(0, 8))
+
+        btn_clr = self.make_button(btn_row, "✕ Clear", do_clear)
+        btn_clr.pack(side=tk.LEFT)
+
+        tk.Label(
+            card1,
+            text="Converted Output:",
+            font=("Segoe UI", 9, "bold"),
+            fg=TEXT_SECONDARY,
+            bg=BG_CARD
+        ).pack(anchor="w", pady=(0, 4))
+
+        self.conv_output = tk.Text(
+            card1,
+            font=("Segoe UI", 10),
+            bg=BG_HOVER,
+            fg=TEXT_PRIMARY,
+            insertbackground=TEXT_PRIMARY,
+            relief=tk.FLAT,
+            height=4,
+            wrap=tk.WORD,
+            padx=8,
+            pady=8
+        )
+        self.conv_output.pack(fill=tk.X)
+
+        # Section 2: Bengali Number-to-Words Converter
+        self.make_section_label(container, "Bengali Number-to-Words Converter")
+        card2 = self.make_card(container)
+
+        num_input_row = tk.Frame(card2, bg=BG_CARD)
+        num_input_row.pack(fill=tk.X, pady=(0, 8))
+
+        tk.Label(
+            num_input_row,
+            text="Enter Digits (0-9 or ০-৯):",
+            font=("Segoe UI", 9, "bold"),
+            fg=TEXT_SECONDARY,
+            bg=BG_CARD
+        ).pack(side=tk.LEFT, padx=(0, 12))
+
+        self.num_entry = tk.Entry(
+            num_input_row,
+            font=("Segoe UI", 11),
+            bg=BG_HOVER,
+            fg=TEXT_PRIMARY,
+            insertbackground=TEXT_PRIMARY,
+            relief=tk.FLAT,
+            width=20
+        )
+        self.num_entry.pack(side=tk.LEFT, padx=(0, 12))
+
+        self.currency_var = tk.BooleanVar(value=True)
+        chk_curr = tk.Checkbutton(
+            num_input_row,
+            text="Format as Taka currency (টাকা মাত্র)",
+            variable=self.currency_var,
+            font=("Segoe UI", 9),
+            fg=TEXT_PRIMARY,
+            bg=BG_CARD,
+            activebackground=BG_CARD,
+            activeforeground=TEXT_PRIMARY,
+            selectcolor=BG_HOVER
+        )
+        chk_curr.pack(side=tk.LEFT)
+
+        # Result display box
+        res_box = tk.Frame(card2, bg=BG_HOVER, padx=14, pady=12)
+        res_box.pack(fill=tk.X, pady=(6, 10))
+
+        self.num_words_lbl = tk.Label(
+            res_box,
+            text="শূন্য টাকা মাত্র",
+            font=("Segoe UI", 12, "bold"),
+            fg=ACCENT_LIGHT,
+            bg=BG_HOVER,
+            wraplength=550,
+            justify=tk.LEFT
+        )
+        self.num_words_lbl.pack(anchor="w")
+
+        def update_number_words(*args):
+            val = self.num_entry.get().strip()
+            as_curr = self.currency_var.get()
+            words = bengali_number_to_words(val, as_currency=as_curr)
+            self.num_words_lbl.configure(text=words)
+
+        self.num_entry.bind("<KeyRelease>", update_number_words)
+        self.currency_var.trace_add("write", update_number_words)
+
+        def copy_num_words():
+            w = self.num_words_lbl.cget("text")
+            if w:
+                self.root.clipboard_clear()
+                self.root.clipboard_append(w)
+                messagebox.showinfo("Copied", "Bengali words copied to clipboard!")
+
+        btn_copy_words = self.make_button(card2, "📋 Copy Words", copy_num_words)
+        btn_copy_words.pack(anchor="w")
+
+        return container
 
     def open_system_fonts(self):
         try:

@@ -180,7 +180,7 @@ class DistributionTests(unittest.TestCase):
                         app = ws.BongoSettingsApp(root)
                         app.switch_layout_mode("national")
                         app.switch_layout_mode("avro")
-                        for idx in range(4):
+                        for idx in range(6):
                             app.select_tab(idx)
                     finally:
                         root.destroy()
@@ -299,6 +299,14 @@ class DistributionTests(unittest.TestCase):
         # Check Core Engine (riti) supports Unicode in autocorrect
         sugg = (ROOT / 'vendor/rust/riti/src/phonetic/suggestion.rs').read_text(encoding='utf-8')
         self.assertIn(r"'\u{0980}'..='\u{09FF}'", sugg)
+
+        # Check Desktop Converters & Linguistic Tools Views
+        self.assertIn('ConvertersView', mac)
+        self.assertIn('BengaliConverter', mac)
+        self.assertIn('create_converters_view', win)
+        self.assertIn('create_converters_view', linux)
+        self.assertIn('bengali_number_to_words', win)
+        self.assertIn('bengali_number_to_words', linux)
 
     def test_phonetic_engine_accuracy(self):
         import importlib.util
@@ -541,6 +549,7 @@ class DistributionTests(unittest.TestCase):
             fix_string_case,
             apply_sandhi_rules,
             AUTOCORRECT_LOANWORDS,
+            bengali_number_to_words,
         )
 
         # 1. Unicode to Bijoy conversion test suite
@@ -615,6 +624,16 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(AUTOCORRECT_LOANWORDS["hospital"], "হাসপাতাল")
         self.assertEqual(AUTOCORRECT_LOANWORDS["police"], "পুলিশ")
         self.assertEqual(AUTOCORRECT_LOANWORDS["google"], "গুগল")
+
+        # 7. Bengali Number to Words Converter
+        self.assertEqual(bengali_number_to_words(0), "শূন্য")
+        self.assertEqual(bengali_number_to_words("0"), "শূন্য")
+        self.assertEqual(bengali_number_to_words("৫"), "পাঁচ")
+        self.assertEqual(bengali_number_to_words(12), "বারো")
+        self.assertEqual(bengali_number_to_words("১০০"), "এক শত")
+        self.assertEqual(bengali_number_to_words("12500"), "বারো হাজার পাঁচ শত")
+        self.assertEqual(bengali_number_to_words("১২৫০০", as_currency=True), "বারো হাজার পাঁচ শত টাকা মাত্র")
+        self.assertEqual(bengali_number_to_words("10500075"), "এক কোটি পাঁচ লক্ষ পঁচাত্তর")
 
 if __name__ == '__main__':
     unittest.main()

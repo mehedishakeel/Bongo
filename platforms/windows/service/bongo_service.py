@@ -30,6 +30,7 @@ try:
         AUTOCORRECT_LOANWORDS,
         unicode_to_bijoy,
         bijoy_to_unicode,
+        bengali_number_to_words,
     )
 except ImportError:
     def separate_padding(word: str):
