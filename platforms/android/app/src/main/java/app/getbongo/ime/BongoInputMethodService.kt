@@ -112,8 +112,8 @@ class BongoInputMethodService : InputMethodService() {
                 dp(44)
             )
             applyTheme(palette)
-            onCandidateSelected = { index, _ ->
-                handleCandidateSelection(index)
+            onCandidateSelected = { index, candidate ->
+                handleCandidateSelection(index, candidate)
             }
             onShortcutAction = { action ->
                 handleShortcutAction(action)
@@ -515,6 +515,7 @@ class BongoInputMethodService : InputMethodService() {
                         candidateStripView?.clear()
                     }
                 } else {
+                    candidateStripView?.clear()
                     sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
                 }
             }
@@ -531,13 +532,14 @@ class BongoInputMethodService : InputMethodService() {
                     } else {
                         sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
                     }
+                    candidateStripView?.clear()
                 }
             }
             is BongoKeyboardView.KeyAction.Space -> {
                 if (isBanglaMode && bongoEngine.hasSession()) {
                     val committed = bongoEngine.commitCandidate(0)
                     ic.commitText("$committed ", 1)
-                    candidateStripView?.clear()
+                    showNextWordPredictions(committed)
                     lastSpaceTime = SystemClock.uptimeMillis()
                 } else {
                     val now = SystemClock.uptimeMillis()
@@ -551,6 +553,7 @@ class BongoInputMethodService : InputMethodService() {
                         ic.commitText(" ", 1)
                         lastSpaceTime = now
                     }
+                    candidateStripView?.clear()
                 }
             }
             is BongoKeyboardView.KeyAction.Return -> {
@@ -616,11 +619,30 @@ class BongoInputMethodService : InputMethodService() {
         }
     }
 
-    private fun handleCandidateSelection(index: Int) {
+    private fun handleCandidateSelection(index: Int, candidate: String) {
         val ic = currentInputConnection ?: return
-        val committed = bongoEngine.commitCandidate(index)
-        ic.commitText("$committed ", 1)
-        candidateStripView?.clear()
+        if (bongoEngine.hasSession()) {
+            val committed = bongoEngine.commitCandidate(index)
+            ic.commitText("$committed ", 1)
+            showNextWordPredictions(committed)
+        } else {
+            // Next-word prediction tapped
+            ic.commitText("$candidate ", 1)
+            showNextWordPredictions(candidate)
+        }
+    }
+
+    private fun showNextWordPredictions(word: String) {
+        if (!isBanglaMode) {
+            candidateStripView?.clear()
+            return
+        }
+        val predictions = bongoEngine.predictNextWords(word)
+        if (predictions.isNotEmpty()) {
+            candidateStripView?.setCandidates(predictions)
+        } else {
+            candidateStripView?.clear()
+        }
     }
 
     private fun commitOngoingComposition() {

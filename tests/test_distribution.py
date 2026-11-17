@@ -551,6 +551,7 @@ class DistributionTests(unittest.TestCase):
             AUTOCORRECT_LOANWORDS,
             bengali_number_to_words,
             lookup_emoji_keyword,
+            predict_next_words,
         )
 
         # 1. Unicode to Bijoy conversion test suite
@@ -643,6 +644,14 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(lookup_emoji_keyword(":hasi:"), "😂")
         self.assertEqual(lookup_emoji_keyword("bongo"), "🇧🇩")
         self.assertEqual(lookup_emoji_keyword("agun"), "🔥")
+
+        # 9. Contextual Next-Word (Bigram) Prediction
+        self.assertIn("সোনার", predict_next_words("আমার"))
+        self.assertIn("বাংলা", predict_next_words("সোনার"))
+        self.assertIn("সকাল", predict_next_words("শুভ"))
+        self.assertIn("ধন্যবাদ", predict_next_words("অনেক"))
+        self.assertIn("আপনাকে", predict_next_words("ধন্যবাদ"))
+        self.assertEqual(predict_next_words(""), [])
 
 if __name__ == '__main__':
     unittest.main()

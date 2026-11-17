@@ -171,6 +171,10 @@ class BongoEngine {
         preedit = ""
     }
 
+    fun predictNextWords(word: String): List<String> {
+        return fallbackEngine.predictNextWords(word)
+    }
+
     fun destroy() {
         if (nativePtr != 0L) {
             try {
