@@ -243,11 +243,17 @@ class BongoKeyboardView @JvmOverloads constructor(
     private fun performHaptic() {
         if (userPrefs.hapticFeedback) {
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    vibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
+                val dur = userPrefs.vibrationDurationMs.coerceIn(5, 100).toLong()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val amp = when {
+                        dur <= 15L -> 100
+                        dur <= 30L -> VibrationEffect.DEFAULT_AMPLITUDE
+                        else -> 255
+                    }
+                    vibrator?.vibrate(VibrationEffect.createOneShot(dur, amp))
                 } else {
                     @Suppress("DEPRECATION")
-                    vibrator?.vibrate(8)
+                    vibrator?.vibrate(dur)
                 }
             } catch (_: Exception) {}
         }

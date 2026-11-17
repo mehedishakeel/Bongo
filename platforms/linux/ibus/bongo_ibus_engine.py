@@ -27,8 +27,10 @@ try:
         unicode_to_bijoy,
         bijoy_to_unicode,
         bengali_number_to_words,
+        lookup_emoji_keyword,
     )
 except ImportError:
+    def lookup_emoji_keyword(word: str): return None
     def separate_padding(word: str):
         m1 = re.match(r"^([\-\]~!@#%&*()_=+[{}'\";<>\/?|.,:]+)", word or "")
         p = m1.group(1) if m1 else ""
@@ -197,6 +199,11 @@ class AvroPhoneticEngine:
         # 4. Autocorrect & Compound expansions (OmicronLab autodict)
         if lower in AUTOCORRECT_LOANWORDS:
             add(AUTOCORRECT_LOANWORDS[lower])
+
+        # 4.5 Inline Emoji & Emotion Keyword Suggestion
+        emoji_match = lookup_emoji_keyword(stem)
+        if emoji_match:
+            add(emoji_match)
 
         # 5. Rule-based phonetic conversion
         rule_based = self.convert_word(cased_stem)

@@ -66,6 +66,10 @@ class UserPreferences(context: Context) {
         get() = prefs.getBoolean(KEY_SWIPE_DELETE, true)
         set(value) = prefs.edit().putBoolean(KEY_SWIPE_DELETE, value).apply()
 
+    var vibrationDurationMs: Int
+        get() = prefs.getInt(KEY_VIBRATION_DURATION, 25)
+        set(value) = prefs.edit().putInt(KEY_VIBRATION_DURATION, value).apply()
+
     fun registerListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
         prefs.registerOnSharedPreferenceChangeListener(listener)
     }
@@ -90,5 +94,6 @@ class UserPreferences(context: Context) {
         const val KEY_SHOW_NUMBER_ROW = "show_number_row"
         const val KEY_POPUP_PREVIEW = "key_popup_preview"
         const val KEY_SWIPE_DELETE = "swipe_delete_words"
+        const val KEY_VIBRATION_DURATION = "vibration_duration_ms"
     }
 }

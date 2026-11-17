@@ -550,6 +550,7 @@ class DistributionTests(unittest.TestCase):
             apply_sandhi_rules,
             AUTOCORRECT_LOANWORDS,
             bengali_number_to_words,
+            lookup_emoji_keyword,
         )
 
         # 1. Unicode to Bijoy conversion test suite
@@ -634,6 +635,14 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(bengali_number_to_words("12500"), "বারো হাজার পাঁচ শত")
         self.assertEqual(bengali_number_to_words("১২৫০০", as_currency=True), "বারো হাজার পাঁচ শত টাকা মাত্র")
         self.assertEqual(bengali_number_to_words("10500075"), "এক কোটি পাঁচ লক্ষ পঁচাত্তর")
+
+        # 8. Inline Emoji & Keyword Lookup
+        self.assertEqual(lookup_emoji_keyword("love"), "❤️")
+        self.assertEqual(lookup_emoji_keyword(":love:"), "❤️")
+        self.assertEqual(lookup_emoji_keyword("hasi"), "😂")
+        self.assertEqual(lookup_emoji_keyword(":hasi:"), "😂")
+        self.assertEqual(lookup_emoji_keyword("bongo"), "🇧🇩")
+        self.assertEqual(lookup_emoji_keyword("agun"), "🔥")
 
 if __name__ == '__main__':
     unittest.main()

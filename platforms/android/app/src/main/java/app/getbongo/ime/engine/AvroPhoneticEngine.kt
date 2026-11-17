@@ -75,6 +75,16 @@ class AvroPhoneticEngine {
         "subscribe" to listOf("সাবস্ক্রাইব"), "channel" to listOf("চ্যানেল"), "bongo" to listOf("বঙ্গ")
     )
 
+    private val emojiKeywords: Map<String, String> = mapOf(
+        "has" to "😄", "hasi" to "😂", "lol" to "😂", "love" to "❤️", "valobasha" to "❤️",
+        "bhalobasha" to "❤️", "kiss" to "😘", "chumo" to "😘", "sad" to "😢", "kanna" to "😭",
+        "dukho" to "😢", "rag" to "😡", "shanto" to "😌", "thik" to "👍", "bhalo" to "👍",
+        "agun" to "🔥", "taka" to "💰", "bd" to "🇧🇩", "bangladesh" to "🇧🇩",
+        "phul" to "🌸", "surjo" to "☀️", "chad" to "🌙", "tara" to "⭐",
+        "cha" to "☕", "coffee" to "☕", "bongo" to "🇧🇩", "clap" to "👏", "taali" to "👏",
+        "namaste" to "🙏", "salam" to "🤝", "victory" to "✌️", "joy" to "✌️", "heart" to "❤️"
+    )
+
     fun separatePadding(word: String): Triple<String, String, String> {
         if (word.isEmpty()) return Triple("", "", "")
         return try {
@@ -155,6 +165,10 @@ class AvroPhoneticEngine {
 
         // Custom Shortcuts & Text Expansion (highest priority)
         customShortcuts[lower]?.let { add(it) }
+
+        // Inline Emoji Keywords
+        val cleanKeyword = lower.trim(':')
+        emojiKeywords[cleanKeyword]?.let { add(it) }
 
         dictionary[lower]?.forEach { add(it) }
         autocorrectLoanwords[lower]?.forEach { add(it) }

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.TypedValue
@@ -282,6 +283,62 @@ class SettingsActivity : Activity() {
             "Tactile click vibration on keypress",
             userPrefs.hapticFeedback
         ) { userPrefs.hapticFeedback = it })
+
+        val intensityRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(16), dp(8), dp(16), dp(12))
+        }
+        val intensityLabel = TextView(this).apply {
+            text = "Vibration Intensity"
+            textSize = 14.5f
+            setTextColor(Color.WHITE)
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        intensityRow.addView(intensityLabel)
+
+        val chipsLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+        }
+        val intensities = listOf("Subtle" to 15, "Normal" to 25, "Strong" to 45)
+        fun refreshIntensityChips() {
+            chipsLayout.removeAllViews()
+            for ((label, ms) in intensities) {
+                val isSelected = userPrefs.vibrationDurationMs == ms
+                val chip = TextView(this).apply {
+                    text = label
+                    textSize = 12.5f
+                    typeface = Typeface.DEFAULT_BOLD
+                    setTextColor(if (isSelected) Color.WHITE else Color.parseColor("#8e8e93"))
+                    setPadding(dp(10), dp(5), dp(10), dp(5))
+                    background = GradientDrawable().apply {
+                        cornerRadius = dp(12).toFloat()
+                        setColor(if (isSelected) Color.parseColor("#6366f1") else Color.parseColor("#2c2c2e"))
+                    }
+                    val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                        setMargins(dp(3), 0, dp(3), 0)
+                    }
+                    layoutParams = lp
+                    setOnClickListener {
+                        userPrefs.vibrationDurationMs = ms
+                        refreshIntensityChips()
+                        try {
+                            val v = getSystemService(Context.VIBRATOR_SERVICE) as? android.os.Vibrator
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                v?.vibrate(android.os.VibrationEffect.createOneShot(ms.toLong(), android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+                            } else {
+                                @Suppress("DEPRECATION")
+                                v?.vibrate(ms.toLong())
+                            }
+                        } catch (_: Exception) {}
+                    }
+                }
+                chipsLayout.addView(chip)
+            }
+        }
+        refreshIntensityChips()
+        intensityRow.addView(chipsLayout)
+        feedbackCard.addView(intensityRow)
         feedbackCard.addView(createDivider())
 
         feedbackCard.addView(createSwitchRow(

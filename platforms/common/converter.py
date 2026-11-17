@@ -526,6 +526,25 @@ AUTOCORRECT_LOANWORDS: Dict[str, str] = {
 }
 
 
+# --- Bengali & English Inline Emoji Keywords ---
+EMOJI_KEYWORDS: Dict[str, str] = {
+    "has": "😄", "hasi": "😂", "lol": "😂", "love": "❤️", "valobasha": "❤️",
+    "bhalobasha": "❤️", "kiss": "😘", "chumo": "😘", "sad": "😢", "kanna": "😭",
+    "dukho": "😢", "rag": "😡", "shanto": "😌", "thik": "👍", "bhalo": "👍",
+    "agun": "🔥", "taka": "💰", "bd": "🇧🇩", "bangladesh": "🇧🇩",
+    "phul": "🌸", "surjo": "☀️", "chad": "🌙", "tara": "⭐",
+    "cha": "☕", "coffee": "☕", "bongo": "🇧🇩", "clap": "👏", "taali": "👏",
+    "namaste": "🙏", "salam": "🤝", "victory": "✌️", "joy": "✌️", "heart": "❤️",
+}
+
+
+def lookup_emoji_keyword(word: str) -> Optional[str]:
+    """Returns matching emoji for a keyword query or colon-wrapped identifier (e.g. :love: or hasi)."""
+    clean = (word or "").strip().lower().strip(":")
+    return EMOJI_KEYWORDS.get(clean)
+
+
+
 # --- Bengali Number to Words Converter ---
 BENGALI_DIGIT_MAP = {
     '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
