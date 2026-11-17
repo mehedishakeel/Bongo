@@ -43,7 +43,7 @@ git clone ssh://aur@aur.archlinux.org/bongo-bin.git aur-repo
 cd aur-repo
 cp /path/to/Bongo/platforms/linux/packaging/aur/bongo-bin/* .
 makepkg --printsrcinfo > .SRCINFO
-git add PKGBUILD .SRCINFO bongo-bin.install README.md
+git add PKGBUILD .SRCINFO bongo-bin.install README.md *.patch
 git commit -m "feat: initial release of bongo-bin"
 git push -u origin master
 ```
