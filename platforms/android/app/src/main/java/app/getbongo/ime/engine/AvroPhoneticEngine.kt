@@ -11,6 +11,7 @@ import org.json.JSONObject
 class AvroPhoneticEngine {
 
     var customShortcuts: Map<String, String> = emptyMap()
+    var learnedSelections: MutableMap<String, String> = mutableMapOf()
 
     private val dictionary: Map<String, List<String>> by lazy {
         loadDictionary()
@@ -218,6 +219,9 @@ class AvroPhoneticEngine {
 
         // Custom Shortcuts & Text Expansion (highest priority)
         customShortcuts[lower]?.let { add(it) }
+
+        // Adaptive Learned Selection (user's personal top choice)
+        learnedSelections[lower]?.let { add(it) }
 
         // Inline Emoji Keywords
         val cleanKeyword = lower.trim(':')

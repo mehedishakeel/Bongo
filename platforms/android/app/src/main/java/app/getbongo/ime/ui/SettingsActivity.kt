@@ -17,6 +17,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.HorizontalScrollView
 import android.widget.ScrollView
 import android.widget.Switch
 import android.widget.TextView
@@ -103,12 +104,21 @@ class SettingsActivity : Activity() {
 
         // Theme Selector
         appearanceCard.addView(createSettingTitle("Theme", "Visual appearance of keyboard"))
+        val themeScroll = HorizontalScrollView(this).apply {
+            isHorizontalScrollBarEnabled = false
+        }
         val themeRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            weightSum = 3f
             setPadding(0, dp(8), 0, dp(14))
         }
-        val themeOptions = listOf("midnight" to "Midnight", "oled" to "OLED Black", "light" to "Light")
+        val themeOptions = listOf(
+            "midnight" to "Midnight",
+            "oled" to "OLED Black",
+            "light" to "Light",
+            "emerald" to "Emerald",
+            "crimson" to "Crimson",
+            "nord" to "Nord"
+        )
         val themeButtons = mutableListOf<Button>()
 
         themeOptions.forEach { (key, label) ->
@@ -119,9 +129,10 @@ class SettingsActivity : Activity() {
                 typeface = Typeface.DEFAULT_BOLD
                 setTextColor(if (isSelected) Color.WHITE else Color.parseColor("#9ca3af"))
                 background = createPillBackground(isSelected)
-                layoutParams = LinearLayout.LayoutParams(0, dp(38), 1f).apply {
+                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, dp(38)).apply {
                     setMargins(dp(3), 0, dp(3), 0)
                 }
+                setPadding(dp(16), 0, dp(16), 0)
                 setOnClickListener {
                     userPrefs.theme = key
                     themeButtons.forEachIndexed { i, b ->
@@ -134,7 +145,51 @@ class SettingsActivity : Activity() {
             themeButtons.add(btn)
             themeRow.addView(btn)
         }
-        appearanceCard.addView(themeRow)
+        themeScroll.addView(themeRow)
+        appearanceCard.addView(themeScroll)
+        appearanceCard.addView(createDivider())
+
+        // Key Borders Toggle
+        appearanceCard.addView(createSwitchRow(
+            "Key Borders",
+            "Draw distinct borders around each keyboard key",
+            userPrefs.showKeyBorders
+        ) { userPrefs.showKeyBorders = it })
+        appearanceCard.addView(createDivider())
+
+        // One-Handed Mode Selector
+        appearanceCard.addView(createSettingTitle("One-Handed Mode", "Align keyboard for one-handed thumb typing"))
+        val oneHandedRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            weightSum = 3f
+            setPadding(0, dp(8), 0, dp(14))
+        }
+        val oneHandedOptions = listOf("none" to "Full Width", "left" to "Left Hand", "right" to "Right Hand")
+        val oneHandedButtons = mutableListOf<Button>()
+        oneHandedOptions.forEach { (mode, label) ->
+            val isSelected = userPrefs.oneHandedMode == mode
+            val btn = Button(this).apply {
+                text = label
+                textSize = 12f
+                typeface = Typeface.DEFAULT_BOLD
+                setTextColor(if (isSelected) Color.WHITE else Color.parseColor("#9ca3af"))
+                background = createPillBackground(isSelected)
+                layoutParams = LinearLayout.LayoutParams(0, dp(38), 1f).apply {
+                    setMargins(dp(3), 0, dp(3), 0)
+                }
+                setOnClickListener {
+                    userPrefs.oneHandedMode = mode
+                    oneHandedButtons.forEachIndexed { i, b ->
+                        val sel = oneHandedOptions[i].first == mode
+                        b.setTextColor(if (sel) Color.WHITE else Color.parseColor("#9ca3af"))
+                        b.background = createPillBackground(sel)
+                    }
+                }
+            }
+            oneHandedButtons.add(btn)
+            oneHandedRow.addView(btn)
+        }
+        appearanceCard.addView(oneHandedRow)
         appearanceCard.addView(createDivider())
 
         // Keyboard Height Selector
@@ -544,8 +599,28 @@ class SettingsActivity : Activity() {
             }
         }
 
+        val resetMemoryBtn = Button(this).apply {
+            text = "Reset Learned Words"
+            textSize = 11f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.parseColor("#f87171"))
+            background = GradientDrawable().apply {
+                cornerRadius = dp(8).toFloat()
+                setColor(Color.parseColor("#1f1f26"))
+                setStroke(dp(1), Color.parseColor("#451a1a"))
+            }
+            layoutParams = LinearLayout.LayoutParams(0, dp(36), 1.1f).apply {
+                setMargins(dp(4), 0, 0, 0)
+            }
+            setOnClickListener {
+                userPrefs.clearLearnedSelections()
+                android.widget.Toast.makeText(this@SettingsActivity, "Learned vocabulary memory reset!", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+
         actionsRow.addView(presetsBtn)
         actionsRow.addView(exportBtn)
+        actionsRow.addView(resetMemoryBtn)
         shortcutsCard.addView(actionsRow)
 
         container.addView(shortcutsCard)

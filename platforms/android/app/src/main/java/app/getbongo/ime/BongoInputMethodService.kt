@@ -21,8 +21,12 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
 import app.getbongo.ime.ui.VoicePermissionActivity
+import android.graphics.Typeface
+import android.util.TypedValue
+import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import app.getbongo.ime.engine.BongoEngine
 import app.getbongo.ime.model.ThemePalette
@@ -47,6 +51,9 @@ class BongoInputMethodService : InputMethodService() {
     private var emojiKeyboardView: EmojiKeyboardView? = null
     private var candidateStripView: CandidateStripView? = null
     private var keyboardFrame: FrameLayout? = null
+    private var keyboardContainer: LinearLayout? = null
+    private var leftOneHandedBar: LinearLayout? = null
+    private var rightOneHandedBar: LinearLayout? = null
     private var dividerView: View? = null
     private var rootView: LinearLayout? = null
 
@@ -70,6 +77,7 @@ class BongoInputMethodService : InputMethodService() {
         userPrefs = UserPreferences(this)
         userDictionary = app.getbongo.ime.model.UserDictionaryManager(this)
         bongoEngine.customShortcuts = userDictionary.getShortcuts()
+        bongoEngine.learnedSelections = userPrefs.getLearnedSelections()
         bongoEngine.setLayout(userPrefs.keyboardLayout)
         userPrefs.registerListener(prefChangeListener)
 
@@ -129,13 +137,29 @@ class BongoInputMethodService : InputMethodService() {
         }
         dividerView = divider
 
-        val frame = FrameLayout(this).apply {
+        val containerLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 dp(getTargetKeyboardHeight())
             )
         }
+        keyboardContainer = containerLayout
+
+        val leftBar = createOneHandedSideBar(isLeft = true)
+        leftOneHandedBar = leftBar
+
+        val frame = FrameLayout(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                1f
+            )
+        }
         keyboardFrame = frame
+
+        val rightBar = createOneHandedSideBar(isLeft = false)
+        rightOneHandedBar = rightBar
 
         keyboardView = BongoKeyboardView(this).apply {
             layoutParams = FrameLayout.LayoutParams(
@@ -169,9 +193,14 @@ class BongoInputMethodService : InputMethodService() {
         frame.addView(keyboardView)
         frame.addView(emojiKeyboardView)
 
+        containerLayout.addView(leftBar)
+        containerLayout.addView(frame)
+        containerLayout.addView(rightBar)
+        applyOneHandedMode()
+
         root.addView(candidateStripView)
         root.addView(divider)
-        root.addView(frame)
+        root.addView(containerLayout)
 
         return root
     }
@@ -236,7 +265,7 @@ class BongoInputMethodService : InputMethodService() {
     private var isVoiceListening = false
 
     private fun cycleTheme() {
-        val themes = listOf("midnight", "light", "oled")
+        val themes = listOf("midnight", "light", "oled", "emerald", "crimson", "nord")
         val currentIdx = themes.indexOf(userPrefs.theme.lowercase())
         val nextIdx = if (currentIdx == -1) 0 else (currentIdx + 1) % themes.size
         val chosenTheme = themes[nextIdx]
@@ -244,9 +273,73 @@ class BongoInputMethodService : InputMethodService() {
         val palette = ThemePalette.getPalette(chosenTheme)
         rootView?.setBackgroundColor(palette.surfaceColor)
         dividerView?.setBackgroundColor(palette.dividerColor)
+        leftOneHandedBar?.setBackgroundColor(palette.surfaceColor)
+        rightOneHandedBar?.setBackgroundColor(palette.surfaceColor)
         keyboardView?.applyTheme(palette)
         candidateStripView?.applyTheme(palette)
         emojiKeyboardView?.applyTheme(palette)
+    }
+
+    private fun createOneHandedSideBar(isLeft: Boolean): LinearLayout {
+        val palette = ThemePalette.getPalette(userPrefs.theme)
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(dp(48), LinearLayout.LayoutParams.MATCH_PARENT)
+            setBackgroundColor(palette.surfaceColor)
+
+            val switchBtn = TextView(context).apply {
+                text = if (isLeft) "▶" else "◀"
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                typeface = Typeface.DEFAULT_BOLD
+                gravity = Gravity.CENTER
+                setTextColor(palette.stripSecondaryText)
+                setPadding(dp(8), dp(16), dp(8), dp(16))
+                isClickable = true
+                isFocusable = true
+                setOnClickListener {
+                    userPrefs.oneHandedMode = if (isLeft) "right" else "left"
+                    applyOneHandedMode()
+                }
+            }
+
+            val expandBtn = TextView(context).apply {
+                text = "⤢"
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+                typeface = Typeface.DEFAULT_BOLD
+                gravity = Gravity.CENTER
+                setTextColor(palette.stripSecondaryText)
+                setPadding(dp(8), dp(16), dp(8), dp(16))
+                isClickable = true
+                isFocusable = true
+                setOnClickListener {
+                    userPrefs.oneHandedMode = "none"
+                    applyOneHandedMode()
+                }
+            }
+
+            addView(switchBtn)
+            addView(View(context).apply { layoutParams = LinearLayout.LayoutParams(dp(1), dp(16)) })
+            addView(expandBtn)
+        }
+    }
+
+    private fun applyOneHandedMode() {
+        when (userPrefs.oneHandedMode) {
+            "left" -> {
+                leftOneHandedBar?.visibility = View.GONE
+                rightOneHandedBar?.visibility = View.VISIBLE
+            }
+            "right" -> {
+                leftOneHandedBar?.visibility = View.VISIBLE
+                rightOneHandedBar?.visibility = View.GONE
+            }
+            else -> {
+                leftOneHandedBar?.visibility = View.GONE
+                rightOneHandedBar?.visibility = View.GONE
+            }
+        }
+        keyboardContainer?.requestLayout()
     }
 
     private fun handleShortcutAction(action: CandidateStripView.ShortcutAction) {
@@ -298,6 +391,14 @@ class BongoInputMethodService : InputMethodService() {
             }
             is CandidateStripView.ShortcutAction.CursorRight -> {
                 sendDownUpKeyEvents(KeyEvent.KEYCODE_DPAD_RIGHT)
+            }
+            is CandidateStripView.ShortcutAction.OneHanded -> {
+                userPrefs.oneHandedMode = when (userPrefs.oneHandedMode) {
+                    "none" -> "right"
+                    "right" -> "left"
+                    else -> "none"
+                }
+                applyOneHandedMode()
             }
         }
     }
@@ -622,7 +723,12 @@ class BongoInputMethodService : InputMethodService() {
     private fun handleCandidateSelection(index: Int, candidate: String) {
         val ic = currentInputConnection ?: return
         if (bongoEngine.hasSession()) {
+            val typedBuffer = bongoEngine.buffer
             val committed = bongoEngine.commitCandidate(index)
+            if (typedBuffer.isNotEmpty()) {
+                bongoEngine.learnSelection(typedBuffer, committed)
+                userPrefs.learnSelection(typedBuffer, committed)
+            }
             ic.commitText("$committed ", 1)
             showNextWordPredictions(committed)
         } else {
@@ -721,18 +827,26 @@ class BongoInputMethodService : InputMethodService() {
         if (key == UserPreferences.KEY_KEYBOARD_LAYOUT) {
             bongoEngine.setLayout(userPrefs.keyboardLayout)
         }
+        if (key == UserPreferences.KEY_ONE_HANDED_MODE) {
+            applyOneHandedMode()
+        }
+        if (key == UserPreferences.KEY_KEY_BORDERS) {
+            keyboardView?.buildKeyboard()
+        }
 
         val palette = ThemePalette.getPalette(userPrefs.theme)
         rootView?.setBackgroundColor(palette.surfaceColor)
         dividerView?.setBackgroundColor(palette.dividerColor)
+        leftOneHandedBar?.setBackgroundColor(palette.surfaceColor)
+        rightOneHandedBar?.setBackgroundColor(palette.surfaceColor)
         candidateStripView?.applyTheme(palette)
         keyboardView?.applyTheme(palette)
 
-        keyboardFrame?.layoutParams = LinearLayout.LayoutParams(
+        keyboardContainer?.layoutParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             dp(getTargetKeyboardHeight())
         )
-        keyboardFrame?.requestLayout()
+        keyboardContainer?.requestLayout()
         rootView?.requestLayout()
     }
 

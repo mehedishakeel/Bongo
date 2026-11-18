@@ -26,6 +26,12 @@ class BongoEngine {
             fallbackEngine.customShortcuts = value
         }
 
+    var learnedSelections: MutableMap<String, String>
+        get() = fallbackEngine.learnedSelections
+        set(value) {
+            fallbackEngine.learnedSelections = value
+        }
+
     init {
         if (BongoNative.isLoaded) {
             try {
@@ -173,6 +179,14 @@ class BongoEngine {
 
     fun predictNextWords(word: String): List<String> {
         return fallbackEngine.predictNextWords(word)
+    }
+
+    fun learnSelection(typed: String, candidate: String) {
+        val cleanTyped = typed.trim().lowercase()
+        val cleanCandidate = candidate.trim()
+        if (cleanTyped.isNotEmpty() && cleanCandidate.isNotEmpty()) {
+            fallbackEngine.learnedSelections[cleanTyped] = cleanCandidate
+        }
     }
 
     fun destroy() {

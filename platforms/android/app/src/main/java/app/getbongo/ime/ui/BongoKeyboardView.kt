@@ -988,7 +988,9 @@ class BongoKeyboardView @JvmOverloads constructor(
         val normal = GradientDrawable().apply {
             cornerRadius = dp(6).toFloat()
             setColor(normalColor)
-            setStroke(dp(1), palette.keyBorderColor)
+            if (userPrefs.showKeyBorders) {
+                setStroke(dp(1), palette.keyBorderColor)
+            }
         }
 
         val pressed = GradientDrawable().apply {

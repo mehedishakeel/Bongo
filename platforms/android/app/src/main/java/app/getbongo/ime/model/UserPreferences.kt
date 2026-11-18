@@ -2,6 +2,7 @@ package app.getbongo.ime.model
 
 import android.content.Context
 import android.content.SharedPreferences
+import org.json.JSONObject
 
 /**
  * Manages user preferences for Bongo Android IME.
@@ -70,6 +71,46 @@ class UserPreferences(context: Context) {
         get() = prefs.getInt(KEY_VIBRATION_DURATION, 25)
         set(value) = prefs.edit().putInt(KEY_VIBRATION_DURATION, value).apply()
 
+    var showKeyBorders: Boolean
+        get() = prefs.getBoolean(KEY_KEY_BORDERS, false)
+        set(value) = prefs.edit().putBoolean(KEY_KEY_BORDERS, value).apply()
+
+    var oneHandedMode: String
+        get() = prefs.getString(KEY_ONE_HANDED_MODE, "none") ?: "none"
+        set(value) = prefs.edit().putString(KEY_ONE_HANDED_MODE, value).apply()
+
+    var learnedSelectionsJson: String
+        get() = prefs.getString(KEY_LEARNED_SELECTIONS, "{}") ?: "{}"
+        set(value) = prefs.edit().putString(KEY_LEARNED_SELECTIONS, value).apply()
+
+    fun getLearnedSelections(): MutableMap<String, String> {
+        val res = mutableMapOf<String, String>()
+        try {
+            val json = JSONObject(learnedSelectionsJson)
+            val keys = json.keys()
+            while (keys.hasNext()) {
+                val k = keys.next()
+                res[k.lowercase()] = json.getString(k)
+            }
+        } catch (_: Exception) {}
+        return res
+    }
+
+    fun learnSelection(typed: String, candidate: String) {
+        val cleanTyped = typed.trim().lowercase()
+        val cleanCandidate = candidate.trim()
+        if (cleanTyped.isEmpty() || cleanCandidate.isEmpty()) return
+        val current = getLearnedSelections()
+        current[cleanTyped] = cleanCandidate
+        val obj = JSONObject()
+        current.forEach { (k, v) -> obj.put(k, v) }
+        learnedSelectionsJson = obj.toString()
+    }
+
+    fun clearLearnedSelections() {
+        learnedSelectionsJson = "{}"
+    }
+
     fun registerListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
         prefs.registerOnSharedPreferenceChangeListener(listener)
     }
@@ -95,5 +136,8 @@ class UserPreferences(context: Context) {
         const val KEY_POPUP_PREVIEW = "key_popup_preview"
         const val KEY_SWIPE_DELETE = "swipe_delete_words"
         const val KEY_VIBRATION_DURATION = "vibration_duration_ms"
+        const val KEY_KEY_BORDERS = "show_key_borders"
+        const val KEY_ONE_HANDED_MODE = "one_handed_mode"
+        const val KEY_LEARNED_SELECTIONS = "learned_selections"
     }
 }

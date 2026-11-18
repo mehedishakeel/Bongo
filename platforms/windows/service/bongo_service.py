@@ -1157,10 +1157,11 @@ class BongoTrayIcon:
     Shows the current typing language (EN / বা), provides tooltip feedback,
     and a right-click context menu (Toggle language, Settings, Exit).
     """
-    def __init__(self, settings: dict, on_toggle=None, on_open_settings=None, on_exit=None):
+    def __init__(self, settings: dict, on_toggle=None, on_open_settings=None, on_open_converter=None, on_exit=None):
         self.settings = settings
         self.on_toggle = on_toggle
         self.on_open_settings = on_open_settings
+        self.on_open_converter = on_open_converter
         self.on_exit = on_exit
         self.hwnd = None
         self._wnd_proc_ref = None
@@ -1325,8 +1326,9 @@ class BongoTrayIcon:
         ID_STATUS = 1001
         ID_SET_BANGLA = 1002
         ID_SET_ENGLISH = 1003
-        ID_SETTINGS = 1004
-        ID_EXIT = 1005
+        ID_CONVERTER = 1004
+        ID_SETTINGS = 1005
+        ID_EXIT = 1006
 
         curr_mode = "বাংলা (Bangla)" if self.current_mode_is_bangla else "English"
         user32.AppendMenuW(h_menu, MF_STRING | MF_GRAYED, ID_STATUS, f"Bongo · {curr_mode}")
@@ -1338,6 +1340,7 @@ class BongoTrayIcon:
         user32.AppendMenuW(h_menu, en_flag, ID_SET_ENGLISH, "English Mode")
         user32.AppendMenuW(h_menu, MF_SEPARATOR, 0, None)
 
+        user32.AppendMenuW(h_menu, MF_STRING, ID_CONVERTER, "Quick Converter (Win+Shift+C)...")
         user32.AppendMenuW(h_menu, MF_STRING, ID_SETTINGS, "Settings...")
         user32.AppendMenuW(h_menu, MF_SEPARATOR, 0, None)
         user32.AppendMenuW(h_menu, MF_STRING, ID_EXIT, "Exit Bongo")
@@ -1355,6 +1358,9 @@ class BongoTrayIcon:
             if self.on_toggle: self.on_toggle()
         elif cmd == ID_SET_ENGLISH and self.current_mode_is_bangla:
             if self.on_toggle: self.on_toggle()
+        elif cmd == ID_CONVERTER:
+            if hasattr(self, "on_open_converter") and self.on_open_converter:
+                self.on_open_converter()
         elif cmd == ID_SETTINGS:
             if self.on_open_settings: self.on_open_settings()
         elif cmd == ID_EXIT:
@@ -1430,6 +1436,7 @@ class BongoWindowsService:
             self.settings,
             on_toggle=self.toggle_mode,
             on_open_settings=self.open_settings,
+            on_open_converter=self.open_quick_converter,
             on_exit=self.quit_service
         )
 
@@ -1437,6 +1444,24 @@ class BongoWindowsService:
 
         self.hook_id = None
         self.hook_proc_ref = None
+
+    def open_quick_converter(self):
+        try:
+            import subprocess
+            candidates = [
+                Path(sys.executable).parent / "bongo-converter.exe",
+                Path(__file__).resolve().parent.parent / "common" / "quick_converter.py",
+                Path(__file__).resolve().parent.parent.parent / "common" / "quick_converter.py",
+            ]
+            for c in candidates:
+                if c.is_file():
+                    if c.suffix == ".py":
+                        subprocess.Popen([sys.executable, str(c)])
+                    else:
+                        subprocess.Popen([str(c)])
+                    break
+        except Exception as e:
+            log_msg(f"Warning opening quick converter from tray: {e}")
 
     def open_settings(self):
         try:
@@ -1815,6 +1840,11 @@ class BongoWindowsService:
                                     self._ctrl_shift_pending = False
                                     self.toggle_mode()
                                     return user32.CallNextHookEx(self.hook_id, n_code, w_param, l_param)
+
+                    # Hotkey: Win+Shift+C -> Open Quick Converter
+                    if is_down and is_win and is_shift and (vk in (ord('C'), ord('c'))):
+                        self.open_quick_converter()
+                        return 1
 
                     # Swallow Space key-up if it was part of Win+Space toggle
                     if not is_down and vk == VK_SPACE and is_win and toggle_key == "Win+Space":

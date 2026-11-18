@@ -40,6 +40,7 @@ class CandidateStripView @JvmOverloads constructor(
         object Paste : ShortcutAction()
         object CursorLeft : ShortcutAction()
         object CursorRight : ShortcutAction()
+        object OneHanded : ShortcutAction()
     }
 
     private val container = LinearLayout(context).apply {
@@ -257,6 +258,7 @@ class CandidateStripView @JvmOverloads constructor(
             Triple("😊", ShortcutAction.Emoji, false),
             Triple("🎨", ShortcutAction.Theme, false),
             Triple("📋", ShortcutAction.Clipboard, false),
+            Triple("✋", ShortcutAction.OneHanded, false),
             Triple("⚙️", ShortcutAction.Settings, false),
             Triple("•••", ShortcutAction.More, false),
             Triple("🎙️", ShortcutAction.VoiceInput, false),
@@ -273,7 +275,7 @@ class CandidateStripView @JvmOverloads constructor(
         for ((label, action, isHighlighted) in shortcuts) {
             val tv = TextView(context).apply {
                 text = label
-                val isEmojiOrIcon = label in listOf("😊", "🎨", "📋", "⚙️", "•••", "🎙️", "◀", "▶")
+                val isEmojiOrIcon = label in listOf("😊", "🎨", "📋", "✋", "⚙️", "•••", "🎙️", "◀", "▶")
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, if (isEmojiOrIcon) 15f else 13f)
                 typeface = Typeface.DEFAULT_BOLD
                 setTextColor(if (isHighlighted) palette.stripPrimaryBorder else palette.stripSecondaryText)

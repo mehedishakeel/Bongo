@@ -10,6 +10,10 @@ Provides:
 """
 
 import re
+import os
+import sys
+import json
+from pathlib import Path
 from typing import Tuple, List, Dict, Optional
 
 # --- Unicode to Bijoy 2000 Mapping (OmicronLab poriborton) ---
@@ -599,6 +603,55 @@ def predict_next_words(word: str) -> List[str]:
         return []
     clean = word.strip(" .,!?।:;'\"_-\t\n")
     return list(COMMON_BIGRAMS.get(clean, []))
+
+
+# --- Adaptive Learned Selections Memory ---
+def get_user_bongo_dir() -> Path:
+    """Resolves and ensures the platform-specific user config directory for Bongo."""
+    if os.environ.get("BONGO_USER_DIR"):
+        p = Path(os.environ["BONGO_USER_DIR"])
+        p.mkdir(parents=True, exist_ok=True)
+        return p
+    if sys.platform == "darwin":
+        p = Path.home() / "Library" / "Application Support" / "Bongo"
+    elif sys.platform == "win32":
+        appdata = os.environ.get("APPDATA")
+        p = (Path(appdata) / "Bongo") if appdata else (Path.home() / ".config" / "bongo")
+    else:
+        p = Path.home() / ".config" / "bongo"
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+
+def load_learned_selections(custom_dir: Optional[str] = None) -> Dict[str, str]:
+    """Loads user's learned phonetic candidate picks from phonetic-candidate-selection.json."""
+    base_dir = Path(custom_dir) if custom_dir else get_user_bongo_dir()
+    file_path = base_dir / "phonetic-candidate-selection.json"
+    if not file_path.is_file():
+        return {}
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            if isinstance(data, dict):
+                return {str(k).lower(): str(v) for k, v in data.items()}
+    except Exception:
+        pass
+    return {}
+
+
+def save_learned_selection(buffer: str, selected_word: str, custom_dir: Optional[str] = None) -> None:
+    """Records a user candidate pick for typed buffer into phonetic-candidate-selection.json."""
+    if not buffer or not selected_word:
+        return
+    base_dir = Path(custom_dir) if custom_dir else get_user_bongo_dir()
+    file_path = base_dir / "phonetic-candidate-selection.json"
+    current = load_learned_selections(str(base_dir))
+    current[buffer.strip().lower()] = selected_word.strip()
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(current, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
 
 
 
