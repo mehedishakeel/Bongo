@@ -434,7 +434,8 @@ class DistributionTests(unittest.TestCase):
         self.assertTrue(h_dari_session)
         self.assertFalse(svc.has_session())
 
-        # Test F12 and Ctrl+Space toggle
+        # Test configured toggle keys (F12, Ctrl+Space, Win+Space)
+        svc.settings["toggle_key"] = "F12"
         self.assertTrue(svc.bangla_active)
         svc.process_key(mod_win.VK_F12, True, False, False, False)
         self.assertFalse(svc.bangla_active)
@@ -442,9 +443,17 @@ class DistributionTests(unittest.TestCase):
         self.assertTrue(svc.bangla_active)
 
         # Test Ctrl+Space toggle
+        svc.settings["toggle_key"] = "Ctrl+Space"
         svc.process_key(mod_win.VK_SPACE, True, False, True, False)
         self.assertFalse(svc.bangla_active)
         svc.process_key(mod_win.VK_SPACE, True, False, True, False)
+        self.assertTrue(svc.bangla_active)
+
+        # Test Win+Space toggle
+        svc.settings["toggle_key"] = "Win+Space"
+        svc.process_key(mod_win.VK_SPACE, True, False, False, False, is_win=True)
+        self.assertFalse(svc.bangla_active)
+        svc.process_key(mod_win.VK_SPACE, True, False, False, False, is_win=True)
         self.assertTrue(svc.bangla_active)
 
         # Test Shifted uppercase typing (e.g. 'T' for ট vs 't' for ত)
