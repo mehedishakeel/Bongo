@@ -111,6 +111,7 @@ Layout=
 
     def test_manual_steps_are_actionable(self):
         steps = self.helper.manual_steps()
+        self.assertIn("fcitx5-config-qt", steps)
         self.assertIn("fcitx5-configtool", steps)
         self.assertIn("Bongo", steps)
 
