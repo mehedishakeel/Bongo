@@ -83,6 +83,14 @@ class UserPreferences(context: Context) {
         get() = prefs.getString(KEY_LEARNED_SELECTIONS, "{}") ?: "{}"
         set(value) = prefs.edit().putString(KEY_LEARNED_SELECTIONS, value).apply()
 
+    var customBgPath: String
+        get() = prefs.getString(KEY_CUSTOM_BG_PATH, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_CUSTOM_BG_PATH, value).apply()
+
+    var customBgDimming: Int
+        get() = prefs.getInt(KEY_CUSTOM_BG_DIMMING, 40)
+        set(value) = prefs.edit().putInt(KEY_CUSTOM_BG_DIMMING, value).apply()
+
     fun getLearnedSelections(): MutableMap<String, String> {
         val res = mutableMapOf<String, String>()
         try {
@@ -139,5 +147,7 @@ class UserPreferences(context: Context) {
         const val KEY_KEY_BORDERS = "show_key_borders"
         const val KEY_ONE_HANDED_MODE = "one_handed_mode"
         const val KEY_LEARNED_SELECTIONS = "learned_selections"
+        const val KEY_CUSTOM_BG_PATH = "custom_bg_path"
+        const val KEY_CUSTOM_BG_DIMMING = "custom_bg_dimming"
     }
 }

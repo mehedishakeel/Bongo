@@ -139,6 +139,7 @@ class BongoKeyboardView @JvmOverloads constructor(
         object Esc : KeyAction()
         object Tab : KeyAction()
         object Ctrl : KeyAction()
+        object InsertNewline : KeyAction()
     }
 
     private companion object {
@@ -830,7 +831,7 @@ class BongoKeyboardView @JvmOverloads constructor(
                         onKeyClickListener?.invoke(KeyAction.CharacterKey('?'))
                     }
                     key == "ACTION" || key == "RETURN" -> {
-                        onKeyClickListener?.invoke(KeyAction.OpenSettings)
+                        onKeyClickListener?.invoke(KeyAction.InsertNewline)
                     }
                 }
             }

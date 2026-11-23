@@ -21,13 +21,17 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
 import app.getbongo.ime.ui.VoicePermissionActivity
+import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Typeface
 import android.util.TypedValue
 import android.view.Gravity
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import java.io.File
 import app.getbongo.ime.engine.BongoEngine
 import app.getbongo.ime.model.ThemePalette
 import app.getbongo.ime.model.UserPreferences
@@ -56,6 +60,8 @@ class BongoInputMethodService : InputMethodService() {
     private var rightOneHandedBar: LinearLayout? = null
     private var dividerView: View? = null
     private var rootView: LinearLayout? = null
+    private var customBgImageView: ImageView? = null
+    private var customBgOverlay: View? = null
 
     private var isBanglaMode = true
     private var isCtrlActive = false
@@ -202,7 +208,61 @@ class BongoInputMethodService : InputMethodService() {
         root.addView(divider)
         root.addView(containerLayout)
 
-        return root
+        val rootFrame = FrameLayout(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val bgIv = ImageView(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+            scaleType = ImageView.ScaleType.CENTER_CROP
+        }
+        customBgImageView = bgIv
+
+        val bgOverlay = View(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+            setBackgroundColor(Color.BLACK)
+        }
+        customBgOverlay = bgOverlay
+
+        rootFrame.addView(bgIv)
+        rootFrame.addView(bgOverlay)
+        rootFrame.addView(root)
+
+        applyCustomBackground()
+
+        return rootFrame
+    }
+
+    private fun applyCustomBackground() {
+        val isCustom = userPrefs.theme == "custom"
+        val bgPath = userPrefs.customBgPath
+        if (isCustom && bgPath.isNotEmpty() && File(bgPath).exists()) {
+            try {
+                val bitmap = BitmapFactory.decodeFile(bgPath)
+                customBgImageView?.setImageBitmap(bitmap)
+                customBgImageView?.visibility = View.VISIBLE
+                val dimmingAlpha = (userPrefs.customBgDimming.coerceIn(0, 95) / 100f)
+                customBgOverlay?.alpha = dimmingAlpha
+                customBgOverlay?.visibility = View.VISIBLE
+                rootView?.setBackgroundColor(Color.TRANSPARENT)
+            } catch (e: Exception) {
+                customBgImageView?.visibility = View.GONE
+                customBgOverlay?.visibility = View.GONE
+            }
+        } else {
+            customBgImageView?.setImageDrawable(null)
+            customBgImageView?.visibility = View.GONE
+            customBgOverlay?.visibility = View.GONE
+        }
     }
 
     private fun showKeyboard() {
@@ -237,15 +297,28 @@ class BongoInputMethodService : InputMethodService() {
             dp(getTargetKeyboardHeight())
         )
 
-        val actionLabel = when (info?.imeOptions?.and(EditorInfo.IME_MASK_ACTION)) {
-            EditorInfo.IME_ACTION_GO -> "Go"
-            EditorInfo.IME_ACTION_SEARCH -> "Search"
-            EditorInfo.IME_ACTION_SEND -> "Send"
-            EditorInfo.IME_ACTION_NEXT -> "Next"
-            EditorInfo.IME_ACTION_DONE -> "Done"
-            else -> if (info?.inputType != null && (info.inputType and EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE) != 0) "⏎" else "Go"
+        applyCustomBackground()
+
+        val inputType = info?.inputType ?: 0
+        val imeOptions = info?.imeOptions ?: 0
+        val isMultiLine = (inputType and EditorInfo.TYPE_MASK_CLASS == EditorInfo.TYPE_CLASS_TEXT) &&
+                ((inputType and EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE) != 0)
+        val hasNoEnterAction = (imeOptions and EditorInfo.IME_FLAG_NO_ENTER_ACTION) != 0
+        val actionId = imeOptions and EditorInfo.IME_MASK_ACTION
+
+        val actionLabel = if (isMultiLine && !hasNoEnterAction) {
+            "⏎"
+        } else {
+            when (actionId) {
+                EditorInfo.IME_ACTION_GO -> "Go"
+                EditorInfo.IME_ACTION_SEARCH -> "Search"
+                EditorInfo.IME_ACTION_SEND -> "Send"
+                EditorInfo.IME_ACTION_NEXT -> "Next"
+                EditorInfo.IME_ACTION_DONE -> if (isMultiLine) "⏎" else "Done"
+                else -> if (isMultiLine) "⏎" else "Go"
+            }
         }
-        val isUri = (info?.inputType != null && (info.inputType and EditorInfo.TYPE_MASK_VARIATION) == EditorInfo.TYPE_TEXT_VARIATION_URI)
+        val isUri = (inputType and EditorInfo.TYPE_MASK_VARIATION) == EditorInfo.TYPE_TEXT_VARIATION_URI
         keyboardView?.setActionInfo(actionLabel, isUri)
     }
 
@@ -664,13 +737,28 @@ class BongoInputMethodService : InputMethodService() {
                     candidateStripView?.clear()
                 }
                 val editorInfo = currentInputEditorInfo
+                val inputType = editorInfo?.inputType ?: 0
                 val imeOptions = editorInfo?.imeOptions ?: 0
+                val isMultiLine = (inputType and EditorInfo.TYPE_MASK_CLASS == EditorInfo.TYPE_CLASS_TEXT) &&
+                        ((inputType and EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE) != 0)
+                val hasNoEnterAction = (imeOptions and EditorInfo.IME_FLAG_NO_ENTER_ACTION) != 0
                 val actionId = imeOptions and EditorInfo.IME_MASK_ACTION
-                if (actionId != EditorInfo.IME_ACTION_NONE && actionId != EditorInfo.IME_ACTION_UNSPECIFIED) {
+
+                if (isMultiLine && !hasNoEnterAction) {
+                    sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER)
+                } else if (actionId != EditorInfo.IME_ACTION_NONE && actionId != EditorInfo.IME_ACTION_UNSPECIFIED) {
                     ic.performEditorAction(actionId)
                 } else {
                     sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER)
                 }
+            }
+            is BongoKeyboardView.KeyAction.InsertNewline -> {
+                if (isBanglaMode && bongoEngine.hasSession()) {
+                    val committed = bongoEngine.commitCandidate(0)
+                    ic.commitText(committed, 1)
+                    candidateStripView?.clear()
+                }
+                ic.commitText("\n", 1)
             }
             is BongoKeyboardView.KeyAction.ToggleLanguage -> {
                 commitOngoingComposition()
@@ -834,8 +922,12 @@ class BongoInputMethodService : InputMethodService() {
             keyboardView?.buildKeyboard()
         }
 
+        applyCustomBackground()
+
         val palette = ThemePalette.getPalette(userPrefs.theme)
-        rootView?.setBackgroundColor(palette.surfaceColor)
+        if (userPrefs.theme != "custom") {
+            rootView?.setBackgroundColor(palette.surfaceColor)
+        }
         dividerView?.setBackgroundColor(palette.dividerColor)
         leftOneHandedBar?.setBackgroundColor(palette.surfaceColor)
         rightOneHandedBar?.setBackgroundColor(palette.surfaceColor)
