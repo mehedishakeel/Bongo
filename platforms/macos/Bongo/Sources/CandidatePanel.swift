@@ -59,6 +59,25 @@ class CandidatePanel {
     /// Called when user clicks a candidate. Parameter is the candidate index.
     var onCandidateSelected: ((Int) -> Void)?
 
+    init() {
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(appearanceChanged),
+            name: .bongoAppearanceChanged, object: nil)
+    }
+
+    @objc private func appearanceChanged() {
+        applyAppearance()
+    }
+
+    private func applyAppearance() {
+        guard let panel = panel else { return }
+        switch BongoInputController.currentAppearance() {
+        case "light": panel.appearance = NSAppearance(named: .aqua)
+        case "dark":  panel.appearance = NSAppearance(named: .darkAqua)
+        default:      panel.appearance = nil   // system follows the user's global setting
+        }
+    }
+
     func show(candidates: [String], auxiliaryText: String, selectedIndex: Int, cursorRect: NSRect) {
         if panel == nil {
             createPanel()
@@ -152,6 +171,7 @@ class CandidatePanel {
         panel.contentView = container
         self.panel = panel
         self.contentView = contentView
+        applyAppearance()
     }
 }
 
@@ -176,7 +196,7 @@ class CandidateView: NSView {
     private let padding: CGFloat = 7
     private var rowHeight: CGFloat { max(27, BongoFontSettings.size + 11) }
     private let auxHeight: CGFloat = 24
-    private let maxVisibleCandidates = 9
+    private var maxVisibleCandidates: Int { BongoInputController.currentCandidateCount() }
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -184,6 +204,9 @@ class CandidateView: NSView {
         NotificationCenter.default.addObserver(
             self, selector: #selector(fontSettingChanged),
             name: .bongoFontSettingChanged, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(fontSettingChanged),
+            name: .bongoCandidateCountChanged, object: nil)
     }
 
     required init?(coder: NSCoder) { fatalError() }

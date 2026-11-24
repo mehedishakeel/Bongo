@@ -44,6 +44,21 @@ class BongoInputController: IMKInputController {
     /// Absent means on.
     static let autostartKey = "BongoAutostart"
 
+    /// UserDefaults int key: maximum candidates shown in the popup (3–9). Default 9.
+    static let candidateCountKey = "BongoCandidateCount"
+
+    /// UserDefaults string key: appearance override. Values: "system", "light", "dark". Default "system".
+    static let appearanceKey = "BongoAppearance"
+
+    static func currentCandidateCount() -> Int {
+        let v = UserDefaults.standard.integer(forKey: candidateCountKey)
+        return (v >= 3 && v <= 9) ? v : 9
+    }
+
+    static func currentAppearance() -> String {
+        return UserDefaults.standard.string(forKey: appearanceKey) ?? "system"
+    }
+
     static func currentKeyboardLayout() -> KeyboardLayout {
         let defaults = UserDefaults.standard
         if let raw = defaults.string(forKey: keyboardLayoutKey),

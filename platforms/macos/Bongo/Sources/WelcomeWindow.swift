@@ -1270,6 +1270,9 @@ class SettingsView: NSView {
     private let emojiSwitch = NSSwitch()
     private let emojiTitle = NSTextField(labelWithString: "Show emoji in suggestions")
     private let startupCheckbox = NSButton(checkboxWithTitle: "Enabled", target: nil, action: nil)
+    private let candidateSlider = NSSlider()
+    private let candidateValueLabel = NSTextField(labelWithString: "9")
+    private let appearanceControl = NSSegmentedControl()
 
     override init(frame: NSRect) {
         super.init(frame: frame)
@@ -1358,6 +1361,80 @@ class SettingsView: NSView {
         stack.addArrangedSubview(cardStack)
         cardStack.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
 
+        // ── Candidate Count Section ───────────────────────────────────────────
+        let candidateHeader = WelcomeUI.sectionHeader("Suggestion popup size")
+        stack.addArrangedSubview(candidateHeader)
+
+        let countLabel = NSTextField(labelWithString: "Candidates shown")
+        countLabel.font = .systemFont(ofSize: 13, weight: .medium)
+        countLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+
+        let currentCount = BongoInputController.currentCandidateCount()
+        candidateSlider.minValue = 3
+        candidateSlider.maxValue = 9
+        candidateSlider.intValue = Int32(currentCount)
+        candidateSlider.numberOfTickMarks = 7
+        candidateSlider.allowsTickMarkValuesOnly = true
+        candidateSlider.target = self
+        candidateSlider.action = #selector(candidateCountChanged)
+        candidateSlider.setContentHuggingPriority(.defaultLow, for: .horizontal)
+
+        candidateValueLabel.stringValue = "\(currentCount)"
+        candidateValueLabel.font = .monospacedSystemFont(ofSize: 13, weight: .semibold)
+        candidateValueLabel.textColor = WelcomeUI.accent
+        candidateValueLabel.alignment = .center
+        candidateValueLabel.setContentHuggingPriority(.required, for: .horizontal)
+
+        let minLabel = NSTextField(labelWithString: "3")
+        minLabel.font = .systemFont(ofSize: 10.5)
+        minLabel.textColor = .tertiaryLabelColor
+        let maxLabel = NSTextField(labelWithString: "9")
+        maxLabel.font = .systemFont(ofSize: 10.5)
+        maxLabel.textColor = .tertiaryLabelColor
+
+        let sliderRow = NSStackView(views: [minLabel, candidateSlider, maxLabel, candidateValueLabel])
+        sliderRow.orientation = .horizontal
+        sliderRow.spacing = 6
+        sliderRow.alignment = .centerY
+        sliderRow.setContentHuggingPriority(.defaultLow, for: .horizontal)
+
+        let countRow = NSStackView(views: [countLabel, sliderRow])
+        countRow.orientation = .horizontal
+        countRow.spacing = 16
+        countRow.alignment = .centerY
+
+        let countCard = CardContainer(content: countRow)
+        stack.addArrangedSubview(countCard)
+        countCard.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+
+        // ── Appearance Section ────────────────────────────────────────────────
+        let appearanceHeader = WelcomeUI.sectionHeader("Appearance")
+        stack.addArrangedSubview(appearanceHeader)
+
+        let appearanceLabel = NSTextField(labelWithString: "Suggestion popup theme")
+        appearanceLabel.font = .systemFont(ofSize: 13, weight: .medium)
+        appearanceLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+
+        appearanceControl.segmentCount = 3
+        appearanceControl.setLabel("System", forSegment: 0)
+        appearanceControl.setLabel("Light", forSegment: 1)
+        appearanceControl.setLabel("Dark", forSegment: 2)
+        appearanceControl.trackingMode = .selectOne
+        let currentAppearance = BongoInputController.currentAppearance()
+        appearanceControl.selectedSegment = currentAppearance == "light" ? 1 : currentAppearance == "dark" ? 2 : 0
+        appearanceControl.target = self
+        appearanceControl.action = #selector(appearanceChanged)
+        appearanceControl.setContentHuggingPriority(.required, for: .horizontal)
+
+        let appearanceRow = NSStackView(views: [appearanceLabel, appearanceControl])
+        appearanceRow.orientation = .horizontal
+        appearanceRow.spacing = 16
+        appearanceRow.alignment = .centerY
+
+        let appearanceCard = CardContainer(content: appearanceRow)
+        stack.addArrangedSubview(appearanceCard)
+        appearanceCard.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+
         // Preferences Section
         let prefHeader = WelcomeUI.sectionHeader("Preferences")
         stack.addArrangedSubview(prefHeader)
@@ -1443,6 +1520,24 @@ class SettingsView: NSView {
         for card in cards {
             card.isSelected = (card.mode == mode)
         }
+    }
+
+    @objc private func candidateCountChanged() {
+        let v = Int(candidateSlider.intValue)
+        candidateValueLabel.stringValue = "\(v)"
+        UserDefaults.standard.set(v, forKey: BongoInputController.candidateCountKey)
+        NotificationCenter.default.post(name: .bongoCandidateCountChanged, object: nil)
+    }
+
+    @objc private func appearanceChanged() {
+        let appearance: String
+        switch appearanceControl.selectedSegment {
+        case 1: appearance = "light"
+        case 2: appearance = "dark"
+        default: appearance = "system"
+        }
+        UserDefaults.standard.set(appearance, forKey: BongoInputController.appearanceKey)
+        NotificationCenter.default.post(name: .bongoAppearanceChanged, object: nil)
     }
 
     @objc private func emojiToggled() {

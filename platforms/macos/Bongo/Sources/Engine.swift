@@ -316,4 +316,6 @@ extension Notification.Name {
     static let bongoEmojiSettingChanged = Notification.Name("BongoEmojiSettingChanged")
     static let bongoFontSettingChanged = Notification.Name("BongoFontSettingChanged")
     static let bongoAutostartChanged = Notification.Name("BongoAutostartChanged")
+    static let bongoCandidateCountChanged = Notification.Name("BongoCandidateCountChanged")
+    static let bongoAppearanceChanged = Notification.Name("BongoAppearanceChanged")
 }
