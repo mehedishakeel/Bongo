@@ -87,6 +87,10 @@ class BongoInputMethodService : InputMethodService() {
         bongoEngine.setLayout(userPrefs.keyboardLayout)
         userPrefs.registerListener(prefChangeListener)
 
+        // Load persistent clipboard history
+        clipboardHistory.clear()
+        clipboardHistory.addAll(userPrefs.getClipboardHistory())
+
         try {
             val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
             clipboardManager = cm
@@ -103,9 +107,10 @@ class BongoInputMethodService : InputMethodService() {
                 if (!text.isNullOrEmpty()) {
                     clipboardHistory.remove(text)
                     clipboardHistory.add(0, text)
-                    if (clipboardHistory.size > 10) {
+                    if (clipboardHistory.size > 20) {
                         clipboardHistory.removeAt(clipboardHistory.size - 1)
                     }
+                    userPrefs.saveClipboardHistory(clipboardHistory)
                 }
             }
         } catch (_: Exception) {}
@@ -320,6 +325,24 @@ class BongoInputMethodService : InputMethodService() {
         }
         val isUri = (inputType and EditorInfo.TYPE_MASK_VARIATION) == EditorInfo.TYPE_TEXT_VARIATION_URI
         keyboardView?.setActionInfo(actionLabel, isUri)
+
+        val inputClass = inputType and EditorInfo.TYPE_MASK_CLASS
+        val inputVariation = inputType and EditorInfo.TYPE_MASK_VARIATION
+        val isPassword = (inputClass == EditorInfo.TYPE_CLASS_TEXT) && (
+            inputVariation == EditorInfo.TYPE_TEXT_VARIATION_PASSWORD ||
+            inputVariation == EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD ||
+            inputVariation == EditorInfo.TYPE_TEXT_VARIATION_WEB_PASSWORD
+        )
+        val isNumberClass = inputClass == EditorInfo.TYPE_CLASS_NUMBER || inputClass == EditorInfo.TYPE_CLASS_PHONE
+
+        // Auto-show number row in password or numeric fields for easy digit entry
+        keyboardView?.setAutoNumberRow(isPassword || isNumberClass)
+
+        // For security and accuracy, switch to English mode in password fields
+        if (isPassword && isBanglaMode) {
+            isBanglaMode = false
+            keyboardView?.setBanglaMode(false)
+        }
     }
 
     private fun getTargetKeyboardHeight(): Int {

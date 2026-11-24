@@ -2,6 +2,7 @@ package app.getbongo.ime.model
 
 import android.content.Context
 import android.content.SharedPreferences
+import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -91,6 +92,32 @@ class UserPreferences(context: Context) {
         get() = prefs.getInt(KEY_CUSTOM_BG_DIMMING, 40)
         set(value) = prefs.edit().putInt(KEY_CUSTOM_BG_DIMMING, value).apply()
 
+    var clipboardHistoryJson: String
+        get() = prefs.getString(KEY_CLIPBOARD_HISTORY, "[]") ?: "[]"
+        set(value) = prefs.edit().putString(KEY_CLIPBOARD_HISTORY, value).apply()
+
+    fun getClipboardHistory(): MutableList<String> {
+        val list = mutableListOf<String>()
+        try {
+            val arr = JSONArray(clipboardHistoryJson)
+            for (i in 0 until arr.length()) {
+                val item = arr.optString(i)
+                if (!item.isNullOrEmpty()) {
+                    list.add(item)
+                }
+            }
+        } catch (_: Exception) {}
+        return list
+    }
+
+    fun saveClipboardHistory(list: List<String>) {
+        try {
+            val arr = JSONArray()
+            list.take(20).forEach { arr.put(it) }
+            clipboardHistoryJson = arr.toString()
+        } catch (_: Exception) {}
+    }
+
     fun getLearnedSelections(): MutableMap<String, String> {
         val res = mutableMapOf<String, String>()
         try {
@@ -149,5 +176,6 @@ class UserPreferences(context: Context) {
         const val KEY_LEARNED_SELECTIONS = "learned_selections"
         const val KEY_CUSTOM_BG_PATH = "custom_bg_path"
         const val KEY_CUSTOM_BG_DIMMING = "custom_bg_dimming"
+        const val KEY_CLIPBOARD_HISTORY = "clipboard_history"
     }
 }

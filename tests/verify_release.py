@@ -63,6 +63,156 @@ def check_install_script_parity() -> bool:
         return False
 
 
+def get_current_version() -> str:
+    cask = REPO_ROOT / "Casks" / "bongo.rb"
+    if cask.exists():
+        m = re.search(r'version\s+"([^"]+)"', cask.read_text(encoding="utf-8"))
+        if m:
+            return m.group(1).strip()
+    return "1.2.1"
+
+
+def bump_version(new_version: str) -> bool:
+    if not re.match(r'^\d+\.\d+\.\d+$', new_version):
+        print(f"{RED}Error: Version must be in semantic format X.Y.Z (e.g. 1.2.2){RESET}")
+        return False
+
+    old_version = get_current_version()
+    if old_version == new_version:
+        print(f"Version is already {new_version}")
+        return True
+
+    print(f"\n{BOLD}Bumping version: {old_version} ➔ {new_version}{RESET}\n")
+
+    # 1. Android gradle
+    gradle_file = REPO_ROOT / "platforms/android/app/build.gradle.kts"
+    if gradle_file.exists():
+        content = gradle_file.read_text(encoding="utf-8")
+        content = re.sub(r'versionName\s*=\s*"[^"]+"', f'versionName = "{new_version}"', content)
+        vc_match = re.search(r'versionCode\s*=\s*(\d+)', content)
+        if vc_match:
+            new_vc = int(vc_match.group(1)) + 1
+            content = re.sub(r'versionCode\s*=\s*\d+', f'versionCode = {new_vc}', content)
+        gradle_file.write_text(content, encoding="utf-8")
+        log_pass(f"Updated {gradle_file.relative_to(REPO_ROOT)}")
+
+    # 2. Android SettingsActivity
+    sa_file = REPO_ROOT / "platforms/android/app/src/main/java/app/getbongo/ime/ui/SettingsActivity.kt"
+    if sa_file.exists():
+        content = sa_file.read_text(encoding="utf-8")
+        content = re.sub(r'versionName\s*\?:\s*"[^"]+"', f'versionName ?: "{new_version}"', content)
+        sa_file.write_text(content, encoding="utf-8")
+        log_pass(f"Updated {sa_file.relative_to(REPO_ROOT)}")
+
+    # 3. macOS Info.plist (Bongo and Launcher)
+    for plist_rel in ["platforms/macos/Bongo/Resources/Info.plist", "platforms/macos/Launcher/Resources/Info.plist"]:
+        plist_path = REPO_ROOT / plist_rel
+        if plist_path.exists():
+            content = plist_path.read_text(encoding="utf-8")
+            content = re.sub(r'(<key>CFBundleShortVersionString</key>\s*<string>)[^<]+(</string>)', rf'\g<1>{new_version}\g<2>', content)
+            plist_path.write_text(content, encoding="utf-8")
+            log_pass(f"Updated {plist_rel}")
+
+    # 4. Linux ibus
+    ibus_file = REPO_ROOT / "platforms/linux/ibus/bongo.xml"
+    if ibus_file.exists():
+        content = ibus_file.read_text(encoding="utf-8")
+        content = re.sub(r'<version>[^<]+</version>', f'<version>{new_version}</version>', content)
+        ibus_file.write_text(content, encoding="utf-8")
+        log_pass(f"Updated {ibus_file.relative_to(REPO_ROOT)}")
+
+    # 5. Linux ui bongo_settings.py
+    l_set = REPO_ROOT / "platforms/linux/ui/bongo_settings.py"
+    if l_set.exists():
+        content = l_set.read_text(encoding="utf-8")
+        content = re.sub(r'APP_VERSION\s*=\s*"[^"]+"', f'APP_VERSION = "{new_version}"', content)
+        l_set.write_text(content, encoding="utf-8")
+        log_pass(f"Updated {l_set.relative_to(REPO_ROOT)}")
+
+    # 6. Windows installer & settings
+    w_iss = REPO_ROOT / "platforms/windows/installer/bongo.iss"
+    if w_iss.exists():
+        content = w_iss.read_text(encoding="utf-8")
+        content = re.sub(r'#define\s+MyAppVersion\s+"[^"]+"', f'#define MyAppVersion "{new_version}"', content)
+        w_iss.write_text(content, encoding="utf-8")
+        log_pass(f"Updated {w_iss.relative_to(REPO_ROOT)}")
+
+    w_wxs = REPO_ROOT / "platforms/windows/installer/bongo.wxs"
+    if w_wxs.exists():
+        content = w_wxs.read_text(encoding="utf-8")
+        content = re.sub(r'Version="[^"]+"', f'Version="{new_version}.0"', content)
+        w_wxs.write_text(content, encoding="utf-8")
+        log_pass(f"Updated {w_wxs.relative_to(REPO_ROOT)}")
+
+    w_set = REPO_ROOT / "platforms/windows/ui/bongo_settings.py"
+    if w_set.exists():
+        content = w_set.read_text(encoding="utf-8")
+        content = re.sub(r'APP_VERSION\s*=\s*"[^"]+"', f'APP_VERSION = "{new_version}"', content)
+        w_set.write_text(content, encoding="utf-8")
+        log_pass(f"Updated {w_set.relative_to(REPO_ROOT)}")
+
+    # 7. Linux AUR PKGBUILD & .SRCINFO
+    pkgbuild = REPO_ROOT / "platforms/linux/packaging/aur/bongo-bin/PKGBUILD"
+    if pkgbuild.exists():
+        content = pkgbuild.read_text(encoding="utf-8")
+        content = re.sub(r'pkgver=[^\n]+', f'pkgver={new_version}', content)
+        content = re.sub(r'pkgrel=\d+', 'pkgrel=1', content)
+        pkgbuild.write_text(content, encoding="utf-8")
+        log_pass(f"Updated {pkgbuild.relative_to(REPO_ROOT)}")
+
+    srcinfo = REPO_ROOT / "platforms/linux/packaging/aur/bongo-bin/.SRCINFO"
+    if srcinfo.exists():
+        content = srcinfo.read_text(encoding="utf-8")
+        content = re.sub(r'pkgver\s*=\s*[^\n]+', f'pkgver = {new_version}', content)
+        content = re.sub(r'pkgrel\s*=\s*\d+', 'pkgrel = 1', content)
+        srcinfo.write_text(content, encoding="utf-8")
+        log_pass(f"Updated {srcinfo.relative_to(REPO_ROOT)}")
+
+    # 8. Linux fcitx5 CMakeLists.txt
+    cmake_file = REPO_ROOT / "platforms/linux/fcitx5/CMakeLists.txt"
+    if cmake_file.exists():
+        content = cmake_file.read_text(encoding="utf-8")
+        content = re.sub(r'project\(bongo-fcitx5\s+VERSION\s+[^\s\)]+', f'project(bongo-fcitx5 VERSION {new_version}', content)
+        cmake_file.write_text(content, encoding="utf-8")
+        log_pass(f"Updated {cmake_file.relative_to(REPO_ROOT)}")
+
+    # 9. Linux metainfo
+    metainfo = REPO_ROOT / "platforms/linux/data/app.getbongo.Bongo.metainfo.xml"
+    if metainfo.exists():
+        content = metainfo.read_text(encoding="utf-8")
+        content = re.sub(r'<release\s+version="[^"]+"', f'<release version="{new_version}"', content)
+        metainfo.write_text(content, encoding="utf-8")
+        log_pass(f"Updated {metainfo.relative_to(REPO_ROOT)}")
+
+    # 10. Homebrew Cask
+    cask_file = REPO_ROOT / "Casks/bongo.rb"
+    if cask_file.exists():
+        content = cask_file.read_text(encoding="utf-8")
+        content = re.sub(r'version\s+"[^"]+"', f'version "{new_version}"', content)
+        cask_file.write_text(content, encoding="utf-8")
+        log_pass(f"Updated {cask_file.relative_to(REPO_ROOT)}")
+
+    # 11. Website docs/index.html, docs/translations.js, README.md
+    for doc_file in [REPO_ROOT / "docs/index.html", REPO_ROOT / "docs/translations.js", REPO_ROOT / "README.md"]:
+        if doc_file.exists():
+            c = doc_file.read_text(encoding="utf-8")
+            c = c.replace(old_version, new_version)
+            doc_file.write_text(c, encoding="utf-8")
+            log_pass(f"Updated {doc_file.relative_to(REPO_ROOT)}")
+
+    app_js = REPO_ROOT / "docs/app.js"
+    if app_js.exists():
+        c = app_js.read_text(encoding="utf-8")
+        v_tag_old = old_version.replace(".", "_")
+        v_tag_new = new_version.replace(".", "_")
+        c = c.replace(v_tag_old, v_tag_new)
+        app_js.write_text(c, encoding="utf-8")
+        log_pass(f"Updated {app_js.relative_to(REPO_ROOT)}")
+
+    print(f"\n{GREEN}{BOLD}✓ Successfully bumped all project files from {old_version} to {new_version}!{RESET}\n")
+    return True
+
+
 def check_version_consistency(expected_version: str = "1.2.1") -> bool:
     print(f"\n{BOLD}[2/5] Checking Version Number Parity ({expected_version})...{RESET}")
     files_to_check = [
@@ -218,13 +368,26 @@ def check_learned_selections_persistence() -> bool:
 
 
 def main():
+    if "--bump" in sys.argv:
+        try:
+            idx = sys.argv.index("--bump")
+            new_v = sys.argv[idx + 1]
+            success = bump_version(new_v)
+            if not success:
+                sys.exit(1)
+        except IndexError:
+            print(f"{RED}Usage: python3 tests/verify_release.py --bump <new_version>{RESET}")
+            sys.exit(1)
+
+    current_v = get_current_version()
+
     print(f"{BOLD}===================================================={RESET}")
     print(f"{BOLD}       Bongo Release Health Verification CLI        {RESET}")
     print(f"{BOLD}===================================================={RESET}")
 
     results = [
         check_install_script_parity(),
-        check_version_consistency("1.2.1"),
+        check_version_consistency(current_v),
         check_linguistic_converters(),
         check_emoji_and_bigram_predictions(),
         check_learned_selections_persistence(),

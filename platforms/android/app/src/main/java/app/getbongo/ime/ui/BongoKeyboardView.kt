@@ -62,6 +62,8 @@ class BongoKeyboardView @JvmOverloads constructor(
         private set
     var isUriInput: Boolean = false
         private set
+    var isAutoNumberRow: Boolean = false
+        private set
 
     private var palette: ThemePalette = ThemePalette.getPalette(userPrefs.theme)
 
@@ -181,6 +183,13 @@ class BongoKeyboardView @JvmOverloads constructor(
         }
     }
 
+    fun setAutoNumberRow(auto: Boolean) {
+        if (isAutoNumberRow != auto) {
+            isAutoNumberRow = auto
+            buildKeyboard()
+        }
+    }
+
     private fun updateLanguageViews() {
         if (isSymbols) {
             buildKeyboard()
@@ -189,7 +198,7 @@ class BongoKeyboardView @JvmOverloads constructor(
         spaceKeyView?.text = if (isBangla) "◀   Bongo   ▶" else "◀   English   ▶"
         periodKeyView?.text = if (isBangla) "।" else "."
 
-        if (!userPrefs.showNumberRow && userPrefs.longPressSymbols) {
+        if (!userPrefs.showNumberRow && !isAutoNumberRow && userPrefs.longPressSymbols) {
             val numHints = if (userPrefs.bengaliDigits && isBangla) ROW1_HINTS_BN else ROW1_HINTS_EN
             for ((key, hintTv) in letterKeyHintViews) {
                 if (key.length == 1) {
@@ -488,8 +497,8 @@ class BongoKeyboardView @JvmOverloads constructor(
     }
 
     private fun buildLetterKeyboard() {
-        // Optional 5th row: Permanent Number Row on top (if enabled in user settings)
-        if (userPrefs.showNumberRow) {
+        // Optional 5th row: Number Row on top (if enabled in user settings or auto-enabled for password/number fields)
+        if (userPrefs.showNumberRow || isAutoNumberRow) {
             val numRow = if (userPrefs.bengaliDigits && isBangla) {
                 listOf("১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯", "০")
             } else {
@@ -616,7 +625,7 @@ class BongoKeyboardView @JvmOverloads constructor(
 
         val lower = ch.lowercaseChar()
         val numHints = if (userPrefs.bengaliDigits && isBangla) ROW1_HINTS_BN else ROW1_HINTS_EN
-        val row1 = if (userPrefs.showNumberRow) null else numHints[lower]
+        val row1 = if (userPrefs.showNumberRow || isAutoNumberRow) null else numHints[lower]
         return row1 ?: ROW2_HINTS[lower] ?: ROW3_HINTS[lower]
     }
 
