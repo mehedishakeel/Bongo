@@ -782,13 +782,21 @@ class BongoInputMethodService : InputMethodService() {
                 bongoEngine.learnSelection(typedBuffer, committed)
                 userPrefs.learnSelection(typedBuffer, committed)
             }
-            ic.commitText("$committed ", 1)
-            showNextWordPredictions(committed)
+            val finalText = if (userPrefs.bengaliDigits) committed.tobengaliDigits() else committed
+            ic.commitText("$finalText ", 1)
+            showNextWordPredictions(finalText)
         } else {
             // Next-word prediction tapped
-            ic.commitText("$candidate ", 1)
-            showNextWordPredictions(candidate)
+            val finalCandidate = if (userPrefs.bengaliDigits) candidate.tobengaliDigits() else candidate
+            ic.commitText("$finalCandidate ", 1)
+            showNextWordPredictions(finalCandidate)
         }
+    }
+
+    /** Converts ASCII digits 0-9 in a string to Bengali digits ০-৯. */
+    private fun String.tobengaliDigits(): String {
+        val bengali = "০১২৩৪৫৬৭৮৯"
+        return map { c -> if (c in '0'..'9') bengali[c - '0'] else c }.joinToString("")
     }
 
     private fun showNextWordPredictions(word: String) {
@@ -879,6 +887,8 @@ class BongoInputMethodService : InputMethodService() {
     private fun handlePreferenceChange(key: String?) {
         if (key == UserPreferences.KEY_KEYBOARD_LAYOUT) {
             bongoEngine.setLayout(userPrefs.keyboardLayout)
+            bongoEngine.resetSession()          // flush any in-progress composition
+            keyboardView?.buildKeyboard()       // redraw keys for new layout
         }
         if (key == UserPreferences.KEY_ONE_HANDED_MODE) {
             applyOneHandedMode()
