@@ -60,8 +60,6 @@ class BongoInputMethodService : InputMethodService() {
     private var rightOneHandedBar: LinearLayout? = null
     private var dividerView: View? = null
     private var rootView: LinearLayout? = null
-    private var customBgImageView: ImageView? = null
-    private var customBgOverlay: View? = null
 
     private var isBanglaMode = true
     private var isCtrlActive = false
@@ -213,61 +211,7 @@ class BongoInputMethodService : InputMethodService() {
         root.addView(divider)
         root.addView(containerLayout)
 
-        val rootFrame = FrameLayout(this).apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-            )
-        }
-
-        val bgIv = ImageView(this).apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            )
-            scaleType = ImageView.ScaleType.CENTER_CROP
-        }
-        customBgImageView = bgIv
-
-        val bgOverlay = View(this).apply {
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            )
-            setBackgroundColor(Color.BLACK)
-        }
-        customBgOverlay = bgOverlay
-
-        rootFrame.addView(bgIv)
-        rootFrame.addView(bgOverlay)
-        rootFrame.addView(root)
-
-        applyCustomBackground()
-
-        return rootFrame
-    }
-
-    private fun applyCustomBackground() {
-        val isCustom = userPrefs.theme == "custom"
-        val bgPath = userPrefs.customBgPath
-        if (isCustom && bgPath.isNotEmpty() && File(bgPath).exists()) {
-            try {
-                val bitmap = BitmapFactory.decodeFile(bgPath)
-                customBgImageView?.setImageBitmap(bitmap)
-                customBgImageView?.visibility = View.VISIBLE
-                val dimmingAlpha = (userPrefs.customBgDimming.coerceIn(0, 95) / 100f)
-                customBgOverlay?.alpha = dimmingAlpha
-                customBgOverlay?.visibility = View.VISIBLE
-                rootView?.setBackgroundColor(Color.TRANSPARENT)
-            } catch (e: Exception) {
-                customBgImageView?.visibility = View.GONE
-                customBgOverlay?.visibility = View.GONE
-            }
-        } else {
-            customBgImageView?.setImageDrawable(null)
-            customBgImageView?.visibility = View.GONE
-            customBgOverlay?.visibility = View.GONE
-        }
+        return root
     }
 
     private fun showKeyboard() {
@@ -301,8 +245,6 @@ class BongoInputMethodService : InputMethodService() {
             LinearLayout.LayoutParams.MATCH_PARENT,
             dp(getTargetKeyboardHeight())
         )
-
-        applyCustomBackground()
 
         val inputType = info?.inputType ?: 0
         val imeOptions = info?.imeOptions ?: 0
@@ -945,12 +887,8 @@ class BongoInputMethodService : InputMethodService() {
             keyboardView?.buildKeyboard()
         }
 
-        applyCustomBackground()
-
         val palette = ThemePalette.getPalette(userPrefs.theme)
-        if (userPrefs.theme != "custom") {
-            rootView?.setBackgroundColor(palette.surfaceColor)
-        }
+        rootView?.setBackgroundColor(palette.surfaceColor)
         dividerView?.setBackgroundColor(palette.dividerColor)
         leftOneHandedBar?.setBackgroundColor(palette.surfaceColor)
         rightOneHandedBar?.setBackgroundColor(palette.surfaceColor)

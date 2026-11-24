@@ -25,24 +25,6 @@ data class ThemePalette(
 ) {
     companion object {
         fun getPalette(themeName: String): ThemePalette = when (themeName.lowercase()) {
-            "custom" -> ThemePalette(
-                name = "custom",
-                surfaceColor = Color.TRANSPARENT,
-                keyNormalColor = Color.argb(140, 24, 25, 28),
-                keySpecialColor = Color.argb(175, 14, 15, 18),
-                keyReturnColor = Color.argb(230, 79, 70, 229),
-                keyPressedColor = Color.argb(220, 60, 60, 70),
-                keyTextColor = Color.WHITE,
-                keySpecialTextColor = Color.WHITE,
-                keyHintColor = Color.argb(190, 210, 210, 220),
-                keyBorderColor = Color.argb(70, 255, 255, 255),
-                stripPrimaryBg = Color.argb(210, 79, 70, 229),
-                stripPrimaryText = Color.WHITE,
-                stripPrimaryBorder = Color.parseColor("#818cf8"),
-                stripSecondaryBg = Color.argb(150, 20, 20, 25),
-                stripSecondaryText = Color.argb(230, 240, 240, 245),
-                dividerColor = Color.argb(50, 255, 255, 255)
-            )
             "oled" -> ThemePalette(
                 name = "oled",
                 surfaceColor = Color.parseColor("#000000"),

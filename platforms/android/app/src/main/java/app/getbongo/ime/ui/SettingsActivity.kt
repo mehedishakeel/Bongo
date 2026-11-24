@@ -3,7 +3,6 @@ package app.getbongo.ime.ui
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -22,9 +21,6 @@ import android.widget.HorizontalScrollView
 import android.widget.ScrollView
 import android.widget.Switch
 import android.widget.TextView
-import android.widget.Toast
-import java.io.File
-import java.io.FileOutputStream
 import app.getbongo.ime.R
 import app.getbongo.ime.engine.BongoNative
 import app.getbongo.ime.model.UserPreferences
@@ -37,9 +33,6 @@ class SettingsActivity : Activity() {
 
     private lateinit var userPrefs: UserPreferences
     private lateinit var heroCardContainer: LinearLayout
-    private var customPhotoPreview: ImageView? = null
-    private var customThemeButtons = mutableListOf<Button>()
-    private var customThemeOptions = listOf<Pair<String, String>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,12 +117,9 @@ class SettingsActivity : Activity() {
             "light" to "Light",
             "emerald" to "Emerald",
             "crimson" to "Crimson",
-            "nord" to "Nord",
-            "custom" to "Custom Photo"
+            "nord" to "Nord"
         )
-        customThemeOptions = themeOptions
         val themeButtons = mutableListOf<Button>()
-        customThemeButtons = themeButtons
 
         themeOptions.forEach { (key, label) ->
             val isSelected = userPrefs.theme == key
@@ -157,103 +147,6 @@ class SettingsActivity : Activity() {
         }
         themeScroll.addView(themeRow)
         appearanceCard.addView(themeScroll)
-        appearanceCard.addView(createDivider())
-
-        // Custom Photo Background Card
-        appearanceCard.addView(createSettingTitle("Custom Photo Background", "Use your favorite photo or wallpaper as keyboard background"))
-        val customPhotoLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, dp(6), 0, dp(10))
-        }
-
-        val photoPreview = ImageView(this).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(72), dp(48)).apply {
-                setMargins(0, 0, dp(12), 0)
-            }
-            scaleType = ImageView.ScaleType.CENTER_CROP
-            background = GradientDrawable().apply {
-                cornerRadius = dp(6).toFloat()
-                setColor(Color.parseColor("#1f1f26"))
-                setStroke(dp(1), Color.parseColor("#3730a3"))
-            }
-            clipToOutline = true
-        }
-        customPhotoPreview = photoPreview
-        refreshCustomPhotoPreview()
-
-        val pickPhotoBtn = Button(this).apply {
-            text = "📷 Choose Photo"
-            textSize = 12f
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(Color.WHITE)
-            background = createPillBackground(true)
-            layoutParams = LinearLayout.LayoutParams(0, dp(38), 1.2f).apply {
-                setMargins(0, 0, dp(6), 0)
-            }
-            setOnClickListener {
-                val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-                    type = "image/*"
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                }
-                startActivityForResult(Intent.createChooser(intent, "Select Keyboard Background"), REQUEST_CODE_PICK_IMAGE)
-            }
-        }
-
-        val removePhotoBtn = Button(this).apply {
-            text = "Remove"
-            textSize = 11f
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(Color.parseColor("#f87171"))
-            background = createPillBackground(false)
-            layoutParams = LinearLayout.LayoutParams(0, dp(38), 0.8f)
-            setOnClickListener {
-                val f = File(userPrefs.customBgPath)
-                if (f.exists()) f.delete()
-                userPrefs.customBgPath = ""
-                userPrefs.theme = "midnight"
-                refreshCustomPhotoPreview()
-            }
-        }
-
-        customPhotoLayout.addView(photoPreview)
-        customPhotoLayout.addView(pickPhotoBtn)
-        customPhotoLayout.addView(removePhotoBtn)
-        appearanceCard.addView(customPhotoLayout)
-
-        // Photo Darkness / Dimming Selector
-        appearanceCard.addView(createSettingTitle("Photo Dimming / Darkness", "Dark overlay level to ensure keys stay clearly readable"))
-        val dimmingRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            weightSum = 3f
-            setPadding(0, dp(4), 0, dp(12))
-        }
-        val dimmingOptions = listOf(25 to "Light (25%)", 45 to "Medium (45%)", 65 to "Dark (65%)")
-        val dimmingButtons = mutableListOf<Button>()
-        dimmingOptions.forEach { (pct, label) ->
-            val isSel = userPrefs.customBgDimming == pct
-            val b = Button(this).apply {
-                text = label
-                textSize = 12f
-                typeface = Typeface.DEFAULT_BOLD
-                setTextColor(if (isSel) Color.WHITE else Color.parseColor("#9ca3af"))
-                background = createPillBackground(isSel)
-                layoutParams = LinearLayout.LayoutParams(0, dp(36), 1f).apply {
-                    setMargins(dp(3), 0, dp(3), 0)
-                }
-                setOnClickListener {
-                    userPrefs.customBgDimming = pct
-                    dimmingButtons.forEachIndexed { idx, btn ->
-                        val sel = dimmingOptions[idx].first == pct
-                        btn.setTextColor(if (sel) Color.WHITE else Color.parseColor("#9ca3af"))
-                        btn.background = createPillBackground(sel)
-                    }
-                }
-            }
-            dimmingButtons.add(b)
-            dimmingRow.addView(b)
-        }
-        appearanceCard.addView(dimmingRow)
         appearanceCard.addView(createDivider())
 
         // Key Borders Toggle
@@ -349,42 +242,84 @@ class SettingsActivity : Activity() {
         container.addView(createSectionHeader("KEYBOARD LAYOUT"))
         val layoutCard = createGroupCard()
 
-        layoutCard.addView(createSettingTitle("Default Layout", "Select active Bengali typing method"))
+        layoutCard.addView(createSettingTitle("Default Layout", "Choose your preferred Bengali typing method"))
 
-        val layoutRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setPadding(dp(16), 0, dp(16), dp(16))
-        }
+        val layoutOptions = listOf(
+            Triple(0, "Avro Phonetic", "Standard phonetic typing (e.g. ami ➔ আমি)"),
+            Triple(1, "National / Bijoy", "Traditional fixed Bijoy & National layout"),
+            Triple(2, "Borno", "Alternative phonetic scheme")
+        )
 
-        val layoutOptions = listOf("Avro Phonetic" to 0, "National / Bijoy" to 1, "Borno" to 2)
-        val layoutButtons = mutableListOf<Button>()
+        val layoutTitleViews = mutableListOf<TextView>()
+        val layoutIndicatorViews = mutableListOf<TextView>()
 
-        layoutOptions.forEach { (name, id) ->
+        layoutOptions.forEachIndexed { _, (id, name, desc) ->
+            layoutCard.addView(createDivider())
+
             val isSelected = userPrefs.keyboardLayout == id
-            val btn = Button(this).apply {
-                text = name
-                isAllCaps = false
-                textSize = 13f
-                typeface = if (isSelected) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
-                setTextColor(if (isSelected) Color.WHITE else Color.parseColor("#98989e"))
-                background = createPillBackground(isSelected)
-                layoutParams = LinearLayout.LayoutParams(0, dp(38), 1f).apply {
-                    setMargins(dp(3), 0, dp(3), 0)
+
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(0, dp(8), 0, dp(8))
+                isClickable = true
+                isFocusable = true
+            }
+
+            val textCol = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    setMargins(0, 0, dp(12), 0)
                 }
-                setOnClickListener {
-                    userPrefs.keyboardLayout = id
-                    layoutButtons.forEachIndexed { idx, b ->
-                        val sel = layoutOptions[idx].second == id
-                        b.setTextColor(if (sel) Color.WHITE else Color.parseColor("#98989e"))
-                        b.typeface = if (sel) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
-                        b.background = createPillBackground(sel)
+            }
+
+            val tvTitle = TextView(this).apply {
+                text = name
+                textSize = 14f
+                typeface = Typeface.DEFAULT_BOLD
+                setTextColor(if (isSelected) Color.WHITE else Color.parseColor("#e4e4e7"))
+            }
+
+            val tvDesc = TextView(this).apply {
+                text = desc
+                textSize = 11f
+                setTextColor(Color.parseColor("#71717a"))
+                setPadding(0, dp(2), 0, 0)
+            }
+
+            textCol.addView(tvTitle)
+            textCol.addView(tvDesc)
+
+            val pillIndicator = TextView(this).apply {
+                textSize = 12f
+                typeface = Typeface.DEFAULT_BOLD
+                setTextColor(if (isSelected) Color.WHITE else Color.parseColor("#71717a"))
+                background = createPillBackground(isSelected)
+                setPadding(dp(12), dp(6), dp(12), dp(6))
+                text = if (isSelected) "Active ✓" else "Select"
+            }
+
+            row.addView(textCol)
+            row.addView(pillIndicator)
+
+            row.setOnClickListener {
+                userPrefs.keyboardLayout = id
+                layoutOptions.forEachIndexed { idx, opt ->
+                    val sel = opt.first == id
+                    layoutTitleViews[idx].setTextColor(if (sel) Color.WHITE else Color.parseColor("#e4e4e7"))
+                    layoutIndicatorViews[idx].apply {
+                        setTextColor(if (sel) Color.WHITE else Color.parseColor("#71717a"))
+                        background = createPillBackground(sel)
+                        text = if (sel) "Active ✓" else "Select"
                     }
                 }
             }
-            layoutButtons.add(btn)
-            layoutRow.addView(btn)
+
+            layoutTitleViews.add(tvTitle)
+            layoutIndicatorViews.add(pillIndicator)
+            layoutCard.addView(row)
         }
-        layoutCard.addView(layoutRow)
+
         container.addView(layoutCard)
         container.addView(createSpacer(dp(22)))
 
@@ -1139,48 +1074,4 @@ class SettingsActivity : Activity() {
 
     private fun dp(value: Int): Int =
         (value * resources.displayMetrics.density).toInt()
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == RESULT_OK) {
-            val uri = data?.data ?: return
-            try {
-                contentResolver.openInputStream(uri)?.use { input ->
-                    val destFile = File(filesDir, "bongo_custom_bg.jpg")
-                    FileOutputStream(destFile).use { output ->
-                        input.copyTo(output)
-                    }
-                    userPrefs.customBgPath = destFile.absolutePath
-                    userPrefs.theme = "custom"
-                    refreshCustomPhotoPreview()
-                    Toast.makeText(this, "Custom photo theme applied!", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this, "Failed to load image: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun refreshCustomPhotoPreview() {
-        val path = userPrefs.customBgPath
-        if (path.isNotEmpty() && File(path).exists()) {
-            try {
-                val bmp = BitmapFactory.decodeFile(path)
-                customPhotoPreview?.setImageBitmap(bmp)
-            } catch (_: Exception) {
-                customPhotoPreview?.setImageDrawable(null)
-            }
-        } else {
-            customPhotoPreview?.setImageDrawable(null)
-        }
-        customThemeButtons.forEachIndexed { i, b ->
-            val sel = customThemeOptions.getOrNull(i)?.first == userPrefs.theme
-            b.setTextColor(if (sel) Color.WHITE else Color.parseColor("#9ca3af"))
-            b.background = createPillBackground(sel)
-        }
-    }
-
-    companion object {
-        private const val REQUEST_CODE_PICK_IMAGE = 1001
-    }
 }
