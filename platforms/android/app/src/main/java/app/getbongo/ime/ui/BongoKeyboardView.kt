@@ -631,6 +631,30 @@ class BongoKeyboardView @JvmOverloads constructor(
             background = createKeyBackground(key)
             isClickable = true
             isFocusable = true
+            // Accessibility: TalkBack content description for each key
+            contentDescription = when (key) {
+                "SHIFT"               -> if (isShifted) "Caps Lock" else "Shift"
+                "BACKSPACE"           -> "Backspace"
+                "RETURN", "ACTION"    -> when (actionLabel) {
+                                            "Search" -> "Search"
+                                            "Done"   -> "Done"
+                                            "Go"     -> "Go"
+                                            "Next"   -> "Next"
+                                            "Send"   -> "Send"
+                                            else     -> "Return"
+                                         }
+                "SPACE"               -> if (isBangla) "Space, Bongo Bangla mode" else "Space, English mode"
+                "EMOJI"               -> "Emoji picker"
+                "?123"                -> "Switch to numbers and symbols"
+                "ABC"                 -> "Switch to letters"
+                "=\\<"                -> "Switch to more symbols"
+                "TAB"                 -> "Tab"
+                "BACKSPACE_WORD"      -> "Delete word"
+                "ESC"                 -> "Escape"
+                "CTRL"                -> "Control"
+                "↕"                   -> "Resize keyboard"
+                else                  -> if (key.length == 1) "Key $key" else key
+            }
         }
 
         val displayLabel = when (key) {

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Adaptive icon foreground: Bongo drum symbol in white.
+    Design spec: drum body centred inside the 108dp safe zone (66dp × 66dp).
+    The adaptive icon canvas is 108dp; the safe zone is the central 72dp circle.
+    All paths are scaled to fit within the 72dp safe zone (18dp inset each side).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Drum body (rounded rectangle) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M36,42 Q36,34 54,34 Q72,34 72,42
+            L72,66 Q72,74 54,74 Q36,74 36,66 Z" />
+
+    <!-- Top ellipse of drum -->
+    <path
+        android:fillColor="#E0E0FF"
+        android:pathData="M36,42 Q36,50 54,50 Q72,50 72,42 Q72,34 54,34 Q36,34 36,42 Z" />
+
+    <!-- Left drumstick -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M38,36 L28,24 Q26,21 29,19 Q32,17 34,20 L44,32 Z"
+        android:strokeColor="#CCCCFF"
+        android:strokeWidth="0.5" />
+
+    <!-- Right drumstick -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M70,36 L80,24 Q82,21 79,19 Q76,17 74,20 L64,32 Z"
+        android:strokeColor="#CCCCFF"
+        android:strokeWidth="0.5" />
+
+    <!-- Drum rim highlight line -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#E0E0FF"
+        android:strokeWidth="1.5"
+        android:pathData="M38,66 Q38,72 54,72 Q70,72 70,66" />
+</vector>

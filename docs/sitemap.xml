@@ -3,11 +3,29 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
         <loc>https://getbongo.app/</loc>
-        <lastmod>2026-10-25</lastmod>
+        <lastmod>2026-11-24</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
         <xhtml:link rel="alternate" hreflang="en" href="https://getbongo.app/" />
         <xhtml:link rel="alternate" hreflang="bn" href="https://getbongo.app/" />
         <xhtml:link rel="alternate" hreflang="x-default" href="https://getbongo.app/" />
+    </url>
+    <url>
+        <loc>https://getbongo.app/releases/v1.2.1</loc>
+        <lastmod>2026-11-24</lastmod>
+        <changefreq>never</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://getbongo.app/releases/v1.2.0</loc>
+        <lastmod>2026-10-25</lastmod>
+        <changefreq>never</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://getbongo.app/releases/v1.1.0</loc>
+        <lastmod>2026-09-01</lastmod>
+        <changefreq>never</changefreq>
+        <priority>0.5</priority>
     </url>
 </urlset>

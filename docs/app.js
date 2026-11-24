@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 9. Installation OS Tab Switcher (macOS / Linux)
     initInstallTabs();
+
+    // 10. Live GitHub download count & star badges
+    initGitHubStats();
 });
 
 /* ========================================================
@@ -1084,4 +1087,69 @@ function initConverter() {
 
     // Initial pass
     updateStats();
+}
+
+/* ========================================================
+   11. Live GitHub Stats (download count + stars)
+   ======================================================== */
+function initGitHubStats() {
+    const GITHUB_REPO = 'mehedishakeel/Bongo';
+    const STATS_CACHE_KEY = 'bongo_gh_stats_v1_2_1';
+    const STATS_TIME_KEY  = 'bongo_gh_stats_time_v1_2_1';
+    const ONE_HOUR = 60 * 60 * 1000;
+
+    function formatCount(n) {
+        if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        return String(n);
+    }
+
+    function applyStats(stars, downloads) {
+        document.querySelectorAll('.gh-stars-count').forEach(el => {
+            el.textContent = formatCount(stars);
+        });
+        document.querySelectorAll('.gh-downloads-count').forEach(el => {
+            el.textContent = formatCount(downloads);
+        });
+        const starsChip = document.getElementById('gh-stars-chip');
+        const dlChip    = document.getElementById('gh-downloads-chip');
+        if (starsChip && stars > 0)     starsChip.style.display = '';
+        if (dlChip    && downloads > 0) dlChip.style.display    = '';
+    }
+
+    // Try cache first
+    try {
+        const cached     = localStorage.getItem(STATS_CACHE_KEY);
+        const cachedTime = localStorage.getItem(STATS_TIME_KEY);
+        if (cached && cachedTime && (Date.now() - parseInt(cachedTime, 10) < ONE_HOUR)) {
+            const data = JSON.parse(cached);
+            applyStats(data.stars, data.downloads);
+            return;
+        }
+    } catch (_) {}
+
+    // Fetch repo info (stars) and all release download counts
+    const repoUrl     = `https://api.github.com/repos/${GITHUB_REPO}`;
+    const releasesUrl = `https://api.github.com/repos/${GITHUB_REPO}/releases?per_page=50`;
+
+    Promise.all([
+        fetch(repoUrl).then(r => r.ok ? r.json() : null),
+        fetch(releasesUrl).then(r => r.ok ? r.json() : null)
+    ]).then(([repo, releases]) => {
+        const stars = repo ? (repo.stargazers_count || 0) : 0;
+        let downloads = 0;
+        if (Array.isArray(releases)) {
+            releases.forEach(release => {
+                if (Array.isArray(release.assets)) {
+                    release.assets.forEach(asset => {
+                        downloads += asset.download_count || 0;
+                    });
+                }
+            });
+        }
+        applyStats(stars, downloads);
+        try {
+            localStorage.setItem(STATS_CACHE_KEY, JSON.stringify({ stars, downloads }));
+            localStorage.setItem(STATS_TIME_KEY, Date.now().toString());
+        } catch (_) {}
+    }).catch(() => {});
 }

@@ -12,6 +12,8 @@
   <a href="https://github.com/mehedishakeel/Bongo/releases/latest"><img src="https://img.shields.io/badge/Platforms-macOS%20|%20Linux%20|%20Windows%20|%20Android-4f46e5?style=flat-square" alt="Platforms"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MPL--2.0-indigo?style=flat-square" alt="License"></a>
   <a href="https://getbongo.app"><img src="https://img.shields.io/badge/Website-getbongo.app-6366f1?style=flat-square" alt="Website"></a>
+  <a href="https://github.com/mehedishakeel/Bongo/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mehedishakeel/Bongo/ci.yml?branch=main&style=flat-square&label=CI" alt="CI Status"></a>
+  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-Welcome-22c55e?style=flat-square" alt="PRs Welcome"></a>
 </p>
 
 <p align="center">
@@ -264,6 +266,12 @@ python3 -m unittest discover -s tests -v
 ```
 
 See [docs/BUILDING.md](docs/BUILDING.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for full developer documentation.
+
+---
+
+## Contributing
+
+We welcome contributions of all kinds — bug fixes, features, translations, and documentation. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide including branch conventions, test requirements, and PR process.
 
 ---
 
