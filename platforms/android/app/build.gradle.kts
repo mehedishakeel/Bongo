@@ -26,11 +26,34 @@ android {
             enableV1Signing = true
             enableV2Signing = true
         }
+        // Release signing: populated from env vars injected by CI (or local keystore.properties).
+        // Falls back gracefully to debug signing when the env vars are absent (local dev builds).
+        create("release") {
+            val keystoreFile = System.getenv("BONGO_KEYSTORE_PATH")
+            val keystorePassword = System.getenv("BONGO_KEY_STORE_PASSWORD")
+            val keyAlias = System.getenv("BONGO_KEY_ALIAS")
+            val keyPassword = System.getenv("BONGO_KEY_PASSWORD")
+
+            if (keystoreFile != null && keystorePassword != null &&
+                keyAlias != null && keyPassword != null) {
+                storeFile = file(keystoreFile)
+                storePassword = keystorePassword
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPassword
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
+                enableV4Signing = true
+            }
+        }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            // Use release signing when env vars are present, fall back to debug otherwise
+            val releaseConfig = signingConfigs.getByName("release")
+            signingConfig = if (releaseConfig.storeFile != null) releaseConfig
+                            else signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
