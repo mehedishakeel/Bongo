@@ -1,6 +1,7 @@
 package app.getbongo.ime.ui
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -64,6 +65,12 @@ class BongoKeyboardView @JvmOverloads constructor(
         private set
     var isAutoNumberRow: Boolean = false
         private set
+
+    val isTablet: Boolean
+        get() = resources.configuration.smallestScreenWidthDp >= 600
+
+    val isLandscape: Boolean
+        get() = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     private var palette: ThemePalette = ThemePalette.getPalette(userPrefs.theme)
 
@@ -156,7 +163,25 @@ class BongoKeyboardView @JvmOverloads constructor(
     init {
         orientation = VERTICAL
         setBackgroundColor(palette.surfaceColor)
-        setPadding(dp(2), dp(3), dp(2), dp(4))
+        applyResponsivePadding()
+        buildKeyboard()
+    }
+
+    private fun applyResponsivePadding() {
+        val horizPad = when {
+            isTablet && isLandscape -> dp(48)
+            isTablet -> dp(16)
+            isLandscape -> dp(14)
+            else -> dp(2)
+        }
+        val topPad = if (isLandscape && !isTablet) dp(2) else dp(3)
+        val bottomPad = if (isLandscape && !isTablet) dp(3) else dp(4)
+        setPadding(horizPad, topPad, horizPad, bottomPad)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        super.onConfigurationChanged(newConfig)
+        applyResponsivePadding()
         buildKeyboard()
     }
 
@@ -198,7 +223,7 @@ class BongoKeyboardView @JvmOverloads constructor(
         spaceKeyView?.text = if (isBangla) "◀   Bongo   ▶" else "◀   English   ▶"
         periodKeyView?.text = if (isBangla) "।" else "."
 
-        if (!userPrefs.showNumberRow && !isAutoNumberRow && userPrefs.longPressSymbols) {
+        if (!userPrefs.showNumberRow && !isAutoNumberRow && !isTablet && userPrefs.longPressSymbols) {
             val numHints = if (userPrefs.bengaliDigits && isBangla) ROW1_HINTS_BN else ROW1_HINTS_EN
             for ((key, hintTv) in letterKeyHintViews) {
                 if (key.length == 1) {
@@ -460,6 +485,7 @@ class BongoKeyboardView @JvmOverloads constructor(
     }
 
     fun buildKeyboard() {
+        applyResponsivePadding()
         popupDismissHandler.removeCallbacks(popupDismissRunnable)
         spaceDismissHandler.removeCallbacks(spaceDismissRunnable)
         if (popupWindow.isShowing) {
@@ -497,8 +523,8 @@ class BongoKeyboardView @JvmOverloads constructor(
     }
 
     private fun buildLetterKeyboard() {
-        // Optional 5th row: Number Row on top (if enabled in user settings or auto-enabled for password/number fields)
-        if (userPrefs.showNumberRow || isAutoNumberRow) {
+        // Optional 5th row: Number Row on top (always on for tablets, or if enabled in settings/password fields)
+        if (userPrefs.showNumberRow || isAutoNumberRow || isTablet) {
             val numRow = if (userPrefs.bengaliDigits && isBangla) {
                 listOf("১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯", "০")
             } else {
@@ -625,7 +651,7 @@ class BongoKeyboardView @JvmOverloads constructor(
 
         val lower = ch.lowercaseChar()
         val numHints = if (userPrefs.bengaliDigits && isBangla) ROW1_HINTS_BN else ROW1_HINTS_EN
-        val row1 = if (userPrefs.showNumberRow || isAutoNumberRow) null else numHints[lower]
+        val row1 = if (userPrefs.showNumberRow || isAutoNumberRow || isTablet) null else numHints[lower]
         return row1 ?: ROW2_HINTS[lower] ?: ROW3_HINTS[lower]
     }
 
@@ -988,15 +1014,22 @@ class BongoKeyboardView @JvmOverloads constructor(
         }
     }
 
-    private fun getKeyTextSize(key: String, isNumberRow: Boolean): Float = when {
-        isNumberRow -> 17f
-        key == "SPACE" -> 14.5f
-        key in listOf("SHIFT", "BACKSPACE") -> 18f
-        key in listOf("?123", "ABC", "=\\<") -> 13.5f
-        key in listOf("RETURN", "ACTION") -> 14f
-        key in listOf("EMOJI", "TAB", "↕") -> 17f
-        key in listOf("ESC", "CTRL") -> 12f
-        else -> 21f
+    private fun getKeyTextSize(key: String, isNumberRow: Boolean): Float {
+        val base = when {
+            isNumberRow -> 17f
+            key == "SPACE" -> 14.5f
+            key in listOf("SHIFT", "BACKSPACE") -> 18f
+            key in listOf("?123", "ABC", "=\\<") -> 13.5f
+            key in listOf("RETURN", "ACTION") -> 14f
+            key in listOf("EMOJI", "TAB", "↕") -> 17f
+            key in listOf("ESC", "CTRL") -> 12f
+            else -> 21f
+        }
+        return when {
+            isTablet -> base * 1.06f
+            isLandscape -> base * 0.90f
+            else -> base
+        }
     }
 
     private fun getKeyTextColor(key: String): Int = when (key) {

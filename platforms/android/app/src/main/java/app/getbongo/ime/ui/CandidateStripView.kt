@@ -193,6 +193,70 @@ class CandidateStripView @JvmOverloads constructor(
         showClipboardHistory(listOf(clipText), onPaste)
     }
 
+    fun showEmojiSearchBar(
+        query: String,
+        matches: List<String>,
+        onEmojiPick: (String) -> Unit,
+        onClose: () -> Unit
+    ) {
+        isShowingCandidates = false
+        container.removeAllViews()
+        ctrlTextView = null
+        voicePromptView = null
+
+        val closeBtn = TextView(context).apply {
+            text = "✕"
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            setTextColor(palette.stripSecondaryText)
+            setPadding(dp(10), dp(6), dp(10), dp(6))
+            gravity = Gravity.CENTER
+            background = createShortcutBackground(false)
+            setOnClickListener { onClose() }
+        }
+        container.addView(closeBtn)
+
+        val queryBadge = TextView(context).apply {
+            text = if (query.isEmpty()) "🔍 খুঁজুন..." else "🔍 $query"
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 13.5f)
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(palette.stripPrimaryText)
+            setPadding(dp(10), dp(5), dp(10), dp(5))
+            gravity = Gravity.CENTER
+            background = createCandidateBackground(true)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(dp(4), 0, dp(6), 0)
+            }
+        }
+        container.addView(queryBadge)
+
+        if (matches.isEmpty()) {
+            val emptyTv = TextView(context).apply {
+                text = "পাওয়া যায়নি"
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                setTextColor(palette.stripSecondaryText)
+                setPadding(dp(8), dp(6), dp(8), dp(6))
+                gravity = Gravity.CENTER
+            }
+            container.addView(emptyTv)
+        } else {
+            for (emoji in matches) {
+                val emojiBtn = TextView(context).apply {
+                    text = emoji
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+                    setPadding(dp(9), dp(4), dp(9), dp(4))
+                    gravity = Gravity.CENTER
+                    background = createShortcutBackground(false)
+                    setOnClickListener { onEmojiPick(emoji) }
+                }
+                container.addView(emojiBtn)
+            }
+        }
+        scrollTo(0, 0)
+    }
+
     fun clear() {
         showShortcuts()
     }

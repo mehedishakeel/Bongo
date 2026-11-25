@@ -4,6 +4,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.inputmethodservice.InputMethodService
 import android.Manifest
 import android.content.pm.PackageManager
@@ -63,6 +64,8 @@ class BongoInputMethodService : InputMethodService() {
 
     private var isBanglaMode = true
     private var isCtrlActive = false
+    private var isEmojiSearchMode = false
+    private val emojiSearchRaw = StringBuilder()
     private var lastSpaceTime = 0L
 
     private val clipboardHistory = mutableListOf<String>()
@@ -197,6 +200,9 @@ class BongoInputMethodService : InputMethodService() {
             onBackspace = {
                 sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
             }
+            onStartTypeSearch = {
+                startEmojiSearch()
+            }
         }
 
         frame.addView(keyboardView)
@@ -221,14 +227,54 @@ class BongoInputMethodService : InputMethodService() {
     }
 
     private fun showEmojiKeyboard() {
+        exitEmojiSearch(restoreShortcuts = false)
         commitOngoingComposition()
         keyboardView?.visibility = View.GONE
         candidateStripView?.visibility = View.GONE
         emojiKeyboardView?.visibility = View.VISIBLE
     }
 
+    private fun startEmojiSearch() {
+        commitOngoingComposition()
+        bongoEngine.resetSession()
+        emojiSearchRaw.clear()
+        isEmojiSearchMode = true
+        showKeyboard()
+        updateEmojiSearchStrip()
+    }
+
+    private fun exitEmojiSearch(restoreShortcuts: Boolean = true) {
+        if (!isEmojiSearchMode) return
+        isEmojiSearchMode = false
+        emojiSearchRaw.clear()
+        bongoEngine.resetSession()
+        if (restoreShortcuts) {
+            candidateStripView?.clear()
+        }
+    }
+
+    private fun updateEmojiSearchStrip() {
+        val raw = emojiSearchRaw.toString()
+        val bangla = if (raw.isNotEmpty() && isBanglaMode) bongoEngine.preedit else ""
+        val displayQuery = if (bangla.isNotEmpty() && bangla != raw) "$bangla ($raw)" else raw
+        val matches = EmojiKeyboardView.searchEmojis(raw, bangla)
+        candidateStripView?.showEmojiSearchBar(
+            query = displayQuery,
+            matches = matches,
+            onEmojiPick = { emoji ->
+                currentInputConnection?.commitText(emoji, 1)
+                emojiKeyboardView?.recordEmojiUsed(emoji)
+                exitEmojiSearch(restoreShortcuts = true)
+            },
+            onClose = {
+                exitEmojiSearch(restoreShortcuts = true)
+            }
+        )
+    }
+
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
+        exitEmojiSearch(restoreShortcuts = false)
         showKeyboard()
         resetComposition()
         bongoEngine.customShortcuts = userDictionary.getShortcuts()
@@ -240,11 +286,7 @@ class BongoInputMethodService : InputMethodService() {
         dividerView?.setBackgroundColor(palette.dividerColor)
         candidateStripView?.applyTheme(palette)
         keyboardView?.applyTheme(palette)
-
-        keyboardFrame?.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            dp(getTargetKeyboardHeight())
-        )
+        emojiKeyboardView?.applyTheme(palette)
 
         val inputType = info?.inputType ?: 0
         val imeOptions = info?.imeOptions ?: 0
@@ -280,6 +322,9 @@ class BongoInputMethodService : InputMethodService() {
         // Auto-show number row in password or numeric fields for easy digit entry
         keyboardView?.setAutoNumberRow(isPassword || isNumberClass)
 
+        // Update container height after auto-number-row & tablet/orientation evaluation
+        updateKeyboardContainerHeight()
+
         // For security and accuracy, switch to English mode in password fields
         if (isPassword && isBanglaMode) {
             isBanglaMode = false
@@ -287,14 +332,40 @@ class BongoInputMethodService : InputMethodService() {
         }
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        updateKeyboardContainerHeight()
+        keyboardView?.buildKeyboard()
+    }
+
+    private fun isTablet(): Boolean =
+        resources.configuration.smallestScreenWidthDp >= 600
+
+    private fun isLandscape(): Boolean =
+        resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    private fun updateKeyboardContainerHeight() {
+        keyboardContainer?.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            dp(getTargetKeyboardHeight())
+        )
+        keyboardContainer?.requestLayout()
+    }
+
     private fun getTargetKeyboardHeight(): Int {
+        val showNumRow = userPrefs.showNumberRow || (keyboardView?.isAutoNumberRow == true) || isTablet()
+        if (isLandscape()) {
+            val base = if (isTablet()) 210 else 164
+            return if (showNumRow) base + 30 else base
+        }
         val base = userPrefs.keyboardHeightDp
-        return if (userPrefs.showNumberRow) base + 36 else base
+        return if (showNumRow) base + 36 else base
     }
 
 
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
+        exitEmojiSearch(restoreShortcuts = false)
         commitOngoingComposition()
         resetComposition()
     }
@@ -627,6 +698,15 @@ class BongoInputMethodService : InputMethodService() {
                     return
                 }
 
+                if (isEmojiSearchMode) {
+                    emojiSearchRaw.append(ch)
+                    if (isBanglaMode && (ch in 'a'..'z' || ch in 'A'..'Z')) {
+                        bongoEngine.feedChar(ch, keyboardView?.isShifted == true)
+                    }
+                    updateEmojiSearchStrip()
+                    return
+                }
+
                 if (ch == '/' || ch == '\\' || ch == ',' || ch == '।' || (!isBanglaMode && ch == '.')) {
                     commitOngoingComposition()
                     ic.commitText(ch.toString(), 1)
@@ -644,6 +724,18 @@ class BongoInputMethodService : InputMethodService() {
                 }
             }
             is BongoKeyboardView.KeyAction.Backspace -> {
+                if (isEmojiSearchMode) {
+                    if (emojiSearchRaw.isNotEmpty()) {
+                        emojiSearchRaw.deleteCharAt(emojiSearchRaw.length - 1)
+                        if (isBanglaMode && bongoEngine.hasSession()) {
+                            bongoEngine.handleBackspace()
+                        }
+                        updateEmojiSearchStrip()
+                    } else {
+                        exitEmojiSearch(restoreShortcuts = true)
+                    }
+                    return
+                }
                 if (isBanglaMode && bongoEngine.hasSession()) {
                     val hasRemaining = bongoEngine.handleBackspace()
                     if (hasRemaining && bongoEngine.preedit.isNotEmpty()) {
@@ -675,6 +767,12 @@ class BongoInputMethodService : InputMethodService() {
                 }
             }
             is BongoKeyboardView.KeyAction.Space -> {
+                if (isEmojiSearchMode) {
+                    emojiSearchRaw.append(' ')
+                    bongoEngine.resetSession()
+                    updateEmojiSearchStrip()
+                    return
+                }
                 if (isBanglaMode && bongoEngine.hasSession()) {
                     val committed = bongoEngine.commitCandidate(0)
                     ic.commitText("$committed ", 1)
@@ -696,6 +794,19 @@ class BongoInputMethodService : InputMethodService() {
                 }
             }
             is BongoKeyboardView.KeyAction.Return -> {
+                if (isEmojiSearchMode) {
+                    val raw = emojiSearchRaw.toString()
+                    if (raw.isNotBlank()) {
+                        val bangla = if (isBanglaMode) bongoEngine.preedit else ""
+                        val topMatch = EmojiKeyboardView.searchEmojis(raw, bangla).firstOrNull()
+                        if (topMatch != null) {
+                            ic.commitText(topMatch, 1)
+                            emojiKeyboardView?.recordEmojiUsed(topMatch)
+                        }
+                    }
+                    exitEmojiSearch(restoreShortcuts = true)
+                    return
+                }
                 if (isBanglaMode && bongoEngine.hasSession()) {
                     val committed = bongoEngine.commitCandidate(0)
                     ic.commitText(committed, 1)
@@ -726,9 +837,16 @@ class BongoInputMethodService : InputMethodService() {
                 ic.commitText("\n", 1)
             }
             is BongoKeyboardView.KeyAction.ToggleLanguage -> {
-                commitOngoingComposition()
-                isBanglaMode = !isBanglaMode
-                keyboardView?.setBanglaMode(isBanglaMode)
+                if (isEmojiSearchMode) {
+                    isBanglaMode = !isBanglaMode
+                    keyboardView?.setBanglaMode(isBanglaMode)
+                    bongoEngine.resetSession()
+                    updateEmojiSearchStrip()
+                } else {
+                    commitOngoingComposition()
+                    isBanglaMode = !isBanglaMode
+                    keyboardView?.setBanglaMode(isBanglaMode)
+                }
             }
             is BongoKeyboardView.KeyAction.SwitchImePicker -> {
                 commitOngoingComposition()
@@ -904,12 +1022,9 @@ class BongoInputMethodService : InputMethodService() {
         rightOneHandedBar?.setBackgroundColor(palette.surfaceColor)
         candidateStripView?.applyTheme(palette)
         keyboardView?.applyTheme(palette)
+        emojiKeyboardView?.applyTheme(palette)
 
-        keyboardContainer?.layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            dp(getTargetKeyboardHeight())
-        )
-        keyboardContainer?.requestLayout()
+        updateKeyboardContainerHeight()
         rootView?.requestLayout()
     }
 

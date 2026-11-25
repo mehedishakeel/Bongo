@@ -15,6 +15,7 @@ Validates:
 import sys
 import os
 import re
+import datetime
 import filecmp
 import hashlib
 from pathlib import Path
@@ -209,6 +210,31 @@ def bump_version(new_version: str) -> bool:
         app_js.write_text(c, encoding="utf-8")
         log_pass(f"Updated {app_js.relative_to(REPO_ROOT)}")
 
+    # 12. Sitemap lastmod + release entry
+    sitemap = REPO_ROOT / "docs/sitemap.xml"
+    if sitemap.exists():
+        today = datetime.date.today().isoformat()
+        c = sitemap.read_text(encoding="utf-8")
+        c = re.sub(
+            r'(<loc>https://getbongo\.app/</loc>\s*<lastmod>)[^<]+(</lastmod>)',
+            rf'\g<1>{today}\g<2>',
+            c,
+            count=1,
+        )
+        rel_url = f"https://getbongo.app/releases/v{new_version}"
+        if rel_url not in c:
+            entry = (
+                f"    <url>\n"
+                f"        <loc>{rel_url}</loc>\n"
+                f"        <lastmod>{today}</lastmod>\n"
+                f"        <changefreq>never</changefreq>\n"
+                f"        <priority>0.7</priority>\n"
+                f"    </url>\n"
+            )
+            c = c.replace("</url>\n    <url>\n        <loc>https://getbongo.app/releases/", f"</url>\n{entry}    <url>\n        <loc>https://getbongo.app/releases/", 1)
+        sitemap.write_text(c, encoding="utf-8")
+        log_pass(f"Updated {sitemap.relative_to(REPO_ROOT)} ({today})")
+
     print(f"\n{GREEN}{BOLD}✓ Successfully bumped all project files from {old_version} to {new_version}!{RESET}\n")
     return True
 
@@ -251,6 +277,16 @@ def check_version_consistency(expected_version: str = "1.2.1") -> bool:
             else:
                 log_fail(f"Version mismatch in {rel_path}: found '{val}', expected '{expected_version}'")
                 all_passed = False
+
+    sitemap = REPO_ROOT / "docs/sitemap.xml"
+    if sitemap.exists():
+        sc = sitemap.read_text(encoding="utf-8")
+        expected_loc = f"https://getbongo.app/releases/v{expected_version}"
+        if expected_loc in sc:
+            log_pass(f"docs/sitemap.xml: includes v{expected_version}")
+        else:
+            log_fail(f"docs/sitemap.xml missing release entry for v{expected_version}")
+            all_passed = False
 
     return all_passed
 
