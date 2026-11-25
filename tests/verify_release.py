@@ -141,7 +141,7 @@ def bump_version(new_version: str) -> bool:
     w_wxs = REPO_ROOT / "platforms/windows/installer/bongo.wxs"
     if w_wxs.exists():
         content = w_wxs.read_text(encoding="utf-8")
-        content = re.sub(r'Version="[^"]+"', f'Version="{new_version}.0"', content)
+        content = re.sub(r'\bVersion="[^"]+"', f'Version="{new_version}.0"', content)
         w_wxs.write_text(content, encoding="utf-8")
         log_pass(f"Updated {w_wxs.relative_to(REPO_ROOT)}")
 

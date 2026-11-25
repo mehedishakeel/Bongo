@@ -34,8 +34,8 @@ android {
             val keyAlias = System.getenv("BONGO_KEY_ALIAS")
             val keyPassword = System.getenv("BONGO_KEY_PASSWORD")
 
-            if (keystoreFile != null && keystorePassword != null &&
-                keyAlias != null && keyPassword != null) {
+            if (!keystoreFile.isNullOrBlank() && !keystorePassword.isNullOrBlank() &&
+                !keyAlias.isNullOrBlank() && !keyPassword.isNullOrBlank()) {
                 storeFile = file(keystoreFile)
                 storePassword = keystorePassword
                 this.keyAlias = keyAlias
