@@ -97,9 +97,11 @@ class DistributionTests(unittest.TestCase):
         self.assertTrue(srcinfo_file.is_file(), ".SRCINFO must exist")
         self.assertTrue(readme_file.is_file(), "AUR README.md must exist")
 
+        expected_ver = plistlib.loads((ROOT / 'platforms/macos/Bongo/Resources/Info.plist').read_bytes())['CFBundleShortVersionString']
+
         pkgbuild = pkgbuild_file.read_text(encoding='utf-8')
         self.assertIn("pkgname=bongo-bin", pkgbuild)
-        self.assertIn("pkgver=1.2.1", pkgbuild)
+        self.assertIn(f"pkgver={expected_ver}", pkgbuild)
         self.assertIn("arch=('x86_64' 'aarch64')", pkgbuild)
         self.assertIn("license=('MPL-2.0')", pkgbuild)
         self.assertIn("fcitx5-bongo", pkgbuild)
@@ -116,7 +118,7 @@ class DistributionTests(unittest.TestCase):
         srcinfo = srcinfo_file.read_text(encoding='utf-8')
         self.assertIn("pkgbase = bongo-bin", srcinfo)
         self.assertIn("pkgname = bongo-bin", srcinfo)
-        self.assertIn("pkgver = 1.2.1", srcinfo)
+        self.assertIn(f"pkgver = {expected_ver}", srcinfo)
         self.assertIn("arch = x86_64", srcinfo)
         self.assertIn("arch = aarch64", srcinfo)
 
@@ -494,12 +496,18 @@ class DistributionTests(unittest.TestCase):
             'app/src/main/java/app/getbongo/ime/model/ThemePalette.kt',
             'app/src/main/java/app/getbongo/ime/ui/BongoKeyboardView.kt',
             'app/src/main/java/app/getbongo/ime/ui/CandidateStripView.kt',
+            'app/src/main/java/app/getbongo/ime/ui/ClipboardKeyboardView.kt',
             'app/src/main/java/app/getbongo/ime/ui/EmojiKeyboardView.kt',
             'app/src/main/java/app/getbongo/ime/ui/SettingsActivity.kt',
+            'app/src/main/java/app/getbongo/ime/model/ClipboardModels.kt',
             'app/src/main/java/app/getbongo/ime/util/BengaliNumberToWords.kt',
+            'app/src/main/java/app/getbongo/ime/util/MathEvaluator.kt',
         ]
         for f in ime_files:
             self.assertTrue((android_dir / f).is_file(), f"Missing Android source file: {f}")
+
+        manifest_xml = (android_dir / 'app/src/main/AndroidManifest.xml').read_text(encoding='utf-8')
+        self.assertIn('android:allowBackup="false"', manifest_xml)
 
         # 5. Slash and Backslash key handling verification
         keyboard_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/ui/BongoKeyboardView.kt').read_text(encoding='utf-8')
@@ -510,7 +518,9 @@ class DistributionTests(unittest.TestCase):
         service_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/BongoInputMethodService.kt').read_text(encoding='utf-8')
         self.assertIn("ch == '/' || ch == '\\\\'", service_kt)
         self.assertIn("userDictionary.getShortcuts()", service_kt)
-        self.assertIn("showClipboardHistory", service_kt)
+        self.assertIn("showClipboardKeyboard", service_kt)
+        self.assertIn("EXTRA_IS_SENSITIVE", service_kt)
+        self.assertIn("IME_FLAG_NO_PERSONALIZED_LEARNING", service_kt)
 
         engine_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/engine/AvroPhoneticEngine.kt').read_text(encoding='utf-8')
         self.assertIn(r':\\]+)', engine_kt)

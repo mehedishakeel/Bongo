@@ -181,6 +181,10 @@ class BongoEngine {
         return fallbackEngine.predictNextWords(word)
     }
 
+    fun matchGlidePath(keySeq: String, isBangla: Boolean): List<String> {
+        return fallbackEngine.matchGlidePath(keySeq, isBangla)
+    }
+
     fun learnSelection(typed: String, candidate: String) {
         val cleanTyped = typed.trim().lowercase()
         val cleanCandidate = candidate.trim()

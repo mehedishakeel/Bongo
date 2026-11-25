@@ -2,7 +2,11 @@ package app.getbongo.ime.ui
 
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.StateListDrawable
@@ -49,14 +53,23 @@ class BongoKeyboardView @JvmOverloads constructor(
     private val repeatHandler = Handler(Looper.getMainLooper())
     private val popupDismissHandler = Handler(Looper.getMainLooper())
     private val spaceDismissHandler = Handler(Looper.getMainLooper())
+    private val keyActionHandler = Handler(Looper.getMainLooper())
+    private var activeLongPressRunnable: Runnable? = null
 
     var isShifted = false
         private set
+    var isCapsLocked = false
+        private set
+    private var lastShiftTapMs = 0L
     var isBangla = true
         private set
     var isSymbols = false
         private set
     var isSymbolsShifted = false
+        private set
+    var isDevMode = false
+        private set
+    var isIncognitoActive = false
         private set
 
     var actionLabel: String = "Go"
@@ -78,12 +91,30 @@ class BongoKeyboardView @JvmOverloads constructor(
 
     // View recycling and in-place reference caching for zero-latency updates
     private val letterKeyViews = mutableMapOf<String, TextView>()
+    private val letterKeyContainers = mutableMapOf<String, View>()
     private val letterKeyHintViews = mutableMapOf<String, TextView>()
     private var shiftKeyView: TextView? = null
     private var spaceKeyView: TextView? = null
     private var periodKeyView: TextView? = null
     private var commaKeyView: TextView? = null
     private var actionKeyView: TextView? = null
+
+    // Glide typing (Swipe-to-type) state & trail renderer
+    private var isGliding = false
+    private var glideDownX = 0f
+    private var glideDownY = 0f
+    private var glideStartLetter: String? = null
+    private val glideTrailPoints = mutableListOf<Pair<Float, Float>>()
+    private val glideLetterSeq = StringBuilder()
+    private val glideTrailPath = Path()
+    private val glidePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+        strokeWidth = dp(4).toFloat()
+        color = palette.stripPrimaryBorder
+        alpha = 210
+    }
 
     // Key Popup Magnifier
     private var activePopupAnchor: View? = null
@@ -131,6 +162,8 @@ class BongoKeyboardView @JvmOverloads constructor(
 
     sealed class KeyAction {
         data class CharacterKey(val ch: Char) : KeyAction()
+        data class StringKey(val text: String) : KeyAction()
+        data class GlideWord(val keySequence: String) : KeyAction()
         object Shift : KeyAction()
         object Backspace : KeyAction()
         object DeleteWord : KeyAction()
@@ -139,6 +172,7 @@ class BongoKeyboardView @JvmOverloads constructor(
         object ToggleLanguage : KeyAction()
         object ToggleSymbols : KeyAction()
         object ToggleEmoji : KeyAction()
+        object ToggleIncognito : KeyAction()
         object SwitchImePicker : KeyAction()
         object OpenSettings : KeyAction()
         object OpenThemes : KeyAction()
@@ -162,6 +196,7 @@ class BongoKeyboardView @JvmOverloads constructor(
 
     init {
         orientation = VERTICAL
+        setWillNotDraw(false)
         setBackgroundColor(palette.surfaceColor)
         applyResponsivePadding()
         buildKeyboard()
@@ -187,6 +222,8 @@ class BongoKeyboardView @JvmOverloads constructor(
 
     fun applyTheme(newPalette: ThemePalette) {
         palette = newPalette
+        glidePaint.color = palette.stripPrimaryBorder
+        glidePaint.alpha = 210
         setBackgroundColor(palette.surfaceColor)
         popupTextView.setTextColor(palette.keyTextColor)
         popupTextView.background = GradientDrawable().apply {
@@ -236,14 +273,28 @@ class BongoKeyboardView @JvmOverloads constructor(
         }
     }
 
-    fun setShift(shifted: Boolean) {
-        if (isShifted != shifted) {
+    fun setShift(shifted: Boolean, lockCaps: Boolean = false) {
+        if (isShifted != shifted || isCapsLocked != lockCaps) {
             isShifted = shifted
-            if (!isSymbols && !isOptionsVisible && letterKeyViews.isNotEmpty()) {
+            isCapsLocked = if (shifted) lockCaps else false
+            if (!isSymbols && !isDevMode && !isOptionsVisible && letterKeyViews.isNotEmpty()) {
                 updateShiftViews()
             } else {
                 buildKeyboard()
             }
+        }
+    }
+
+    fun setAutoShift(shifted: Boolean) {
+        if (!isCapsLocked) {
+            setShift(shifted, lockCaps = false)
+        }
+    }
+
+    fun setIncognitoActive(active: Boolean) {
+        if (isIncognitoActive != active) {
+            isIncognitoActive = active
+            if (isOptionsVisible) buildKeyboard()
         }
     }
 
@@ -252,13 +303,38 @@ class BongoKeyboardView @JvmOverloads constructor(
             tv.text = if (isShifted) key.uppercase() else key.lowercase()
         }
         shiftKeyView?.apply {
-            text = if (isShifted) "⇪" else "⇧"
-            setTextColor(if (isShifted) palette.stripPrimaryBorder else palette.keyTextColor)
+            text = when {
+                isCapsLocked -> "⇪"
+                isShifted -> "⇧"
+                else -> "⇧"
+            }
+            setTextColor(
+                when {
+                    isCapsLocked -> Color.parseColor("#34d399")
+                    isShifted -> palette.stripPrimaryBorder
+                    else -> palette.keyTextColor
+                }
+            )
         }
     }
 
     fun toggleShift() {
-        setShift(!isShifted)
+        val now = System.currentTimeMillis()
+        when {
+            isCapsLocked -> {
+                setShift(false, lockCaps = false)
+                lastShiftTapMs = 0L
+            }
+            isShifted && (now - lastShiftTapMs) < 350L -> {
+                setShift(true, lockCaps = true)
+                lastShiftTapMs = 0L
+            }
+            else -> {
+                val next = !isShifted
+                setShift(next, lockCaps = false)
+                lastShiftTapMs = if (next) now else 0L
+            }
+        }
     }
 
     fun setActionInfo(label: String, isUri: Boolean) {
@@ -455,6 +531,37 @@ class BongoKeyboardView @JvmOverloads constructor(
 
         root.addView(row)
 
+        val row2 = LinearLayout(context).apply {
+            orientation = HORIZONTAL
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = dp(12)
+            }
+        }
+
+        row2.addView(createOptionCircle("</>", if (isDevMode) "ABC Mode" else "Dev Mode") {
+            isDevMode = !isDevMode
+            isSymbols = false
+            isSymbolsShifted = false
+            isOptionsVisible = false
+            buildKeyboard()
+        })
+
+        row2.addView(createOptionCircle("🕶️", if (isIncognitoActive) "Incognito ON" else "Incognito") {
+            isOptionsVisible = false
+            onKeyClickListener?.invoke(KeyAction.ToggleIncognito)
+        })
+
+        row2.addView(createOptionCircle("📏", "Height +") {
+            val next = if (userPrefs.keyboardHeightDp >= 320) 230 else userPrefs.keyboardHeightDp + 15
+            userPrefs.keyboardHeightDp = next
+        })
+
+        root.addView(row2)
+
         val closeBtn = TextView(context).apply {
             text = "✕ Back to Keyboard"
             gravity = Gravity.CENTER
@@ -488,6 +595,9 @@ class BongoKeyboardView @JvmOverloads constructor(
         applyResponsivePadding()
         popupDismissHandler.removeCallbacks(popupDismissRunnable)
         spaceDismissHandler.removeCallbacks(spaceDismissRunnable)
+        keyActionHandler.removeCallbacksAndMessages(null)
+        activeLongPressRunnable = null
+        clearGlideTrail()
         if (popupWindow.isShowing) {
             popupWindow.dismiss()
         }
@@ -497,6 +607,7 @@ class BongoKeyboardView @JvmOverloads constructor(
         activePopupAnchor = null
 
         letterKeyViews.clear()
+        letterKeyContainers.clear()
         letterKeyHintViews.clear()
         shiftKeyView = null
         spaceKeyView = null
@@ -511,6 +622,11 @@ class BongoKeyboardView @JvmOverloads constructor(
             return
         }
 
+        if (isDevMode) {
+            buildDevKeyboard()
+            return
+        }
+
         if (isSymbols) {
             if (isSymbolsShifted) {
                 buildShiftedSymbolsKeyboard()
@@ -520,6 +636,20 @@ class BongoKeyboardView @JvmOverloads constructor(
         } else {
             buildLetterKeyboard()
         }
+    }
+
+    private fun buildDevKeyboard() {
+        val r1 = listOf("{", "}", "[", "]", "(", ")", "<", ">", "=", "!=")
+        addRow(r1, hasSideSpacers = false, isNumberRow = false)
+
+        val r2 = listOf("=>", "->", "&&", "||", "==", "===", "!", "&", "|", "^")
+        addRow(r2, hasSideSpacers = false, isNumberRow = false)
+
+        val r3 = listOf("TAB", ";", ":", "`", "~", "$", "\\", "/", "BACKSPACE")
+        addRow(r3, hasSideSpacers = false, isNumberRow = false)
+
+        val r4 = listOf("ABC", "\"", "'", "SPACE", "_", "ACTION")
+        addRow(r4, hasSideSpacers = false, isNumberRow = false)
     }
 
     private fun buildLetterKeyboard() {
@@ -726,15 +856,21 @@ class BongoKeyboardView @JvmOverloads constructor(
         container.addView(tv)
 
         // Cache view references for instant zero-allocation updates
-        if (!isNumberRow && !isSymbols) {
+        if (!isNumberRow && !isSymbols && !isDevMode) {
             if (key.length == 1 && key[0] in 'a'..'z') {
                 letterKeyViews[key] = tv
+                letterKeyContainers[key] = container
             }
             when (key) {
                 "SHIFT" -> shiftKeyView = tv
                 "SPACE" -> spaceKeyView = tv
                 ".", "।" -> periodKeyView = tv
                 ",", "/" -> commaKeyView = tv
+                "ACTION", "RETURN" -> actionKeyView = tv
+            }
+        } else if (isDevMode) {
+            when (key) {
+                "SPACE" -> spaceKeyView = tv
                 "ACTION", "RETURN" -> actionKeyView = tv
             }
         }
@@ -789,12 +925,13 @@ class BongoKeyboardView @JvmOverloads constructor(
 
     private fun setupSpacebarInteractions(view: View, labelTv: TextView) {
         var startX = 0f
-        var hasSwiped = false
+        var lastScrubX = 0f
+        var hasMovedAction = false
         var isLongPressed = false
-        val swipeThreshold = dp(22)
-        val longPressHandler = Handler(Looper.getMainLooper())
+        val langSwipeThreshold = dp(26)
+        val scrubStepPx = dp(16).toFloat()
         val longPressRunnable = Runnable {
-            if (!hasSwiped) {
+            if (!hasMovedAction) {
                 isLongPressed = true
                 performHaptic()
                 hideSpacePopup()
@@ -807,22 +944,38 @@ class BongoKeyboardView @JvmOverloads constructor(
                 when (event.actionMasked) {
                     MotionEvent.ACTION_DOWN -> {
                         startX = event.x
-                        hasSwiped = false
+                        lastScrubX = event.x
+                        hasMovedAction = false
                         isLongPressed = false
                         v.isPressed = true
                         performHaptic()
                         playKeySound()
                         showSpacePopup(v, if (isBangla) "Bongo" else "English")
-                        longPressHandler.postDelayed(longPressRunnable, 450L)
+                        activeLongPressRunnable?.let { keyActionHandler.removeCallbacks(it) }
+                        activeLongPressRunnable = longPressRunnable
+                        keyActionHandler.postDelayed(longPressRunnable, 450L)
                         true
                     }
                     MotionEvent.ACTION_MOVE -> {
-                        val dx = event.x - startX
-                        if (Math.abs(dx) > swipeThreshold) {
-                            longPressHandler.removeCallbacks(longPressRunnable)
-                        }
-                        if (!hasSwiped && Math.abs(dx) > swipeThreshold) {
-                            hasSwiped = true
+                        val dxTotal = event.x - startX
+                        if (userPrefs.cursorScrubbing) {
+                            val scrubDelta = event.x - lastScrubX
+                            if (Math.abs(scrubDelta) >= scrubStepPx) {
+                                keyActionHandler.removeCallbacks(longPressRunnable)
+                                hasMovedAction = true
+                                val steps = (scrubDelta / scrubStepPx).toInt()
+                                lastScrubX += steps * scrubStepPx
+                                showSpacePopup(v, "◀ Cursor ▶")
+                                val count = kotlin.math.abs(steps)
+                                val action = if (steps > 0) KeyAction.CursorRight else KeyAction.CursorLeft
+                                for (i in 0 until count) {
+                                    performHaptic()
+                                    onKeyClickListener?.invoke(action)
+                                }
+                            }
+                        } else if (!hasMovedAction && Math.abs(dxTotal) > langSwipeThreshold) {
+                            keyActionHandler.removeCallbacks(longPressRunnable)
+                            hasMovedAction = true
                             isBangla = !isBangla
                             performHaptic()
                             playKeySound()
@@ -834,21 +987,21 @@ class BongoKeyboardView @JvmOverloads constructor(
                         true
                     }
                     MotionEvent.ACTION_UP -> {
-                        longPressHandler.removeCallbacks(longPressRunnable)
+                        keyActionHandler.removeCallbacks(longPressRunnable)
                         v.isPressed = false
                         hideSpacePopup()
-                        if (!hasSwiped && !isLongPressed) {
+                        if (!hasMovedAction && !isLongPressed) {
                             onKeyClickListener?.invoke(KeyAction.Space)
                         }
-                        hasSwiped = false
+                        hasMovedAction = false
                         isLongPressed = false
                         true
                     }
                     MotionEvent.ACTION_CANCEL -> {
-                        longPressHandler.removeCallbacks(longPressRunnable)
+                        keyActionHandler.removeCallbacks(longPressRunnable)
                         v.isPressed = false
                         hideSpacePopup()
-                        hasSwiped = false
+                        hasMovedAction = false
                         isLongPressed = false
                         true
                     }
@@ -870,7 +1023,6 @@ class BongoKeyboardView @JvmOverloads constructor(
         val isLetterOrNum = !isSpecialKey(key) && key.length == 1
         var hasLongPressed = false
         var isInsideKey = false
-        val longPressHandler = Handler(Looper.getMainLooper())
 
         val longPressRunnable = Runnable {
             if (isInsideKey && !hasLongPressed) {
@@ -908,7 +1060,9 @@ class BongoKeyboardView @JvmOverloads constructor(
                         val currentLabel = if (isShifted) key.uppercase() else key
                         showKeyPopup(v, currentLabel)
                     }
-                    longPressHandler.postDelayed(longPressRunnable, 380L)
+                    activeLongPressRunnable?.let { keyActionHandler.removeCallbacks(it) }
+                    activeLongPressRunnable = longPressRunnable
+                    keyActionHandler.postDelayed(longPressRunnable, 380L)
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
@@ -917,14 +1071,14 @@ class BongoKeyboardView @JvmOverloads constructor(
                         if (isInsideKey) {
                             isInsideKey = false
                             v.isPressed = false
-                            longPressHandler.removeCallbacks(longPressRunnable)
+                            keyActionHandler.removeCallbacks(longPressRunnable)
                             hideKeyPopup(v)
                         }
                     }
                     true
                 }
                 MotionEvent.ACTION_UP -> {
-                    longPressHandler.removeCallbacks(longPressRunnable)
+                    keyActionHandler.removeCallbacks(longPressRunnable)
                     v.isPressed = false
                     hideKeyPopup(v)
                     if (isInsideKey && !hasLongPressed) {
@@ -935,7 +1089,7 @@ class BongoKeyboardView @JvmOverloads constructor(
                     true
                 }
                 MotionEvent.ACTION_CANCEL -> {
-                    longPressHandler.removeCallbacks(longPressRunnable)
+                    keyActionHandler.removeCallbacks(longPressRunnable)
                     v.isPressed = false
                     hideKeyPopup(v)
                     isInsideKey = false
@@ -1023,6 +1177,7 @@ class BongoKeyboardView @JvmOverloads constructor(
             key in listOf("RETURN", "ACTION") -> 14f
             key in listOf("EMOJI", "TAB", "↕") -> 17f
             key in listOf("ESC", "CTRL") -> 12f
+            key.length >= 2 -> 14.5f
             else -> 21f
         }
         return when {
@@ -1033,7 +1188,11 @@ class BongoKeyboardView @JvmOverloads constructor(
     }
 
     private fun getKeyTextColor(key: String): Int = when (key) {
-        "SHIFT" -> if (isShifted) palette.stripPrimaryBorder else palette.keyTextColor
+        "SHIFT" -> when {
+            isCapsLocked -> Color.parseColor("#34d399")
+            isShifted -> palette.stripPrimaryBorder
+            else -> palette.keyTextColor
+        }
         "SPACE" -> Color.parseColor("#a8a9af")
         "?123", "ABC", "=\\<", "ACTION", "RETURN" -> Color.WHITE
         else -> palette.keyTextColor
@@ -1099,28 +1258,147 @@ class BongoKeyboardView @JvmOverloads constructor(
             "ABC" -> {
                 isSymbols = false
                 isSymbolsShifted = false
+                isDevMode = false
                 buildKeyboard()
                 onKeyClickListener?.invoke(KeyAction.ToggleSymbols)
             }
             else -> {
-                val ch = when (key) {
-                    "." -> if (isBangla) '।' else '.'
-                    "।" -> '।'
-                    "," -> ','
-                    "/" -> '/'
-                    else -> if (isShifted) key.uppercase().first() else key.first()
-                }
-                onKeyClickListener?.invoke(KeyAction.CharacterKey(ch))
-                if (isShifted) {
-                    setShift(false)
+                if (key.length > 1) {
+                    onKeyClickListener?.invoke(KeyAction.StringKey(key))
+                } else {
+                    val ch = when (key) {
+                        "." -> if (isBangla) '।' else '.'
+                        "।" -> '।'
+                        "," -> ','
+                        "/" -> '/'
+                        else -> if (isShifted) key.uppercase().first() else key.first()
+                    }
+                    onKeyClickListener?.invoke(KeyAction.CharacterKey(ch))
+                    if (isShifted && !isCapsLocked) {
+                        setShift(false, lockCaps = false)
+                    }
                 }
             }
+        }
+    }
+
+    private val glideHitRect = Rect()
+
+    private fun findLetterKeyAt(x: Float, y: Float): String? {
+        val ix = x.toInt()
+        val iy = y.toInt()
+        for ((letter, view) in letterKeyContainers) {
+            if (!view.isShown) continue
+            glideHitRect.set(0, 0, view.width, view.height)
+            offsetDescendantRectToMyCoords(view, glideHitRect)
+            if (glideHitRect.contains(ix, iy)) {
+                return letter
+            }
+        }
+        return null
+    }
+
+    private fun clearGlideTrail() {
+        isGliding = false
+        glideStartLetter = null
+        glideTrailPoints.clear()
+        glideLetterSeq.clear()
+        glideTrailPath.reset()
+        invalidate()
+    }
+
+    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+        if (!userPrefs.glideTyping || isSymbols || isDevMode || isOptionsVisible || letterKeyContainers.isEmpty()) {
+            return super.onInterceptTouchEvent(ev)
+        }
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                glideDownX = ev.x
+                glideDownY = ev.y
+                isGliding = false
+                glideTrailPoints.clear()
+                glideLetterSeq.clear()
+                glideTrailPath.reset()
+                glideStartLetter = findLetterKeyAt(ev.x, ev.y)
+                if (glideStartLetter != null) {
+                    glideTrailPoints.add(ev.x to ev.y)
+                    glideLetterSeq.append(glideStartLetter)
+                }
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val startKey = glideStartLetter ?: return false
+                val dist = kotlin.math.hypot((ev.x - glideDownX).toDouble(), (ev.y - glideDownY).toDouble())
+                val currentKey = findLetterKeyAt(ev.x, ev.y)
+                if (!isGliding && dist > dp(24) && currentKey != null && currentKey != startKey) {
+                    isGliding = true
+                    activeLongPressRunnable?.let { keyActionHandler.removeCallbacks(it) }
+                    hideKeyPopup()
+                    glideTrailPoints.add(ev.x to ev.y)
+                    if (glideLetterSeq.isEmpty() || glideLetterSeq.last().toString() != currentKey) {
+                        glideLetterSeq.append(currentKey)
+                    }
+                    invalidate()
+                    return true
+                }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                glideStartLetter = null
+                if (!isGliding) {
+                    glideTrailPoints.clear()
+                    glideLetterSeq.clear()
+                }
+            }
+        }
+        return super.onInterceptTouchEvent(ev)
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (!isGliding) return super.onTouchEvent(event)
+        when (event.actionMasked) {
+            MotionEvent.ACTION_MOVE -> {
+                glideTrailPoints.add(event.x to event.y)
+                val key = findLetterKeyAt(event.x, event.y)
+                if (key != null && (glideLetterSeq.isEmpty() || glideLetterSeq.last().toString() != key)) {
+                    glideLetterSeq.append(key)
+                }
+                invalidate()
+                return true
+            }
+            MotionEvent.ACTION_UP -> {
+                val seq = glideLetterSeq.toString()
+                clearGlideTrail()
+                if (seq.length >= 2) {
+                    performHaptic()
+                    playKeySound()
+                    onKeyClickListener?.invoke(KeyAction.GlideWord(seq))
+                }
+                return true
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                clearGlideTrail()
+                return true
+            }
+        }
+        return super.onTouchEvent(event)
+    }
+
+    override fun dispatchDraw(canvas: Canvas) {
+        super.dispatchDraw(canvas)
+        if (isGliding && glideTrailPoints.size >= 2) {
+            glideTrailPath.reset()
+            glideTrailPath.moveTo(glideTrailPoints[0].first, glideTrailPoints[0].second)
+            for (i in 1 until glideTrailPoints.size) {
+                glideTrailPath.lineTo(glideTrailPoints[i].first, glideTrailPoints[i].second)
+            }
+            canvas.drawPath(glideTrailPath, glidePaint)
         }
     }
 
     override fun onDetachedFromWindow() {
         popupDismissHandler.removeCallbacksAndMessages(null)
         spaceDismissHandler.removeCallbacksAndMessages(null)
+        keyActionHandler.removeCallbacksAndMessages(null)
+        activeLongPressRunnable = null
         if (popupWindow.isShowing) {
             popupWindow.dismiss()
         }

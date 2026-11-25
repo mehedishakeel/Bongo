@@ -11,8 +11,8 @@ android {
         applicationId = "app.getbongo.ime"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
-        versionName = "1.2.1"
+        versionCode = 6
+        versionName = "1.2.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -72,6 +72,12 @@ android {
         jvmTarget = "17"
     }
 
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
+
     sourceSets {
         named("main") {
             jniLibs.srcDirs("src/main/jniLibs")
@@ -84,4 +90,6 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20231013")
 }

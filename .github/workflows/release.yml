@@ -184,14 +184,17 @@ jobs:
           cache: 'gradle'
 
       - name: Decode Keystore
-        # Only runs when the KEYSTORE_BASE64 secret is present (i.e. on official releases).
-        # On forks or PRs the secret is absent and the step is skipped gracefully.
-        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        # Only decodes when KEYSTORE_BASE64 secret is configured on official releases;
+        # falls back gracefully to debug signing when absent on forks or PRs.
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 --decode > /tmp/bongo-release.jks
-          echo "BONGO_KEYSTORE_PATH=/tmp/bongo-release.jks" >> "$GITHUB_ENV"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > /tmp/bongo-release.jks
+            echo "BONGO_KEYSTORE_PATH=/tmp/bongo-release.jks" >> "$GITHUB_ENV"
+          else
+            echo "KEYSTORE_BASE64 not set; falling back to debug signing."
+          fi
 
       - name: Build Android APK
         env:
@@ -202,12 +205,13 @@ jobs:
         run: |
           cd platforms/android
           chmod +x ./gradlew
+          ./gradlew testDebugUnitTest
           ./gradlew assembleRelease
           mkdir -p release
           TAG_NAME="${GITHUB_REF#refs/tags/}"
           VERSION="${TAG_NAME#v}"
           if [ -z "$VERSION" ] || [ "$VERSION" = "$GITHUB_REF" ]; then
-            VERSION="1.2.1"
+            VERSION="1.2.2"
           fi
           cp app/build/outputs/apk/release/app-release.apk "release/Bongo-${VERSION}-android.apk"
           cd release
@@ -251,7 +255,9 @@ jobs:
           else
             echo "body_path=" >> $GITHUB_OUTPUT
           fi
-          if [ "$TAG_NAME" = "v1.2.1" ]; then
+          if [ "$TAG_NAME" = "v1.2.2" ]; then
+            echo "title=Bongo v1.2.2 — Glide Typing, Structured Clipboard, Incognito & Security Hardening" >> $GITHUB_OUTPUT
+          elif [ "$TAG_NAME" = "v1.2.1" ]; then
             echo "title=Bongo v1.2.1 — Linguistic Converters, User Dictionary & Engine Parity" >> $GITHUB_OUTPUT
           elif [ "$TAG_NAME" = "v1.2.0" ]; then
             echo "title=Bongo v1.2.0 — Borno Layout, Windows Tray & System Startup" >> $GITHUB_OUTPUT

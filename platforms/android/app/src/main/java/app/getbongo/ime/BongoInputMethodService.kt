@@ -1,5 +1,6 @@
 package app.getbongo.ime
 
+import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
@@ -34,12 +35,16 @@ import android.widget.TextView
 import android.widget.Toast
 import java.io.File
 import app.getbongo.ime.engine.BongoEngine
+import app.getbongo.ime.model.ClipboardEntry
+import app.getbongo.ime.model.ClipboardStoreLogic
 import app.getbongo.ime.model.ThemePalette
 import app.getbongo.ime.model.UserPreferences
 import app.getbongo.ime.ui.BongoKeyboardView
 import app.getbongo.ime.ui.CandidateStripView
+import app.getbongo.ime.ui.ClipboardKeyboardView
 import app.getbongo.ime.ui.EmojiKeyboardView
 import app.getbongo.ime.ui.SettingsActivity
+import app.getbongo.ime.util.MathEvaluator
 
 /**
  * Main Android InputMethodService for Bongo.
@@ -54,6 +59,7 @@ class BongoInputMethodService : InputMethodService() {
     private lateinit var userDictionary: app.getbongo.ime.model.UserDictionaryManager
     private var keyboardView: BongoKeyboardView? = null
     private var emojiKeyboardView: EmojiKeyboardView? = null
+    private var clipboardKeyboardView: ClipboardKeyboardView? = null
     private var candidateStripView: CandidateStripView? = null
     private var keyboardFrame: FrameLayout? = null
     private var keyboardContainer: LinearLayout? = null
@@ -64,11 +70,15 @@ class BongoInputMethodService : InputMethodService() {
 
     private var isBanglaMode = true
     private var isCtrlActive = false
+    private var isManualIncognito = false
     private var isEmojiSearchMode = false
-    private val emojiSearchRaw = StringBuilder()
+    private var isClipboardSearchMode = false
+    private var isMathCandidateActive = false
+    private val stripSearchRaw = StringBuilder()
+    private var lastDeletedText: String? = null
     private var lastSpaceTime = 0L
 
-    private val clipboardHistory = mutableListOf<String>()
+    private val clipboardEntries = mutableListOf<ClipboardEntry>()
     private var clipboardManager: ClipboardManager? = null
     private val clipListener = ClipboardManager.OnPrimaryClipChangedListener {
         updateLatestClip()
@@ -88,9 +98,10 @@ class BongoInputMethodService : InputMethodService() {
         bongoEngine.setLayout(userPrefs.keyboardLayout)
         userPrefs.registerListener(prefChangeListener)
 
-        // Load persistent clipboard history
-        clipboardHistory.clear()
-        clipboardHistory.addAll(userPrefs.getClipboardHistory())
+        // Load persistent structured clipboard history (auto-pruning expired sensitive entries)
+        clipboardEntries.clear()
+        clipboardEntries.addAll(userPrefs.getClipboardEntries())
+        userPrefs.saveClipboardEntries(clipboardEntries)
 
         try {
             val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
@@ -100,18 +111,44 @@ class BongoInputMethodService : InputMethodService() {
         } catch (_: Exception) {}
     }
 
+    private fun isPasswordField(info: EditorInfo?): Boolean {
+        val inputType = info?.inputType ?: 0
+        val inputClass = inputType and EditorInfo.TYPE_MASK_CLASS
+        val inputVariation = inputType and EditorInfo.TYPE_MASK_VARIATION
+        return (inputClass == EditorInfo.TYPE_CLASS_TEXT) && (
+            inputVariation == EditorInfo.TYPE_TEXT_VARIATION_PASSWORD ||
+            inputVariation == EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD ||
+            inputVariation == EditorInfo.TYPE_TEXT_VARIATION_WEB_PASSWORD
+        )
+    }
+
+    private fun isIncognito(): Boolean {
+        val info = currentInputEditorInfo
+        val noPersonalized = ((info?.imeOptions ?: 0) and EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING) != 0
+        return isManualIncognito || noPersonalized || isPasswordField(info)
+    }
+
     private fun updateLatestClip() {
+        if (isIncognito()) return
         try {
             val clip = clipboardManager?.primaryClip
             if (clip != null && clip.itemCount > 0) {
+                val desc = clip.description
+                val isOsSensitive = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    desc?.extras?.getBoolean(ClipDescription.EXTRA_IS_SENSITIVE, false) == true
+                } else {
+                    false
+                }
+                // Never log OS-marked passwords/sensitive tokens to persistent storage
+                if (isOsSensitive) return
+
                 val text = clip.getItemAt(0)?.coerceToText(this)?.toString()?.trim()
                 if (!text.isNullOrEmpty()) {
-                    clipboardHistory.remove(text)
-                    clipboardHistory.add(0, text)
-                    if (clipboardHistory.size > 20) {
-                        clipboardHistory.removeAt(clipboardHistory.size - 1)
-                    }
-                    userPrefs.saveClipboardHistory(clipboardHistory)
+                    val updated = ClipboardStoreLogic.addText(clipboardEntries, text)
+                    clipboardEntries.clear()
+                    clipboardEntries.addAll(updated)
+                    userPrefs.saveClipboardEntries(clipboardEntries)
+                    clipboardKeyboardView?.setEntries(clipboardEntries)
                 }
             }
         } catch (_: Exception) {}
@@ -205,8 +242,57 @@ class BongoInputMethodService : InputMethodService() {
             }
         }
 
+        clipboardKeyboardView = ClipboardKeyboardView(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+            visibility = View.GONE
+            applyTheme(palette)
+            setEntries(clipboardEntries)
+            onPasteEntry = { entry ->
+                currentInputConnection?.commitText(entry.text, 1)
+                showKeyboard()
+            }
+            onTogglePin = { id ->
+                val updated = ClipboardStoreLogic.togglePin(clipboardEntries, id)
+                clipboardEntries.clear()
+                clipboardEntries.addAll(updated)
+                userPrefs.saveClipboardEntries(clipboardEntries)
+                setEntries(clipboardEntries)
+            }
+            onDeleteEntry = { id ->
+                val updated = ClipboardStoreLogic.deleteById(clipboardEntries, id)
+                clipboardEntries.clear()
+                clipboardEntries.addAll(updated)
+                userPrefs.saveClipboardEntries(clipboardEntries)
+                setEntries(clipboardEntries)
+            }
+            onClearUnpinned = {
+                val updated = ClipboardStoreLogic.clearUnpinned(clipboardEntries)
+                if (updated.size == clipboardEntries.size && clipboardEntries.isNotEmpty()) {
+                    clipboardEntries.clear()
+                } else {
+                    clipboardEntries.clear()
+                    clipboardEntries.addAll(updated)
+                }
+                userPrefs.saveClipboardEntries(clipboardEntries)
+                setEntries(clipboardEntries)
+            }
+            onStartSearch = {
+                startClipboardSearch()
+            }
+            onBackToKeyboard = {
+                showKeyboard()
+            }
+            onBackspace = {
+                sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
+            }
+        }
+
         frame.addView(keyboardView)
         frame.addView(emojiKeyboardView)
+        frame.addView(clipboardKeyboardView)
 
         containerLayout.addView(leftBar)
         containerLayout.addView(frame)
@@ -222,31 +308,56 @@ class BongoInputMethodService : InputMethodService() {
 
     private fun showKeyboard() {
         emojiKeyboardView?.visibility = View.GONE
+        clipboardKeyboardView?.visibility = View.GONE
         keyboardView?.visibility = View.VISIBLE
         candidateStripView?.visibility = View.VISIBLE
     }
 
     private fun showEmojiKeyboard() {
-        exitEmojiSearch(restoreShortcuts = false)
+        exitSearchModes(restoreShortcuts = false)
         commitOngoingComposition()
         keyboardView?.visibility = View.GONE
+        clipboardKeyboardView?.visibility = View.GONE
         candidateStripView?.visibility = View.GONE
         emojiKeyboardView?.visibility = View.VISIBLE
+    }
+
+    private fun showClipboardKeyboard() {
+        exitSearchModes(restoreShortcuts = false)
+        commitOngoingComposition()
+        updateLatestClip()
+        clipboardKeyboardView?.setEntries(clipboardEntries)
+        keyboardView?.visibility = View.GONE
+        emojiKeyboardView?.visibility = View.GONE
+        candidateStripView?.visibility = View.GONE
+        clipboardKeyboardView?.visibility = View.VISIBLE
     }
 
     private fun startEmojiSearch() {
         commitOngoingComposition()
         bongoEngine.resetSession()
-        emojiSearchRaw.clear()
+        stripSearchRaw.clear()
+        isClipboardSearchMode = false
         isEmojiSearchMode = true
         showKeyboard()
         updateEmojiSearchStrip()
     }
 
-    private fun exitEmojiSearch(restoreShortcuts: Boolean = true) {
-        if (!isEmojiSearchMode) return
+    private fun startClipboardSearch() {
+        commitOngoingComposition()
+        bongoEngine.resetSession()
+        stripSearchRaw.clear()
         isEmojiSearchMode = false
-        emojiSearchRaw.clear()
+        isClipboardSearchMode = true
+        showKeyboard()
+        updateClipboardSearchStrip()
+    }
+
+    private fun exitSearchModes(restoreShortcuts: Boolean = true) {
+        if (!isEmojiSearchMode && !isClipboardSearchMode) return
+        isEmojiSearchMode = false
+        isClipboardSearchMode = false
+        stripSearchRaw.clear()
         bongoEngine.resetSession()
         if (restoreShortcuts) {
             candidateStripView?.clear()
@@ -254,7 +365,7 @@ class BongoInputMethodService : InputMethodService() {
     }
 
     private fun updateEmojiSearchStrip() {
-        val raw = emojiSearchRaw.toString()
+        val raw = stripSearchRaw.toString()
         val bangla = if (raw.isNotEmpty() && isBanglaMode) bongoEngine.preedit else ""
         val displayQuery = if (bangla.isNotEmpty() && bangla != raw) "$bangla ($raw)" else raw
         val matches = EmojiKeyboardView.searchEmojis(raw, bangla)
@@ -264,21 +375,47 @@ class BongoInputMethodService : InputMethodService() {
             onEmojiPick = { emoji ->
                 currentInputConnection?.commitText(emoji, 1)
                 emojiKeyboardView?.recordEmojiUsed(emoji)
-                exitEmojiSearch(restoreShortcuts = true)
+                exitSearchModes(restoreShortcuts = true)
             },
             onClose = {
-                exitEmojiSearch(restoreShortcuts = true)
+                exitSearchModes(restoreShortcuts = true)
+            }
+        )
+    }
+
+    private fun updateClipboardSearchStrip() {
+        val raw = stripSearchRaw.toString()
+        val matches = ClipboardStoreLogic.search(clipboardEntries, raw).map { it.text }
+        candidateStripView?.showSearchBar(
+            placeholder = "ক্লিপবোর্ড খুঁজুন...",
+            query = raw,
+            matches = matches,
+            emptyText = "মিলছে না",
+            isEmojiSize = false,
+            onPick = { clipText ->
+                currentInputConnection?.commitText(clipText, 1)
+                exitSearchModes(restoreShortcuts = true)
+            },
+            onClose = {
+                exitSearchModes(restoreShortcuts = true)
             }
         )
     }
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
-        exitEmojiSearch(restoreShortcuts = false)
+        exitSearchModes(restoreShortcuts = false)
+        isMathCandidateActive = false
+        lastDeletedText = null
+        candidateStripView?.setCanUndo(false)
         showKeyboard()
         resetComposition()
         bongoEngine.customShortcuts = userDictionary.getShortcuts()
         updateLatestClip()
+
+        val incog = isIncognito()
+        candidateStripView?.setIncognito(incog)
+        keyboardView?.setIncognitoActive(incog)
 
         // Sync theme and height changes from settings
         val palette = ThemePalette.getPalette(userPrefs.theme)
@@ -287,6 +424,8 @@ class BongoInputMethodService : InputMethodService() {
         candidateStripView?.applyTheme(palette)
         keyboardView?.applyTheme(palette)
         emojiKeyboardView?.applyTheme(palette)
+        clipboardKeyboardView?.applyTheme(palette)
+        clipboardKeyboardView?.applyTheme(palette)
 
         val inputType = info?.inputType ?: 0
         val imeOptions = info?.imeOptions ?: 0
@@ -311,12 +450,7 @@ class BongoInputMethodService : InputMethodService() {
         keyboardView?.setActionInfo(actionLabel, isUri)
 
         val inputClass = inputType and EditorInfo.TYPE_MASK_CLASS
-        val inputVariation = inputType and EditorInfo.TYPE_MASK_VARIATION
-        val isPassword = (inputClass == EditorInfo.TYPE_CLASS_TEXT) && (
-            inputVariation == EditorInfo.TYPE_TEXT_VARIATION_PASSWORD ||
-            inputVariation == EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD ||
-            inputVariation == EditorInfo.TYPE_TEXT_VARIATION_WEB_PASSWORD
-        )
+        val isPassword = isPasswordField(info)
         val isNumberClass = inputClass == EditorInfo.TYPE_CLASS_NUMBER || inputClass == EditorInfo.TYPE_CLASS_PHONE
 
         // Auto-show number row in password or numeric fields for easy digit entry
@@ -330,6 +464,37 @@ class BongoInputMethodService : InputMethodService() {
             isBanglaMode = false
             keyboardView?.setBanglaMode(false)
         }
+        candidateStripView?.setBanglaActive(isBanglaMode)
+        updateAutoCapitalization()
+    }
+
+    private fun updateAutoCapitalization() {
+        val kv = keyboardView ?: return
+        if (isBanglaMode || !userPrefs.autoCapitalization) {
+            kv.setAutoShift(false)
+            return
+        }
+        val info = currentInputEditorInfo ?: return
+        val inputType = info.inputType
+        val capsMode = inputType and (
+            EditorInfo.TYPE_TEXT_FLAG_CAP_CHARACTERS or
+            EditorInfo.TYPE_TEXT_FLAG_CAP_WORDS or
+            EditorInfo.TYPE_TEXT_FLAG_CAP_SENTENCES
+        )
+        if ((capsMode and EditorInfo.TYPE_TEXT_FLAG_CAP_CHARACTERS) != 0) {
+            kv.setShift(true, lockCaps = true)
+            return
+        }
+        val ic = currentInputConnection ?: return
+        val before = ic.getTextBeforeCursor(3, 0)?.toString() ?: ""
+        val shouldCap = when {
+            before.isEmpty() -> true
+            before.endsWith("\n") -> true
+            (capsMode and EditorInfo.TYPE_TEXT_FLAG_CAP_WORDS) != 0 && before.last().isWhitespace() -> true
+            before.endsWith(". ") || before.endsWith("! ") || before.endsWith("? ") -> true
+            else -> false
+        }
+        kv.setAutoShift(shouldCap)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -365,7 +530,7 @@ class BongoInputMethodService : InputMethodService() {
 
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
-        exitEmojiSearch(restoreShortcuts = false)
+        exitSearchModes(restoreShortcuts = false)
         commitOngoingComposition()
         resetComposition()
     }
@@ -387,6 +552,7 @@ class BongoInputMethodService : InputMethodService() {
         keyboardView?.applyTheme(palette)
         candidateStripView?.applyTheme(palette)
         emojiKeyboardView?.applyTheme(palette)
+        clipboardKeyboardView?.applyTheme(palette)
     }
 
     private fun createOneHandedSideBar(isLeft: Boolean): LinearLayout {
@@ -455,6 +621,12 @@ class BongoInputMethodService : InputMethodService() {
         val ic = currentInputConnection ?: return
 
         when (action) {
+            is CandidateStripView.ShortcutAction.ToggleLanguage -> {
+                handleKeyAction(BongoKeyboardView.KeyAction.ToggleLanguage)
+            }
+            is CandidateStripView.ShortcutAction.Undo -> {
+                performUndoDelete()
+            }
             is CandidateStripView.ShortcutAction.Emoji -> {
                 showEmojiKeyboard()
             }
@@ -513,14 +685,15 @@ class BongoInputMethodService : InputMethodService() {
     }
 
     private fun handleClipboardAction() {
-        updateLatestClip()
-        if (clipboardHistory.isNotEmpty()) {
-            candidateStripView?.showClipboardHistory(clipboardHistory.toList()) { toPaste ->
-                currentInputConnection?.commitText(toPaste, 1)
-            }
-        } else {
-            currentInputConnection?.performContextMenuAction(android.R.id.paste)
-        }
+        showClipboardKeyboard()
+    }
+
+    private fun performUndoDelete() {
+        val text = lastDeletedText ?: return
+        val ic = currentInputConnection ?: return
+        ic.commitText(text, 1)
+        lastDeletedText = null
+        candidateStripView?.setCanUndo(false)
     }
 
     private fun handleVoiceInputAction() {
@@ -675,7 +848,13 @@ class BongoInputMethodService : InputMethodService() {
                         'c' -> ic.performContextMenuAction(android.R.id.copy)
                         'v' -> ic.performContextMenuAction(android.R.id.paste)
                         'x' -> ic.performContextMenuAction(android.R.id.cut)
-                        'z' -> ic.performContextMenuAction(android.R.id.undo)
+                        'z' -> {
+                            if (lastDeletedText != null) {
+                                performUndoDelete()
+                            } else {
+                                ic.performContextMenuAction(android.R.id.undo)
+                            }
+                        }
                         else -> {
                             val keyCode = when (lower) {
                                 'd' -> KeyEvent.KEYCODE_D
@@ -698,18 +877,38 @@ class BongoInputMethodService : InputMethodService() {
                     return
                 }
 
-                if (isEmojiSearchMode) {
-                    emojiSearchRaw.append(ch)
-                    if (isBanglaMode && (ch in 'a'..'z' || ch in 'A'..'Z')) {
+                if (isEmojiSearchMode || isClipboardSearchMode) {
+                    stripSearchRaw.append(ch)
+                    if (isEmojiSearchMode && isBanglaMode && (ch in 'a'..'z' || ch in 'A'..'Z')) {
                         bongoEngine.feedChar(ch, keyboardView?.isShifted == true)
                     }
-                    updateEmojiSearchStrip()
+                    if (isEmojiSearchMode) updateEmojiSearchStrip() else updateClipboardSearchStrip()
                     return
                 }
+
+                if (ch == '=') {
+                    commitOngoingComposition()
+                    ic.commitText("=", 1)
+                    val before = ic.getTextBeforeCursor(64, 0)?.toString()
+                    val result = if (!before.isNullOrEmpty()) {
+                        MathEvaluator.evaluateInline(before, useBengaliDigits = userPrefs.bengaliDigits)
+                    } else null
+                    if (result != null) {
+                        isMathCandidateActive = true
+                        candidateStripView?.setCandidates(listOf(result))
+                    } else {
+                        isMathCandidateActive = false
+                    }
+                    updateAutoCapitalization()
+                    return
+                }
+
+                isMathCandidateActive = false
 
                 if (ch == '/' || ch == '\\' || ch == ',' || ch == '।' || (!isBanglaMode && ch == '.')) {
                     commitOngoingComposition()
                     ic.commitText(ch.toString(), 1)
+                    updateAutoCapitalization()
                     return
                 }
 
@@ -721,18 +920,55 @@ class BongoInputMethodService : InputMethodService() {
                 } else {
                     commitOngoingComposition()
                     ic.commitText(ch.toString(), 1)
+                    updateAutoCapitalization()
+                }
+            }
+            is BongoKeyboardView.KeyAction.StringKey -> {
+                isMathCandidateActive = false
+                if (isEmojiSearchMode || isClipboardSearchMode) {
+                    stripSearchRaw.append(action.text)
+                    if (isEmojiSearchMode) updateEmojiSearchStrip() else updateClipboardSearchStrip()
+                    return
+                }
+                commitOngoingComposition()
+                ic.commitText(action.text, 1)
+                updateAutoCapitalization()
+            }
+            is BongoKeyboardView.KeyAction.GlideWord -> {
+                isMathCandidateActive = false
+                commitOngoingComposition()
+                val matches = bongoEngine.matchGlidePath(action.keySequence, isBanglaMode)
+                if (matches.isNotEmpty()) {
+                    val best = matches.first()
+                    val finalBest = if (userPrefs.bengaliDigits) best.tobengaliDigits() else best
+                    val before = ic.getTextBeforeCursor(1, 0)?.toString()
+                    val prefixSpace = if (!before.isNullOrEmpty() && !before[0].isWhitespace()) " " else ""
+                    ic.commitText("$prefixSpace$finalBest ", 1)
+                    if (!isIncognito()) {
+                        userPrefs.recordTypedWord(isBangla = isBanglaMode, isGlide = true)
+                    }
+                    val rest = matches.drop(1).take(userPrefs.candidateCount)
+                    if (rest.isNotEmpty()) {
+                        candidateStripView?.setCandidates(rest)
+                    } else if (isBanglaMode) {
+                        showNextWordPredictions(finalBest)
+                    } else {
+                        candidateStripView?.clear()
+                    }
+                    updateAutoCapitalization()
                 }
             }
             is BongoKeyboardView.KeyAction.Backspace -> {
-                if (isEmojiSearchMode) {
-                    if (emojiSearchRaw.isNotEmpty()) {
-                        emojiSearchRaw.deleteCharAt(emojiSearchRaw.length - 1)
-                        if (isBanglaMode && bongoEngine.hasSession()) {
+                isMathCandidateActive = false
+                if (isEmojiSearchMode || isClipboardSearchMode) {
+                    if (stripSearchRaw.isNotEmpty()) {
+                        stripSearchRaw.deleteCharAt(stripSearchRaw.length - 1)
+                        if (isEmojiSearchMode && isBanglaMode && bongoEngine.hasSession()) {
                             bongoEngine.handleBackspace()
                         }
-                        updateEmojiSearchStrip()
+                        if (isEmojiSearchMode) updateEmojiSearchStrip() else updateClipboardSearchStrip()
                     } else {
-                        exitEmojiSearch(restoreShortcuts = true)
+                        exitSearchModes(restoreShortcuts = true)
                     }
                     return
                 }
@@ -748,9 +984,11 @@ class BongoInputMethodService : InputMethodService() {
                 } else {
                     candidateStripView?.clear()
                     sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
+                    updateAutoCapitalization()
                 }
             }
             is BongoKeyboardView.KeyAction.DeleteWord -> {
+                isMathCandidateActive = false
                 if (bongoEngine.hasSession()) {
                     resetComposition()
                 } else {
@@ -758,28 +996,37 @@ class BongoInputMethodService : InputMethodService() {
                     if (!before.isNullOrEmpty()) {
                         val trimmed = before.trimEnd()
                         val lastWordIndex = trimmed.lastIndexOfAny(charArrayOf(' ', '\n', '\t', '।', '.', ',', '!', '?', ';', ':'))
-                        val charsToDelete = if (lastWordIndex == -1) before.length else (before.length - (lastWordIndex + 1))
-                        ic.deleteSurroundingText(charsToDelete.coerceAtLeast(1), 0)
+                        val charsToDelete = (if (lastWordIndex == -1) before.length else (before.length - (lastWordIndex + 1))).coerceAtLeast(1)
+                        lastDeletedText = before.takeLast(charsToDelete)
+                        ic.deleteSurroundingText(charsToDelete, 0)
+                        candidateStripView?.clear()
+                        candidateStripView?.setCanUndo(true)
                     } else {
                         sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
+                        candidateStripView?.clear()
                     }
-                    candidateStripView?.clear()
+                    updateAutoCapitalization()
                 }
             }
             is BongoKeyboardView.KeyAction.Space -> {
-                if (isEmojiSearchMode) {
-                    emojiSearchRaw.append(' ')
+                isMathCandidateActive = false
+                if (isEmojiSearchMode || isClipboardSearchMode) {
+                    stripSearchRaw.append(' ')
                     bongoEngine.resetSession()
-                    updateEmojiSearchStrip()
+                    if (isEmojiSearchMode) updateEmojiSearchStrip() else updateClipboardSearchStrip()
                     return
                 }
                 if (isBanglaMode && bongoEngine.hasSession()) {
                     val committed = bongoEngine.commitCandidate(0)
                     val finalText = if (userPrefs.bengaliDigits) committed.tobengaliDigits() else committed
                     ic.commitText("$finalText ", 1)
+                    if (!isIncognito()) {
+                        userPrefs.recordTypedWord(isBangla = true, isGlide = false)
+                    }
                     showNextWordPredictions(finalText)
                     lastSpaceTime = SystemClock.uptimeMillis()
                 } else {
+                    val beforeSpace = ic.getTextBeforeCursor(24, 0)?.toString()
                     val now = SystemClock.uptimeMillis()
                     // Double-tap Space for Dari (।) / Period (.)
                     if (userPrefs.doubleSpacePeriod && (now - lastSpaceTime < 350L) && !bongoEngine.hasSession()) {
@@ -788,15 +1035,20 @@ class BongoInputMethodService : InputMethodService() {
                         ic.commitText(period, 1)
                         lastSpaceTime = 0L
                     } else {
+                        if (!isBanglaMode && !beforeSpace.isNullOrEmpty() && beforeSpace.last().isLetter() && !isIncognito()) {
+                            userPrefs.recordTypedWord(isBangla = false, isGlide = false)
+                        }
                         ic.commitText(" ", 1)
                         lastSpaceTime = now
                     }
                     candidateStripView?.clear()
                 }
+                updateAutoCapitalization()
             }
             is BongoKeyboardView.KeyAction.Return -> {
+                isMathCandidateActive = false
                 if (isEmojiSearchMode) {
-                    val raw = emojiSearchRaw.toString()
+                    val raw = stripSearchRaw.toString()
                     if (raw.isNotBlank()) {
                         val bangla = if (isBanglaMode) bongoEngine.preedit else ""
                         val topMatch = EmojiKeyboardView.searchEmojis(raw, bangla).firstOrNull()
@@ -805,14 +1057,31 @@ class BongoInputMethodService : InputMethodService() {
                             emojiKeyboardView?.recordEmojiUsed(topMatch)
                         }
                     }
-                    exitEmojiSearch(restoreShortcuts = true)
+                    exitSearchModes(restoreShortcuts = true)
+                    return
+                }
+                if (isClipboardSearchMode) {
+                    val query = stripSearchRaw.toString()
+                    val topClip = ClipboardStoreLogic.search(clipboardEntries, query).firstOrNull()
+                    if (topClip != null) {
+                        ic.commitText(topClip.text, 1)
+                    }
+                    exitSearchModes(restoreShortcuts = true)
                     return
                 }
                 if (isBanglaMode && bongoEngine.hasSession()) {
                     val committed = bongoEngine.commitCandidate(0)
                     val finalText = if (userPrefs.bengaliDigits) committed.tobengaliDigits() else committed
                     ic.commitText(finalText, 1)
+                    if (!isIncognito()) {
+                        userPrefs.recordTypedWord(isBangla = true, isGlide = false)
+                    }
                     candidateStripView?.clear()
+                } else if (!isBanglaMode && !isIncognito()) {
+                    val beforeReturn = ic.getTextBeforeCursor(24, 0)?.toString()
+                    if (!beforeReturn.isNullOrEmpty() && beforeReturn.last().isLetter()) {
+                        userPrefs.recordTypedWord(isBangla = false, isGlide = false)
+                    }
                 }
                 val editorInfo = currentInputEditorInfo
                 val inputType = editorInfo?.inputType ?: 0
@@ -829,8 +1098,10 @@ class BongoInputMethodService : InputMethodService() {
                 } else {
                     sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER)
                 }
+                updateAutoCapitalization()
             }
             is BongoKeyboardView.KeyAction.InsertNewline -> {
+                isMathCandidateActive = false
                 if (isBanglaMode && bongoEngine.hasSession()) {
                     val committed = bongoEngine.commitCandidate(0)
                     val finalText = if (userPrefs.bengaliDigits) committed.tobengaliDigits() else committed
@@ -838,18 +1109,22 @@ class BongoInputMethodService : InputMethodService() {
                     candidateStripView?.clear()
                 }
                 ic.commitText("\n", 1)
+                updateAutoCapitalization()
             }
             is BongoKeyboardView.KeyAction.ToggleLanguage -> {
-                if (isEmojiSearchMode) {
+                if (isEmojiSearchMode || isClipboardSearchMode) {
                     isBanglaMode = !isBanglaMode
                     keyboardView?.setBanglaMode(isBanglaMode)
+                    candidateStripView?.setBanglaActive(isBanglaMode)
                     bongoEngine.resetSession()
-                    updateEmojiSearchStrip()
+                    if (isEmojiSearchMode) updateEmojiSearchStrip() else updateClipboardSearchStrip()
                 } else {
                     commitOngoingComposition()
                     isBanglaMode = !isBanglaMode
                     keyboardView?.setBanglaMode(isBanglaMode)
+                    candidateStripView?.setBanglaActive(isBanglaMode)
                 }
+                updateAutoCapitalization()
             }
             is BongoKeyboardView.KeyAction.SwitchImePicker -> {
                 commitOngoingComposition()
@@ -887,6 +1162,12 @@ class BongoInputMethodService : InputMethodService() {
             is BongoKeyboardView.KeyAction.ToggleVoice -> {
                 handleVoiceInputAction()
             }
+            is BongoKeyboardView.KeyAction.ToggleIncognito -> {
+                isManualIncognito = !isManualIncognito
+                val active = isIncognito()
+                candidateStripView?.setIncognito(active)
+                keyboardView?.setIncognitoActive(active)
+            }
             is BongoKeyboardView.KeyAction.Shift,
             is BongoKeyboardView.KeyAction.ToggleSymbols -> {
                 // UI state handled internally in BongoKeyboardView
@@ -896,22 +1177,36 @@ class BongoInputMethodService : InputMethodService() {
 
     private fun handleCandidateSelection(index: Int, candidate: String) {
         val ic = currentInputConnection ?: return
+        if (isMathCandidateActive) {
+            isMathCandidateActive = false
+            ic.commitText("$candidate ", 1)
+            candidateStripView?.clear()
+            updateAutoCapitalization()
+            return
+        }
         if (bongoEngine.hasSession()) {
             val typedBuffer = bongoEngine.buffer
             val committed = bongoEngine.commitCandidate(index)
-            if (typedBuffer.isNotEmpty()) {
+            if (typedBuffer.isNotEmpty() && !isIncognito()) {
                 bongoEngine.learnSelection(typedBuffer, committed)
                 userPrefs.learnSelection(typedBuffer, committed)
             }
             val finalText = if (userPrefs.bengaliDigits) committed.tobengaliDigits() else committed
             ic.commitText("$finalText ", 1)
+            if (!isIncognito()) {
+                userPrefs.recordTypedWord(isBangla = true, isGlide = false)
+            }
             showNextWordPredictions(finalText)
         } else {
-            // Next-word prediction tapped
+            // Next-word or glide alternative prediction tapped
             val finalCandidate = if (userPrefs.bengaliDigits) candidate.tobengaliDigits() else candidate
             ic.commitText("$finalCandidate ", 1)
+            if (!isIncognito()) {
+                userPrefs.recordTypedWord(isBangla = isBanglaMode, isGlide = false)
+            }
             showNextWordPredictions(finalCandidate)
         }
+        updateAutoCapitalization()
     }
 
     /** Converts ASCII digits 0-9 in a string to Bengali digits ০-৯. */
@@ -957,6 +1252,8 @@ class BongoInputMethodService : InputMethodService() {
             commitOngoingComposition()
             isBanglaMode = !isBanglaMode
             keyboardView?.setBanglaMode(isBanglaMode)
+            candidateStripView?.setBanglaActive(isBanglaMode)
+            updateAutoCapitalization()
             return true
         }
 
@@ -1027,6 +1324,7 @@ class BongoInputMethodService : InputMethodService() {
         candidateStripView?.applyTheme(palette)
         keyboardView?.applyTheme(palette)
         emojiKeyboardView?.applyTheme(palette)
+        clipboardKeyboardView?.applyTheme(palette)
 
         updateKeyboardContainerHeight()
         rootView?.requestLayout()

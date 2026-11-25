@@ -75,7 +75,7 @@ class SettingsActivity : Activity() {
             setTextColor(Color.WHITE)
         }
         val verName = try {
-            packageManager.getPackageInfo(packageName, 0).versionName ?: "1.2.1"
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "1.2.2"
         } catch (_: Exception) {
             "1.2.1"
         }
@@ -360,6 +360,20 @@ class SettingsActivity : Activity() {
             "Hold down letters for symbols and digits",
             userPrefs.longPressSymbols
         ) { userPrefs.longPressSymbols = it })
+        gesturesCard.addView(createDivider())
+
+        gesturesCard.addView(createSwitchRow(
+            "Glide Typing (Swipe-to-Type)",
+            "Slide across letters to enter Bengali or English words",
+            userPrefs.glideTyping
+        ) { userPrefs.glideTyping = it })
+        gesturesCard.addView(createDivider())
+
+        gesturesCard.addView(createSwitchRow(
+            "Auto-Capitalization (English)",
+            "Automatically shift at sentence start and after '.', '!', '?'",
+            userPrefs.autoCapitalization
+        ) { userPrefs.autoCapitalization = it })
         gesturesCard.addView(createDivider())
 
         gesturesCard.addView(createSwitchRow(
@@ -818,6 +832,61 @@ class SettingsActivity : Activity() {
         toolsCard.addView(currencySwitch)
 
         container.addView(toolsCard)
+        container.addView(createSpacer(dp(22)))
+
+        // --- Privacy & Typing Stats ---
+        container.addView(createSectionHeader("PRIVACY & TYPING STATS"))
+        val privacyCard = createGroupCard()
+        val privacyDisclosure = TextView(this).apply {
+            text = "100% offline processing. Device cloud backup is disabled, password fields and Incognito mode are never learned, and sensitive clipboard entries auto-expire."
+            textSize = 12f
+            setTextColor(Color.parseColor("#a1a1aa"))
+            setPadding(0, 0, 0, dp(10))
+        }
+        privacyCard.addView(privacyDisclosure)
+        privacyCard.addView(createDivider())
+
+        val statsSummaryView = TextView(this).apply {
+            textSize = 13f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.parseColor("#f4f4f5"))
+            setPadding(0, dp(10), 0, dp(10))
+        }
+        fun refreshStatsSummary() {
+            statsSummaryView.text =
+                "Words Typed: ${userPrefs.statsWordsTyped}  •  " +
+                "Bangla: ${userPrefs.statsBanglaWords}  •  " +
+                "English: ${userPrefs.statsEnglishWords}  •  " +
+                "Glide: ${userPrefs.statsGlidesUsed}"
+        }
+        refreshStatsSummary()
+        privacyCard.addView(statsSummaryView)
+
+        val resetStatsBtn = TextView(this).apply {
+            text = "Reset Stats & Learned Predictions"
+            textSize = 13f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.parseColor("#fca5a5"))
+            gravity = Gravity.CENTER
+            setPadding(dp(12), dp(10), dp(12), dp(10))
+            background = GradientDrawable().apply {
+                setColor(Color.parseColor("#2a1618"))
+                cornerRadius = dp(10).toFloat()
+                setStroke(dp(1), Color.parseColor("#7f1d1d"))
+            }
+            setOnClickListener {
+                userPrefs.resetTypingStats()
+                userPrefs.clearLearnedSelections()
+                refreshStatsSummary()
+                android.widget.Toast.makeText(
+                    this@SettingsActivity,
+                    "On-device stats and learned predictions cleared",
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+        privacyCard.addView(resetStatsBtn)
+        container.addView(privacyCard)
         container.addView(createSpacer(dp(22)))
 
         // --- Core Engine Status Badge ---

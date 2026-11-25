@@ -26,10 +26,12 @@ class CandidateStripView @JvmOverloads constructor(
 ) : HorizontalScrollView(context, attrs, defStyleAttr) {
 
     sealed class ShortcutAction {
+        object ToggleLanguage : ShortcutAction()
         object Emoji : ShortcutAction()
         object Theme : ShortcutAction()
         object Settings : ShortcutAction()
         object More : ShortcutAction()
+        object Undo : ShortcutAction()
         object Esc : ShortcutAction()
         object Tab : ShortcutAction()
         object ToggleCtrl : ShortcutAction()
@@ -55,6 +57,9 @@ class CandidateStripView @JvmOverloads constructor(
 
     private var palette: ThemePalette = ThemePalette.getPalette("midnight")
     private var isCtrlActive = false
+    private var isIncognito = false
+    private var isBanglaActive = true
+    private var canUndo = false
     private var ctrlTextView: TextView? = null
     private var isShowingCandidates = false
 
@@ -193,10 +198,34 @@ class CandidateStripView @JvmOverloads constructor(
         showClipboardHistory(listOf(clipText), onPaste)
     }
 
-    fun showEmojiSearchBar(
+    fun setIncognito(active: Boolean) {
+        if (isIncognito != active) {
+            isIncognito = active
+            if (!isShowingCandidates) showShortcuts()
+        }
+    }
+
+    fun setBanglaActive(active: Boolean) {
+        if (isBanglaActive != active) {
+            isBanglaActive = active
+            if (!isShowingCandidates) showShortcuts()
+        }
+    }
+
+    fun setCanUndo(available: Boolean) {
+        if (canUndo != available) {
+            canUndo = available
+            if (!isShowingCandidates) showShortcuts()
+        }
+    }
+
+    fun showSearchBar(
+        placeholder: String,
         query: String,
         matches: List<String>,
-        onEmojiPick: (String) -> Unit,
+        emptyText: String,
+        isEmojiSize: Boolean,
+        onPick: (String) -> Unit,
         onClose: () -> Unit
     ) {
         isShowingCandidates = false
@@ -216,7 +245,7 @@ class CandidateStripView @JvmOverloads constructor(
         container.addView(closeBtn)
 
         val queryBadge = TextView(context).apply {
-            text = if (query.isEmpty()) "🔍 খুঁজুন..." else "🔍 $query"
+            text = if (query.isEmpty()) "🔍 $placeholder" else "🔍 $query"
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 13.5f)
             typeface = Typeface.DEFAULT_BOLD
             setTextColor(palette.stripPrimaryText)
@@ -234,7 +263,7 @@ class CandidateStripView @JvmOverloads constructor(
 
         if (matches.isEmpty()) {
             val emptyTv = TextView(context).apply {
-                text = "পাওয়া যায়নি"
+                text = emptyText
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
                 setTextColor(palette.stripSecondaryText)
                 setPadding(dp(8), dp(6), dp(8), dp(6))
@@ -242,19 +271,37 @@ class CandidateStripView @JvmOverloads constructor(
             }
             container.addView(emptyTv)
         } else {
-            for (emoji in matches) {
-                val emojiBtn = TextView(context).apply {
-                    text = emoji
-                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+            for (item in matches) {
+                val pill = TextView(context).apply {
+                    text = if (!isEmojiSize && item.length > 24) item.take(24).replace("\n", " ") + "…" else item.replace("\n", " ")
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, if (isEmojiSize) 20f else 13f)
+                    setTextColor(palette.stripPrimaryText)
                     setPadding(dp(9), dp(4), dp(9), dp(4))
                     gravity = Gravity.CENTER
                     background = createShortcutBackground(false)
-                    setOnClickListener { onEmojiPick(emoji) }
+                    setOnClickListener { onPick(item) }
                 }
-                container.addView(emojiBtn)
+                container.addView(pill)
             }
         }
         scrollTo(0, 0)
+    }
+
+    fun showEmojiSearchBar(
+        query: String,
+        matches: List<String>,
+        onEmojiPick: (String) -> Unit,
+        onClose: () -> Unit
+    ) {
+        showSearchBar(
+            placeholder = "খুঁজুন...",
+            query = query,
+            matches = matches,
+            emptyText = "পাওয়া যায়নি",
+            isEmojiSize = true,
+            onPick = onEmojiPick,
+            onClose = onClose
+        )
     }
 
     fun clear() {
@@ -318,23 +365,47 @@ class CandidateStripView @JvmOverloads constructor(
         ctrlTextView = null
         voicePromptView = null
 
-        val shortcuts = listOf(
-            Triple("😊", ShortcutAction.Emoji, false),
-            Triple("🎨", ShortcutAction.Theme, false),
-            Triple("📋", ShortcutAction.Clipboard, false),
-            Triple("✋", ShortcutAction.OneHanded, false),
-            Triple("⚙️", ShortcutAction.Settings, false),
-            Triple("•••", ShortcutAction.More, false),
-            Triple("🎙️", ShortcutAction.VoiceInput, false),
-            Triple("Esc", ShortcutAction.Esc, false),
-            Triple("Tab", ShortcutAction.Tab, false),
-            Triple("Ctrl", ShortcutAction.ToggleCtrl, isCtrlActive),
-            Triple("Select All", ShortcutAction.SelectAll, false),
-            Triple("Copy", ShortcutAction.Copy, false),
-            Triple("Paste", ShortcutAction.Paste, false),
-            Triple("◀", ShortcutAction.CursorLeft, false),
-            Triple("▶", ShortcutAction.CursorRight, false)
+        val shortcuts = mutableListOf<Triple<String, ShortcutAction, Boolean>>()
+        shortcuts.add(Triple(if (isBanglaActive) "🌐 বাং" else "🌐 EN", ShortcutAction.ToggleLanguage, false))
+        if (canUndo) {
+            shortcuts.add(Triple("↩ Undo", ShortcutAction.Undo, true))
+        }
+        shortcuts.addAll(
+            listOf(
+                Triple("😊", ShortcutAction.Emoji, false),
+                Triple("🎨", ShortcutAction.Theme, false),
+                Triple("📋", ShortcutAction.Clipboard, false),
+                Triple("✋", ShortcutAction.OneHanded, false),
+                Triple("⚙️", ShortcutAction.Settings, false),
+                Triple("•••", ShortcutAction.More, false),
+                Triple("🎙️", ShortcutAction.VoiceInput, false),
+                Triple("Esc", ShortcutAction.Esc, false),
+                Triple("Tab", ShortcutAction.Tab, false),
+                Triple("Ctrl", ShortcutAction.ToggleCtrl, isCtrlActive),
+                Triple("Select All", ShortcutAction.SelectAll, false),
+                Triple("Copy", ShortcutAction.Copy, false),
+                Triple("Paste", ShortcutAction.Paste, false),
+                Triple("◀", ShortcutAction.CursorLeft, false),
+                Triple("▶", ShortcutAction.CursorRight, false)
+            )
         )
+
+        if (isIncognito) {
+            val incogBadge = TextView(context).apply {
+                text = "🕶️ Incognito"
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 11.5f)
+                typeface = Typeface.DEFAULT_BOLD
+                setTextColor(palette.stripPrimaryBorder)
+                setPadding(dp(8), dp(4), dp(8), dp(4))
+                background = createShortcutBackground(true)
+                val lp = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { setMargins(dp(2), 0, dp(4), 0) }
+                layoutParams = lp
+            }
+            container.addView(incogBadge)
+        }
 
         for ((label, action, isHighlighted) in shortcuts) {
             val tv = TextView(context).apply {
