@@ -106,6 +106,8 @@ DEFAULT_SETTINGS = {
     "keyboard_layout": 0,     # 0: Avro Phonetic, 1: National (Bijoy), 2: Borno (SafeWorks)
     "typing_mode": 0,         # 0: PhoneticFirst, 1: Smart, 2: PhoneticOnly
     "suggest_emoji": True,
+    "candidate_count": 9,
+    "appearance": "system",   # "system" | "light" | "dark"
     "candidate_font": "Noto Sans Bengali",
     "candidate_font_size": 16,
     "toggle_key": "Win+Space",
@@ -872,9 +874,59 @@ class BongoCandidateHUD:
         self._active_border_brush = None
         self._sep_brush = None
         self._last_caret_pos = (200, 200)
+        self._max_candidates = max(3, min(9, int(settings.get("candidate_count", 9))))
+        self._is_light = self._resolve_is_light(settings)
 
         if sys.platform == "win32":
             self._init_win32()
+
+    @staticmethod
+    def _resolve_is_light(settings: dict) -> bool:
+        mode = str(settings.get("appearance", "system")).lower()
+        if mode == "light":
+            return True
+        if mode == "dark":
+            return False
+        if sys.platform == "win32":
+            try:
+                import winreg
+                with winreg.OpenKey(
+                    winreg.HKEY_CURRENT_USER,
+                    r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+                ) as key:
+                    val, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
+                    return bool(val)
+            except Exception:
+                pass
+        return False
+
+    def _rebuild_brushes(self):
+        if sys.platform != "win32":
+            return
+        for obj in (self._bg_brush, self._border_pen, self._active_brush, self._active_border_brush, self._sep_brush):
+            if obj:
+                gdi32.DeleteObject(obj)
+        if self._is_light:
+            self._bg_brush = gdi32.CreateSolidBrush(0xFFFFFF)           # #FFFFFF
+            self._border_pen = gdi32.CreatePen(0, 1, 0xDCD7D4)          # #D4D7DC
+            self._active_brush = gdi32.CreateSolidBrush(0xFFE7E0)       # #E0E7FF (BGR)
+            self._active_border_brush = gdi32.CreateSolidBrush(0xE5464F)  # #4F46E5 (BGR)
+            self._sep_brush = gdi32.CreateSolidBrush(0xEBE6E4)          # #E4E6EB
+        else:
+            self._bg_brush = gdi32.CreateSolidBrush(0x131111)           # #111113
+            self._border_pen = gdi32.CreatePen(0, 1, 0x332E2E)          # #2e2e33
+            self._active_brush = gdi32.CreateSolidBrush(0x382323)       # #232338
+            self._active_border_brush = gdi32.CreateSolidBrush(0xF16663)  # #6366f1
+            self._sep_brush = gdi32.CreateSolidBrush(0x2E2E33)          # #2e2e33
+
+    def apply_settings(self, settings: dict):
+        self.settings = settings
+        self._max_candidates = max(3, min(9, int(settings.get("candidate_count", 9))))
+        self._is_light = self._resolve_is_light(settings)
+        if sys.platform == "win32" and self.hwnd:
+            self._rebuild_brushes()
+            if self.is_visible:
+                user32.InvalidateRect(self.hwnd, None, True)
 
     def _create_font(self, name: str, size: int, bold: bool = False):
         if sys.platform != "win32":
@@ -938,11 +990,7 @@ class BongoCandidateHUD:
             self._font_ui_bold = self._create_font("Segoe UI", 11, bold=True)
             self._font_header = self._create_font("Segoe UI", 10, bold=False)
 
-            self._bg_brush = gdi32.CreateSolidBrush(0x131111)           # #111113
-            self._border_pen = gdi32.CreatePen(0, 1, 0x332E2E)          # #2e2e33
-            self._active_brush = gdi32.CreateSolidBrush(0x382323)       # #232338
-            self._active_border_brush = gdi32.CreateSolidBrush(0xF16663)  # #6366f1
-            self._sep_brush = gdi32.CreateSolidBrush(0x2E2E33)          # #2e2e33
+            self._rebuild_brushes()
 
             log_msg("Bongo Candidate HUD window initialized.")
         except Exception as e:
@@ -996,7 +1044,7 @@ class BongoCandidateHUD:
 
         # 3. Header bar: Latin buffer and Avro Bengali tag
         gdi32.SelectObject(mem_dc, self._font_header)
-        gdi32.SetTextColor(mem_dc, 0xF88C81)  # #818cf8
+        gdi32.SetTextColor(mem_dc, 0xE5464F if self._is_light else 0xF88C81)
         aux_text = f"{self.buffer}  ·  বাংলা"
         rc_aux = RECT(12, 6, w - 12, 24)
         user32.DrawTextW(mem_dc, aux_text, -1, ctypes.byref(rc_aux), DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX)
@@ -1008,7 +1056,7 @@ class BongoCandidateHUD:
         # 4. Candidates list
         start_y = 31
         row_h = 30
-        for i, cand in enumerate(self.candidates[:9]):
+        for i, cand in enumerate(self.candidates[:self._max_candidates]):
             y = start_y + (i * row_h)
             is_active = (i == self.selected_index)
 
@@ -1021,13 +1069,15 @@ class BongoCandidateHUD:
             num_text = f"{i + 1}"
             rc_num = RECT(14, y, 32, y + row_h - 2)
             gdi32.SelectObject(mem_dc, self._font_ui_bold if is_active else self._font_ui)
-            gdi32.SetTextColor(mem_dc, 0xF88C81 if is_active else 0x7A7171)
+            num_col = (0xE5464F if is_active else 0x8B8686) if self._is_light else (0xF88C81 if is_active else 0x7A7171)
+            gdi32.SetTextColor(mem_dc, num_col)
             user32.DrawTextW(mem_dc, num_text, -1, ctypes.byref(rc_num), DT_LEFT | DT_VCENTER | DT_SINGLELINE)
 
             # Bengali candidate word
             rc_cand = RECT(36, y, w - 12, y + row_h - 2)
             gdi32.SelectObject(mem_dc, self._font_bengali_bold if is_active else self._font_bengali)
-            gdi32.SetTextColor(mem_dc, 0xFFFFFF if is_active else 0xD8D4D4)
+            text_col = (0x1F1D1D if is_active else 0x3D3A3A) if self._is_light else (0xFFFFFF if is_active else 0xD8D4D4)
+            gdi32.SetTextColor(mem_dc, text_col)
             user32.DrawTextW(mem_dc, cand, -1, ctypes.byref(rc_cand), DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX)
 
         gdi32.BitBlt(hdc, 0, 0, w, h, mem_dc, 0, 0, SRCCOPY)
@@ -1096,7 +1146,7 @@ class BongoCandidateHUD:
         if sys.platform != "win32" or not self.hwnd:
             return
 
-        count = min(len(self.candidates), 9)
+        count = min(len(self.candidates), self._max_candidates)
         h = 32 + (count * 30) + 6
         w = 260
 
@@ -1485,6 +1535,8 @@ class BongoWindowsService:
         user32.PostQuitMessage(0)
 
     def apply_settings(self):
+        if hasattr(self, "hud") and self.hud:
+            self.hud.apply_settings(self.settings)
         if not self.engine_ptr or not self.native or not self.native.lib:
             return
         layout = self.settings.get("keyboard_layout", 0)
@@ -1549,7 +1601,8 @@ class BongoWindowsService:
                 pass
 
         # Built-in Avro phonetic transliteration
-        self.candidates = self.phonetic_engine.get_candidates(self.buffer)
+        max_c = max(3, min(9, int(self.settings.get("candidate_count", 9))))
+        self.candidates = self.phonetic_engine.get_candidates(self.buffer)[:max_c]
         self.preedit_str = self.candidates[0] if self.candidates else self.buffer
         self._sync_inline_text()
         if self.settings.get("typing_mode", 0) != 2 and self.candidates:
@@ -1562,7 +1615,8 @@ class BongoWindowsService:
         self.last_injected_len = sum(2 if ord(c) > 0xFFFF else 1 for c in target)
 
     def update_suggestions(self, sugg_ptr):
-        count = self.native.lib.bongo_suggestion_count(sugg_ptr)
+        max_c = max(3, min(9, int(self.settings.get("candidate_count", 9))))
+        count = min(self.native.lib.bongo_suggestion_count(sugg_ptr), max_c)
         self.candidates = []
         for i in range(count):
             c_ptr = self.native.lib.bongo_suggestion_get_candidate(sugg_ptr, i)
@@ -1605,7 +1659,8 @@ class BongoWindowsService:
             if not self.buffer:
                 self.clear_session()
             else:
-                self.candidates = self.phonetic_engine.get_candidates(self.buffer)
+                max_c = max(3, min(9, int(self.settings.get("candidate_count", 9))))
+                self.candidates = self.phonetic_engine.get_candidates(self.buffer)[:max_c]
                 self.preedit_str = self.candidates[0] if self.candidates else self.buffer
                 self._sync_inline_text()
                 if self.settings.get("typing_mode", 0) != 2 and self.candidates:

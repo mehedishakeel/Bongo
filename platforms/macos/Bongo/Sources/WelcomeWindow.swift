@@ -1305,6 +1305,8 @@ class SettingsView: NSView {
              "Modern phonetic input: type as you speak in English letters (e.g. ami -> আমি, bangla -> বাংলা).", true),
             (.national, "National / Bijoy (জাতীয়)",
              "Standard Bangladesh BDS 1738:2004 layout: fixed keymap (e.g. j -> ক, d+j -> কি, g -> ্).", false),
+            (.borno, "Borno (বর্ণ)",
+             "SafeWorks Bornona layout: intuitive fixed keymap (e.g. k -> ক, K -> খ, h -> ্).", false),
         ]
 
         let layoutCardStack = NSStackView()

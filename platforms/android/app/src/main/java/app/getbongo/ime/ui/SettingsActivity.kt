@@ -367,6 +367,50 @@ class SettingsActivity : Activity() {
             "Use Bengali digits instead of English numerals",
             userPrefs.bengaliDigits
         ) { userPrefs.bengaliDigits = it })
+        gesturesCard.addView(createDivider())
+
+        val candCountRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(16), dp(10), dp(16), dp(12))
+        }
+        candCountRow.addView(createSettingTitle("Suggestion Count", "Max candidates shown in top strip").apply {
+            setPadding(0, 0, dp(8), 0)
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        })
+        val candChipsLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+        }
+        val candCounts = listOf(3, 5, 7, 9)
+        fun refreshCandChips() {
+            candChipsLayout.removeAllViews()
+            for (cnt in candCounts) {
+                val isSelected = userPrefs.candidateCount == cnt
+                val chip = TextView(this).apply {
+                    text = cnt.toString()
+                    textSize = 12.5f
+                    typeface = Typeface.DEFAULT_BOLD
+                    setTextColor(if (isSelected) Color.WHITE else Color.parseColor("#8e8e93"))
+                    setPadding(dp(10), dp(5), dp(10), dp(5))
+                    background = GradientDrawable().apply {
+                        cornerRadius = dp(12).toFloat()
+                        setColor(if (isSelected) Color.parseColor("#6366f1") else Color.parseColor("#2c2c2e"))
+                    }
+                    val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                        setMargins(dp(3), 0, dp(3), 0)
+                    }
+                    layoutParams = lp
+                    setOnClickListener {
+                        userPrefs.candidateCount = cnt
+                        refreshCandChips()
+                    }
+                }
+                candChipsLayout.addView(chip)
+            }
+        }
+        refreshCandChips()
+        candCountRow.addView(candChipsLayout)
+        gesturesCard.addView(candCountRow)
 
         container.addView(gesturesCard)
         container.addView(createSpacer(dp(22)))

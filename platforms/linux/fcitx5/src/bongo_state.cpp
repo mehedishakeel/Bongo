@@ -221,7 +221,10 @@ void BongoState::clearPanel() {
 
 void BongoState::updateSuggestions(EngineApi::SuggestionPtr suggestion) {
     candidates_.clear();
-    const size_t count = api_.suggestionCount(suggestion.get());
+    const int maxCandidates =
+        std::clamp(settingsWatcher_.settings().candidateCount, 3, 9);
+    const size_t count = std::min(api_.suggestionCount(suggestion.get()),
+                                  static_cast<size_t>(maxCandidates));
     for (size_t index = 0; index < count; ++index) {
         candidates_.push_back(api_.candidate(suggestion.get(), index));
     }
@@ -241,12 +244,12 @@ void BongoState::updateSuggestions(EngineApi::SuggestionPtr suggestion) {
 
     auto list = std::make_unique<fcitx::CommonCandidateList>();
     fcitx::KeyList selectionKeys;
-    for (int index = 0; index < 9; ++index) {
+    for (int index = 0; index < maxCandidates; ++index) {
         selectionKeys.emplace_back(
             static_cast<fcitx::KeySym>(FcitxKey_1 + index));
     }
     list->setSelectionKey(selectionKeys);
-    list->setPageSize(9);
+    list->setPageSize(maxCandidates);
     list->setLayoutHint(fcitx::CandidateLayoutHint::Vertical);
     list->setCursorPositionAfterPaging(
         fcitx::CursorPositionAfterPaging::ResetToFirst);

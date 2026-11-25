@@ -84,6 +84,8 @@ DEFAULT_SETTINGS = {
     "keyboard_layout": 0,     # 0: Avro Phonetic, 1: National (Bijoy), 2: Borno (SafeWorks)
     "typing_mode": 0,         # 0: PhoneticFirst, 1: Smart, 2: PhoneticOnly
     "suggest_emoji": True,
+    "candidate_count": 9,
+    "appearance": "system",   # "system" | "light" | "dark"
     "candidate_font": "Noto Sans Bengali",
     "candidate_font_size": 16,
     "toggle_key": "Win+Space",
@@ -1212,6 +1214,87 @@ class BongoSettingsApp:
         )
         em_cb.pack(side=tk.RIGHT)
 
+        # Section: SUGGESTION POPUP SIZE
+        self.make_section_label(container, "Suggestion popup size")
+
+        count_card = self.make_card(container)
+        c_row = tk.Frame(count_card, bg=BG_CARD)
+        c_row.pack(fill=tk.X)
+
+        c_lbl = tk.Label(
+            c_row,
+            text="Candidates shown (3–9)",
+            font=("Segoe UI", 10),
+            fg=TEXT_PRIMARY,
+            bg=BG_CARD
+        )
+        c_lbl.pack(side=tk.LEFT)
+
+        cur_count = max(3, min(9, int(self.settings.get("candidate_count", 9))))
+        self.candidate_count_var = tk.IntVar(value=cur_count)
+        self.candidate_count_val_lbl = tk.Label(
+            c_row,
+            text=str(cur_count),
+            font=("Consolas", 11, "bold"),
+            fg=ACCENT_LIGHT,
+            bg=BG_CARD,
+            width=2
+        )
+        self.candidate_count_val_lbl.pack(side=tk.RIGHT, padx=(8, 0))
+
+        cand_scale = tk.Scale(
+            c_row,
+            from_=3,
+            to=9,
+            orient=tk.HORIZONTAL,
+            variable=self.candidate_count_var,
+            command=self.on_candidate_count_changed,
+            showvalue=0,
+            length=160,
+            bg=BG_CARD,
+            fg=TEXT_PRIMARY,
+            troughcolor=BG_DARK,
+            highlightthickness=0,
+            activebackground=ACCENT_COLOR
+        )
+        cand_scale.pack(side=tk.RIGHT)
+
+        # Section: APPEARANCE
+        self.make_section_label(container, "Appearance")
+
+        app_card = self.make_card(container)
+        a_row = tk.Frame(app_card, bg=BG_CARD)
+        a_row.pack(fill=tk.X)
+
+        a_lbl = tk.Label(
+            a_row,
+            text="Suggestion popup theme",
+            font=("Segoe UI", 10),
+            fg=TEXT_PRIMARY,
+            bg=BG_CARD
+        )
+        a_lbl.pack(side=tk.LEFT)
+
+        self.appearance_btns = {}
+        app_seg = tk.Frame(a_row, bg=BG_DARK, padx=2, pady=2)
+        app_seg.pack(side=tk.RIGHT)
+        cur_app = self.settings.get("appearance", "system")
+        for key, label in (("system", "System"), ("light", "Light"), ("dark", "Dark")):
+            is_sel = (cur_app == key)
+            btn = tk.Label(
+                app_seg,
+                text=label,
+                font=("Segoe UI", 9, "bold" if is_sel else "normal"),
+                fg=TEXT_PRIMARY if is_sel else TEXT_SECONDARY,
+                bg=ACCENT_COLOR if is_sel else BG_DARK,
+                padx=10,
+                pady=3,
+                cursor="hand2"
+            )
+            btn.pack(side=tk.LEFT, padx=1)
+            btn.bind("<Button-1>", lambda e, k=key: self.on_appearance_changed(k))
+            self.appearance_btns[key] = btn
+
         # Section: SYSTEM STARTUP
         self.make_section_label(container, "System Startup")
 
@@ -1529,6 +1612,26 @@ class BongoSettingsApp:
     def on_emoji_changed(self):
         self.settings["suggest_emoji"] = self.emoji_var.get()
         save_settings(self.settings)
+
+    def on_candidate_count_changed(self, value):
+        val = max(3, min(9, int(float(value))))
+        if hasattr(self, "candidate_count_val_lbl"):
+            self.candidate_count_val_lbl.configure(text=str(val))
+        self.settings["candidate_count"] = val
+        save_settings(self.settings)
+
+    def on_appearance_changed(self, appearance):
+        if appearance not in ("system", "light", "dark"):
+            appearance = "system"
+        self.settings["appearance"] = appearance
+        save_settings(self.settings)
+        for key, btn in getattr(self, "appearance_btns", {}).items():
+            is_sel = (key == appearance)
+            btn.configure(
+                font=("Segoe UI", 9, "bold" if is_sel else "normal"),
+                fg=TEXT_PRIMARY if is_sel else TEXT_SECONDARY,
+                bg=ACCENT_COLOR if is_sel else BG_DARK
+            )
 
     def on_autostart_changed(self):
         val = self.autostart_var.get()

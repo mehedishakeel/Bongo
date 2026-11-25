@@ -88,6 +88,10 @@ class UserPreferences(context: Context) {
         get() = prefs.getString(KEY_CLIPBOARD_HISTORY, "[]") ?: "[]"
         set(value) = prefs.edit().putString(KEY_CLIPBOARD_HISTORY, value).apply()
 
+    var candidateCount: Int
+        get() = prefs.getInt(KEY_CANDIDATE_COUNT, 9).coerceIn(3, 9)
+        set(value) = prefs.edit().putInt(KEY_CANDIDATE_COUNT, value.coerceIn(3, 9)).apply()
+
     fun getClipboardHistory(): MutableList<String> {
         val list = mutableListOf<String>()
         try {
@@ -167,5 +171,6 @@ class UserPreferences(context: Context) {
         const val KEY_ONE_HANDED_MODE = "one_handed_mode"
         const val KEY_LEARNED_SELECTIONS = "learned_selections"
         const val KEY_CLIPBOARD_HISTORY = "clipboard_history"
+        const val KEY_CANDIDATE_COUNT = "candidate_count"
     }
 }

@@ -118,6 +118,17 @@ Settings parseSettings(std::string_view text) {
         }
     }
 
+    if (const auto value = valueAfterKey(text, "\"candidate_count\"");
+        !value.empty()) {
+        int count = 9;
+        const auto *begin = value.data();
+        const auto *end = begin + value.size();
+        const auto result = std::from_chars(begin, end, count);
+        if (result.ec == std::errc() && count >= 3 && count <= 9) {
+            settings.candidateCount = count;
+        }
+    }
+
     return settings;
 }
 
@@ -156,6 +167,8 @@ void applySettingsOverride(const std::filesystem::path &path,
                               scalarJson(settings.keyboardLayout));
     text = replaceOrInsertKey(std::move(text), "suggest_emoji",
                               scalarJson(settings.suggestEmoji));
+    text = replaceOrInsertKey(std::move(text), "candidate_count",
+                              scalarJson(settings.candidateCount));
 
     std::ofstream file(path, std::ios::trunc);
     file << text;

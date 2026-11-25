@@ -24,6 +24,7 @@ class BongoInputController: IMKInputController {
     enum KeyboardLayout: String {
         case avroPhonetic = "avroPhonetic"
         case national = "national"
+        case borno = "borno"
     }
 
     /// UserDefaults key holding the raw value of the current `TypingMode`.
@@ -755,6 +756,11 @@ class BongoInputController: IMKInputController {
         nationalItem.state = (currentLayout == .national) ? .on : .off
         menu.addItem(nationalItem)
 
+        let bornoItem = NSMenuItem(title: "Borno (বর্ণ)", action: #selector(menuSelectBornoLayout), keyEquivalent: "")
+        bornoItem.target = self
+        bornoItem.state = (currentLayout == .borno) ? .on : .off
+        menu.addItem(bornoItem)
+
         menu.addItem(NSMenuItem.separator())
 
         let currentMode = Self.currentTypingMode()
@@ -811,6 +817,11 @@ class BongoInputController: IMKInputController {
 
     @objc private func menuSelectNationalLayout() {
         UserDefaults.standard.set(KeyboardLayout.national.rawValue, forKey: Self.keyboardLayoutKey)
+        NotificationCenter.default.post(name: .bongoKeyboardLayoutChanged, object: nil)
+    }
+
+    @objc private func menuSelectBornoLayout() {
+        UserDefaults.standard.set(KeyboardLayout.borno.rawValue, forKey: Self.keyboardLayoutKey)
         NotificationCenter.default.post(name: .bongoKeyboardLayoutChanged, object: nil)
     }
 

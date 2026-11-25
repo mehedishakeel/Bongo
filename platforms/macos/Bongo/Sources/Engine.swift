@@ -171,14 +171,19 @@ final class BongoEngine {
     /// binary, so no database dir is needed - only the user dir.
     private static func makeConfig(userDir: String, phoneticSuggestion: Bool, layout: BongoInputController.KeyboardLayout) -> OpaquePointer? {
         let config = riti_config_new()
-        let layoutName = (layout == .national) ? "national" : "avro_phonetic"
+        let layoutName: String
+        switch layout {
+        case .national:     layoutName = "national"
+        case .borno:        layoutName = "borno"
+        case .avroPhonetic: layoutName = "avro_phonetic"
+        }
         layoutName.withCString { ptr in
             _ = riti_config_set_layout_file(config, ptr)
         }
         userDir.withCString { ptr in
             _ = riti_config_set_user_dir(config, ptr)
         }
-        if layout == .national {
+        if layout == .national || layout == .borno {
             riti_config_set_fixed_auto_vowel(config, true)
             riti_config_set_fixed_old_kar_order(config, true)
             riti_config_set_fixed_traditional_kar(config, true)

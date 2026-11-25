@@ -99,6 +99,7 @@ DEFAULT_SETTINGS = {
     "keyboard_layout": 0,     # 0: Avro Phonetic, 1: National (Bijoy), 2: Borno (SafeWorks)
     "typing_mode": 0,         # 0: PhoneticFirst, 1: Smart, 2: PhoneticOnly
     "suggest_emoji": True,
+    "candidate_count": 9,
     "candidate_font": "Noto Sans Bengali",
     "candidate_font_size": 16,
     "autostart": True,
@@ -1191,6 +1192,33 @@ class BongoSettingsApp:
         self.set_card_content(pref_card, pref_box)
         self.append_widget(box, pref_card)
 
+        # Suggestion Popup Size Section
+        self.append_widget(box, self.make_section_label("Suggestion popup size"))
+
+        count_card = self.make_card()
+        count_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=14)
+
+        count_lbl = Gtk.Label(label="Candidates shown (3–9)")
+        count_lbl.set_xalign(0)
+        count_lbl.set_hexpand(True)
+
+        cur_count = max(3, min(9, int(self.settings.get("candidate_count", 9))))
+        self.candidate_count_label = Gtk.Label()
+        self.candidate_count_label.set_markup(f"<b>{cur_count}</b>")
+
+        self.candidate_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 3, 9, 1)
+        self.candidate_scale.set_draw_value(False)
+        self.candidate_scale.set_digits(0)
+        self.candidate_scale.set_size_request(150, -1)
+        self.candidate_scale.set_value(cur_count)
+        self.candidate_scale.connect("value-changed", self.on_candidate_count_changed)
+
+        self.append_widget(count_box, count_lbl)
+        self.append_widget(count_box, self.candidate_scale)
+        self.append_widget(count_box, self.candidate_count_label)
+        self.set_card_content(count_card, count_box)
+        self.append_widget(box, count_card)
+
         # System Startup Section
         self.append_widget(box, self.make_section_label("System Startup"))
 
@@ -1404,6 +1432,13 @@ class BongoSettingsApp:
 
     def on_emoji_toggled(self, switch, state):
         self.settings["suggest_emoji"] = state
+        save_settings(self.settings)
+
+    def on_candidate_count_changed(self, scale):
+        val = max(3, min(9, int(round(scale.get_value()))))
+        if hasattr(self, "candidate_count_label"):
+            self.candidate_count_label.set_markup(f"<b>{val}</b>")
+        self.settings["candidate_count"] = val
         save_settings(self.settings)
 
     def on_autostart_toggled(self, widget):

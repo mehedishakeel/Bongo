@@ -19,10 +19,13 @@ void expect(bool condition, const std::string &message) {
 }
 
 void expectSettings(const bongo::Settings &actual, int mode, bool emoji,
-                    const std::string &message, int layout = 0) {
+                    const std::string &message, int layout = 0,
+                    int candidateCount = 9) {
     expect(actual.typingMode == mode, message + " typing_mode");
     expect(actual.keyboardLayout == layout, message + " keyboard_layout");
     expect(actual.suggestEmoji == emoji, message + " suggest_emoji");
+    expect(actual.candidateCount == candidateCount,
+           message + " candidate_count");
 }
 
 } // namespace
@@ -112,6 +115,16 @@ int main() {
     bongo::applySettingsOverride(path2, bongo::Settings{1, true, 1});
     expectSettings(bongo::loadSettings(path2), 1, true,
                    "merge writer supports layout override", 1);
+
+    expectSettings(bongo::parseSettings(R"({"candidate_count": 5})"), 0, true,
+                   "valid candidate_count", 0, 5);
+    expectSettings(bongo::parseSettings(R"({"candidate_count": 1})"), 0, true,
+                   "out of range low candidate_count", 0, 9);
+    expectSettings(bongo::parseSettings(R"({"candidate_count": 20})"), 0, true,
+                   "out of range high candidate_count", 0, 9);
+    bongo::applySettingsOverride(path2, bongo::Settings{0, true, 0, 6});
+    expectSettings(bongo::loadSettings(path2), 0, true,
+                   "merge writer supports candidate_count override", 0, 6);
 
     std::filesystem::remove_all(temp);
 

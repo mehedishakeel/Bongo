@@ -277,6 +277,7 @@ def load_settings():
         "keyboard_layout": 0,   # 0: Avro Phonetic, 1: National (Bijoy), 2: Borno (SafeWorks)
         "typing_mode": 0,       # 0: PhoneticFirst, 1: Smart, 2: PhoneticOnly
         "suggest_emoji": True,
+        "candidate_count": 9,
         "candidate_font": "Noto Sans Bengali",
         "candidate_font_size": 16,
     }
@@ -342,12 +343,13 @@ class BongoEngine(BaseEngine):
         log_msg(f"BongoEngine initialized: obj_path={obj_path}, native={bool(self.engine_ptr)}")
 
         self._settings_mtime = 0
+        self._candidate_count = 9
         self.settings = load_settings()
         self.apply_settings()
 
         # Lookup table for floating candidate HUD
         if IBus is not None:
-            self.table = IBus.LookupTable.new(9, 0, True, True)
+            self.table = IBus.LookupTable.new(self._candidate_count, 0, True, True)
             self.table.set_orientation(IBus.Orientation.VERTICAL)
         else:
             self.table = None
@@ -418,6 +420,12 @@ class BongoEngine(BaseEngine):
                 log_msg(f"Could not launch bongo-settings: {e}")
 
     def apply_settings(self):
+        self._candidate_count = max(3, min(9, int(self.settings.get("candidate_count", 9))))
+        if hasattr(self, "table") and self.table is not None:
+            try:
+                self.table.set_page_size(self._candidate_count)
+            except Exception:
+                pass
         if not self.engine_ptr:
             return
         layout = self.settings.get("keyboard_layout", 0)
@@ -570,7 +578,7 @@ class BongoEngine(BaseEngine):
 
         # Built-in Avro phonetic transliteration fallback
         self.buffer += char_str
-        self.candidates = self.phonetic_engine.get_candidates(self.buffer)
+        self.candidates = self.phonetic_engine.get_candidates(self.buffer)[:self._candidate_count]
         self.preedit_str = self.candidates[0] if self.candidates else self.buffer
         log_msg(f"feed_character fallback: buffer='{self.buffer}', preedit='{self.preedit_str}', candidates={self.candidates[:3]}")
 
@@ -605,7 +613,7 @@ class BongoEngine(BaseEngine):
             if not self.buffer:
                 self.reset_session()
             else:
-                self.candidates = self.phonetic_engine.get_candidates(self.buffer)
+                self.candidates = self.phonetic_engine.get_candidates(self.buffer)[:self._candidate_count]
                 self.preedit_str = self.candidates[0] if self.candidates else self.buffer
                 if self.table is not None:
                     self.table.clear()
@@ -615,7 +623,7 @@ class BongoEngine(BaseEngine):
                 self._render_lookup_table()
 
     def update_suggestions(self, sugg_ptr):
-        count = self.native.lib.bongo_suggestion_count(sugg_ptr)
+        count = min(self.native.lib.bongo_suggestion_count(sugg_ptr), self._candidate_count)
         self.candidates = []
         if self.table is not None:
             self.table.clear()

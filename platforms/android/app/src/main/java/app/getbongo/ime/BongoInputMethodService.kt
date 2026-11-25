@@ -717,7 +717,7 @@ class BongoInputMethodService : InputMethodService() {
                     bongoEngine.feedChar(ch, keyboardView?.isShifted == true)
                     val composing = bongoEngine.preedit
                     ic.setComposingText(composing, 1)
-                    candidateStripView?.setCandidates(bongoEngine.candidates)
+                    candidateStripView?.setCandidates(bongoEngine.candidates.take(userPrefs.candidateCount))
                 } else {
                     commitOngoingComposition()
                     ic.commitText(ch.toString(), 1)
@@ -740,7 +740,7 @@ class BongoInputMethodService : InputMethodService() {
                     val hasRemaining = bongoEngine.handleBackspace()
                     if (hasRemaining && bongoEngine.preedit.isNotEmpty()) {
                         ic.setComposingText(bongoEngine.preedit, 1)
-                        candidateStripView?.setCandidates(bongoEngine.candidates)
+                        candidateStripView?.setCandidates(bongoEngine.candidates.take(userPrefs.candidateCount))
                     } else {
                         ic.setComposingText("", 0)
                         candidateStripView?.clear()
@@ -775,8 +775,9 @@ class BongoInputMethodService : InputMethodService() {
                 }
                 if (isBanglaMode && bongoEngine.hasSession()) {
                     val committed = bongoEngine.commitCandidate(0)
-                    ic.commitText("$committed ", 1)
-                    showNextWordPredictions(committed)
+                    val finalText = if (userPrefs.bengaliDigits) committed.tobengaliDigits() else committed
+                    ic.commitText("$finalText ", 1)
+                    showNextWordPredictions(finalText)
                     lastSpaceTime = SystemClock.uptimeMillis()
                 } else {
                     val now = SystemClock.uptimeMillis()
@@ -809,7 +810,8 @@ class BongoInputMethodService : InputMethodService() {
                 }
                 if (isBanglaMode && bongoEngine.hasSession()) {
                     val committed = bongoEngine.commitCandidate(0)
-                    ic.commitText(committed, 1)
+                    val finalText = if (userPrefs.bengaliDigits) committed.tobengaliDigits() else committed
+                    ic.commitText(finalText, 1)
                     candidateStripView?.clear()
                 }
                 val editorInfo = currentInputEditorInfo
@@ -831,7 +833,8 @@ class BongoInputMethodService : InputMethodService() {
             is BongoKeyboardView.KeyAction.InsertNewline -> {
                 if (isBanglaMode && bongoEngine.hasSession()) {
                     val committed = bongoEngine.commitCandidate(0)
-                    ic.commitText(committed, 1)
+                    val finalText = if (userPrefs.bengaliDigits) committed.tobengaliDigits() else committed
+                    ic.commitText(finalText, 1)
                     candidateStripView?.clear()
                 }
                 ic.commitText("\n", 1)
@@ -922,7 +925,7 @@ class BongoInputMethodService : InputMethodService() {
             candidateStripView?.clear()
             return
         }
-        val predictions = bongoEngine.predictNextWords(word)
+        val predictions = bongoEngine.predictNextWords(word).take(userPrefs.candidateCount)
         if (predictions.isNotEmpty()) {
             candidateStripView?.setCandidates(predictions)
         } else {
@@ -934,7 +937,8 @@ class BongoInputMethodService : InputMethodService() {
         val ic = currentInputConnection ?: return
         if (bongoEngine.hasSession()) {
             val committed = bongoEngine.commitCandidate(0)
-            ic.commitText(committed, 1)
+            val finalText = if (userPrefs.bengaliDigits) committed.tobengaliDigits() else committed
+            ic.commitText(finalText, 1)
             candidateStripView?.clear()
         }
     }
