@@ -75,7 +75,7 @@ class SettingsActivity : Activity() {
             setTextColor(Color.WHITE)
         }
         val verName = try {
-            packageManager.getPackageInfo(packageName, 0).versionName ?: "1.2.3"
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "1.2.1"
         } catch (_: Exception) {
             "1.2.1"
         }
@@ -1023,10 +1023,10 @@ class SettingsActivity : Activity() {
                 setTextColor(Color.WHITE)
             }
             val desc = TextView(this).apply {
-                text = "Enable Bongo in Android input settings to start typing."
+                text = "Enable Bongo in Android input settings to start typing.\n\n🔒 Note: Android shows a standard system warning for every third-party keyboard. Bongo has no Internet permission, runs 100% offline, and never collects or sends typed text."
                 textSize = 12f
                 setTextColor(Color.parseColor("#a1a1aa"))
-                setPadding(0, dp(2), 0, dp(12))
+                setPadding(0, dp(4), 0, dp(12))
             }
             val btn = Button(this).apply {
                 text = "Enable in Android Settings"

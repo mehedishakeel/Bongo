@@ -80,6 +80,7 @@ class BongoInputMethodService : InputMethodService() {
 
     private val clipboardEntries = mutableListOf<ClipboardEntry>()
     private var clipboardManager: ClipboardManager? = null
+    private var lastSeenClipTimestamp: Long = -1L
     private val clipListener = ClipboardManager.OnPrimaryClipChangedListener {
         updateLatestClip()
     }
@@ -107,7 +108,6 @@ class BongoInputMethodService : InputMethodService() {
             val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
             clipboardManager = cm
             cm?.addPrimaryClipChangedListener(clipListener)
-            updateLatestClip()
         } catch (_: Exception) {}
     }
 
@@ -131,17 +131,22 @@ class BongoInputMethodService : InputMethodService() {
     private fun updateLatestClip() {
         if (isIncognito()) return
         try {
-            val clip = clipboardManager?.primaryClip
-            if (clip != null && clip.itemCount > 0) {
-                val desc = clip.description
-                val isOsSensitive = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    desc?.extras?.getBoolean(ClipDescription.EXTRA_IS_SENSITIVE, false) == true
-                } else {
-                    false
-                }
-                // Never log OS-marked passwords/sensitive tokens to persistent storage
-                if (isOsSensitive) return
+            val cm = clipboardManager ?: return
+            val desc = cm.primaryClipDescription ?: return
+            val isOsSensitive = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                desc.extras?.getBoolean(ClipDescription.EXTRA_IS_SENSITIVE, false) == true
+            } else {
+                false
+            }
+            // Never read or log OS-marked passwords/sensitive tokens
+            if (isOsSensitive) return
 
+            val ts = desc.timestamp
+            if (ts > 0L && ts == lastSeenClipTimestamp) return
+            lastSeenClipTimestamp = ts
+
+            val clip = cm.primaryClip
+            if (clip != null && clip.itemCount > 0) {
                 val text = clip.getItemAt(0)?.coerceToText(this)?.toString()?.trim()
                 if (!text.isNullOrEmpty()) {
                     val updated = ClipboardStoreLogic.addText(clipboardEntries, text)
@@ -411,7 +416,6 @@ class BongoInputMethodService : InputMethodService() {
         showKeyboard()
         resetComposition()
         bongoEngine.customShortcuts = userDictionary.getShortcuts()
-        updateLatestClip()
 
         val incog = isIncognito()
         candidateStripView?.setIncognito(incog)

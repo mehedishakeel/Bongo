@@ -691,8 +691,8 @@ function initDownloadHub() {
    ======================================================== */
 function initDirectDownload() {
     const GITHUB_REPO = 'mehedishakeel/Bongo';
-    const CACHE_KEY = 'bongo_latest_assets_v1_2_3';
-    const CACHE_TIME_KEY = 'bongo_latest_assets_time_v1_2_3';
+    const CACHE_KEY = 'bongo_latest_assets_v1_2_1';
+    const CACHE_TIME_KEY = 'bongo_latest_assets_time_v1_2_1';
     const ONE_HOUR = 60 * 60 * 1000;
 
     function applyAssetUrls(assets) {
@@ -1094,8 +1094,8 @@ function initConverter() {
    ======================================================== */
 function initGitHubStats() {
     const GITHUB_REPO = 'mehedishakeel/Bongo';
-    const STATS_CACHE_KEY = 'bongo_gh_stats_v1_2_3';
-    const STATS_TIME_KEY  = 'bongo_gh_stats_time_v1_2_3';
+    const STATS_CACHE_KEY = 'bongo_gh_stats_v1_2_1';
+    const STATS_TIME_KEY  = 'bongo_gh_stats_time_v1_2_1';
     const ONE_HOUR = 60 * 60 * 1000;
 
     function formatCount(n) {
