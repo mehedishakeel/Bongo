@@ -25,6 +25,7 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
+import app.getbongo.ime.engine.FixedLayoutEngine
 import app.getbongo.ime.model.ThemePalette
 import app.getbongo.ime.model.UserPreferences
 
@@ -62,6 +63,8 @@ class BongoKeyboardView @JvmOverloads constructor(
         private set
     private var lastShiftTapMs = 0L
     var isBangla = true
+        private set
+    var activeLayout: Int = userPrefs.keyboardLayout
         private set
     var isSymbols = false
         private set
@@ -169,6 +172,7 @@ class BongoKeyboardView @JvmOverloads constructor(
         object DeleteWord : KeyAction()
         object Space : KeyAction()
         object Return : KeyAction()
+        data class SwitchInputMode(val forward: Boolean) : KeyAction()
         object ToggleLanguage : KeyAction()
         object ToggleSymbols : KeyAction()
         object ToggleEmoji : KeyAction()
@@ -234,9 +238,32 @@ class BongoKeyboardView @JvmOverloads constructor(
         buildKeyboard()
     }
 
+    fun getInputModeLabel(): String {
+        if (!isBangla) return "English"
+        return when (activeLayout) {
+            FixedLayoutEngine.LAYOUT_NATIONAL -> "National"
+            FixedLayoutEngine.LAYOUT_BORNO -> "Borno"
+            else -> "Bongo"
+        }
+    }
+
+    private fun getKeyCapLabel(key: String): String {
+        if (key.length == 1 && key[0] in 'a'..'z' && isBangla &&
+            (activeLayout == FixedLayoutEngine.LAYOUT_NATIONAL || activeLayout == FixedLayoutEngine.LAYOUT_BORNO)
+        ) {
+            FixedLayoutEngine.getDisplayLabel(key[0], activeLayout, isShifted)?.let { return it }
+        }
+        return if (isShifted) key.uppercase() else key
+    }
+
     fun setBanglaMode(active: Boolean) {
-        if (isBangla != active) {
-            isBangla = active
+        setInputMode(active, activeLayout)
+    }
+
+    fun setInputMode(bangla: Boolean, layout: Int) {
+        if (isBangla != bangla || activeLayout != layout) {
+            isBangla = bangla
+            activeLayout = layout
             if (!isSymbols && !isOptionsVisible && spaceKeyView != null) {
                 updateLanguageViews()
             } else {
@@ -257,8 +284,14 @@ class BongoKeyboardView @JvmOverloads constructor(
             buildKeyboard()
             return
         }
-        spaceKeyView?.text = if (isBangla) "◀   Bongo   ▶" else "◀   English   ▶"
+        val modeLabel = getInputModeLabel()
+        spaceKeyView?.text = "◀   $modeLabel   ▶"
+        spaceKeyView?.contentDescription = "Space, $modeLabel layout"
         periodKeyView?.text = if (isBangla) "।" else "."
+
+        for ((key, tv) in letterKeyViews) {
+            tv.text = getKeyCapLabel(key)
+        }
 
         if (!userPrefs.showNumberRow && !isAutoNumberRow && !isTablet && userPrefs.longPressSymbols) {
             val numHints = if (userPrefs.bengaliDigits && isBangla) ROW1_HINTS_BN else ROW1_HINTS_EN
@@ -300,7 +333,7 @@ class BongoKeyboardView @JvmOverloads constructor(
 
     private fun updateShiftViews() {
         for ((key, tv) in letterKeyViews) {
-            tv.text = if (isShifted) key.uppercase() else key.lowercase()
+            tv.text = getKeyCapLabel(key)
         }
         shiftKeyView?.apply {
             text = when {
@@ -518,9 +551,9 @@ class BongoKeyboardView @JvmOverloads constructor(
             onKeyClickListener?.invoke(KeyAction.OpenSettings)
         })
 
-        row.addView(createOptionCircle("🌐", if (isBangla) "English" else "Bongo") {
+        row.addView(createOptionCircle("🌐", "Switch Layout") {
             isOptionsVisible = false
-            onKeyClickListener?.invoke(KeyAction.ToggleLanguage)
+            onKeyClickListener?.invoke(KeyAction.SwitchInputMode(true))
         })
 
         row.addView(createOptionCircle("123", if (userPrefs.showNumberRow) "Hide # Row" else "Show # Row") {
@@ -808,7 +841,7 @@ class BongoKeyboardView @JvmOverloads constructor(
                                             "Send"   -> "Send"
                                             else     -> "Return"
                                          }
-                "SPACE"               -> if (isBangla) "Space, Bongo Bangla mode" else "Space, English mode"
+                "SPACE"               -> "Space, ${getInputModeLabel()} layout"
                 "EMOJI"               -> "Emoji picker"
                 "?123"                -> "Switch to numbers and symbols"
                 "ABC"                 -> "Switch to letters"
@@ -829,7 +862,7 @@ class BongoKeyboardView @JvmOverloads constructor(
                 "Search" -> "🔍"
                 else -> actionLabel
             }
-            "SPACE" -> if (isBangla) "Bongo" else "English"
+            "SPACE" -> getInputModeLabel()
             "EMOJI" -> "☺"
             "?123" -> "?123"
             "ABC" -> "ABC"
@@ -838,7 +871,11 @@ class BongoKeyboardView @JvmOverloads constructor(
             "↕" -> "↕"
             "ESC" -> "Esc"
             "CTRL" -> "Ctrl"
-            else -> if (isShifted) key.uppercase() else key
+            else -> if (isSymbols || isDevMode || isNumberRow) {
+                if (isShifted) key.uppercase() else key
+            } else {
+                getKeyCapLabel(key)
+            }
         }
 
         val tv = TextView(context).apply {
@@ -950,7 +987,7 @@ class BongoKeyboardView @JvmOverloads constructor(
                         v.isPressed = true
                         performHaptic()
                         playKeySound()
-                        showSpacePopup(v, if (isBangla) "Bongo" else "English")
+                        showSpacePopup(v, getInputModeLabel())
                         activeLongPressRunnable?.let { keyActionHandler.removeCallbacks(it) }
                         activeLongPressRunnable = longPressRunnable
                         keyActionHandler.postDelayed(longPressRunnable, 450L)
@@ -976,13 +1013,11 @@ class BongoKeyboardView @JvmOverloads constructor(
                         } else if (!hasMovedAction && Math.abs(dxTotal) > langSwipeThreshold) {
                             keyActionHandler.removeCallbacks(longPressRunnable)
                             hasMovedAction = true
-                            isBangla = !isBangla
+                            val forward = dxTotal > 0f
                             performHaptic()
                             playKeySound()
-                            val newLabel = if (isBangla) "Bongo" else "English"
-                            updateLanguageViews()
-                            showSpacePopup(v, newLabel)
-                            onKeyClickListener?.invoke(KeyAction.ToggleLanguage)
+                            onKeyClickListener?.invoke(KeyAction.SwitchInputMode(forward))
+                            showSpacePopup(v, getInputModeLabel())
                         }
                         true
                     }
@@ -1057,7 +1092,11 @@ class BongoKeyboardView @JvmOverloads constructor(
                     performHaptic()
                     playKeySound()
                     if (isLetterOrNum) {
-                        val currentLabel = if (isShifted) key.uppercase() else key
+                        val currentLabel = if (isSymbols || isDevMode || isNumberRow) {
+                            if (isShifted) key.uppercase() else key
+                        } else {
+                            getKeyCapLabel(key)
+                        }
                         showKeyPopup(v, currentLabel)
                     }
                     activeLongPressRunnable?.let { keyActionHandler.removeCallbacks(it) }
@@ -1308,7 +1347,9 @@ class BongoKeyboardView @JvmOverloads constructor(
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        if (!userPrefs.glideTyping || isSymbols || isDevMode || isOptionsVisible || letterKeyContainers.isEmpty()) {
+        if (!userPrefs.glideTyping || isSymbols || isDevMode || isOptionsVisible ||
+            (isBangla && activeLayout != FixedLayoutEngine.LAYOUT_PHONETIC) || letterKeyContainers.isEmpty()
+        ) {
             return super.onInterceptTouchEvent(ev)
         }
         when (ev.actionMasked) {

@@ -29,27 +29,27 @@
   </provides>
   <content_rating type="oars-1.1"/>
   <releases>
-    <release version="1.2.2" date="2026-11-14">
+    <release version="1.2.3" date="2026-11-14">
       <description>
         <p>Adds Tools and Converters for Bijoy to Unicode, Bengali Number-to-Words converter, user dictionary manager, and expanded phonetic autocorrect rules.</p>
       </description>
     </release>
-    <release version="1.2.2" date="2026-11-06">
+    <release version="1.2.3" date="2026-11-06">
       <description>
         <p>Adds Borno / SafeWorks layout, native Arch AUR package, standalone AppImage for immutable distros, system startup autostart management, and Fcitx5 composition fixes.</p>
       </description>
     </release>
-    <release version="1.2.2" date="2026-10-21">
+    <release version="1.2.3" date="2026-10-21">
       <description>
         <p>Introduces full National / Bijoy layout (BDS 1738:2004) support, native Fcitx5 frontend, and interactive layout cheatsheet switcher.</p>
       </description>
     </release>
-    <release version="1.2.2" date="2026-10-20">
+    <release version="1.2.3" date="2026-10-20">
       <description>
         <p>Hotfix release resolving duplicate application launcher in GNOME menus and Backspace control key handling in IBus.</p>
       </description>
     </release>
-    <release version="1.2.2" date="2026-10-10">
+    <release version="1.2.3" date="2026-10-10">
       <description>
         <p>Initial release of Bongo for Linux with IBus input method and GTK4 settings.</p>
       </description>

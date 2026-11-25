@@ -12,6 +12,10 @@ class BongoEngine {
 
     private var nativePtr: Long = 0
     private val fallbackEngine = AvroPhoneticEngine()
+    private val fixedEngine = FixedLayoutEngine()
+
+    var currentLayout: Int = 0
+        private set
 
     var buffer = ""
         private set
@@ -44,7 +48,15 @@ class BongoEngine {
         }
     }
 
+    fun isFixedLayout(): Boolean =
+        currentLayout == FixedLayoutEngine.LAYOUT_NATIONAL ||
+        currentLayout == FixedLayoutEngine.LAYOUT_BORNO
+
     fun setLayout(layout: Int) {
+        currentLayout = layout
+        if (layout == FixedLayoutEngine.LAYOUT_NATIONAL || layout == FixedLayoutEngine.LAYOUT_BORNO) {
+            fixedEngine.setLayout(layout)
+        }
         if (nativePtr != 0L) {
             try {
                 BongoNative.setLayout(nativePtr, layout)
@@ -52,11 +64,15 @@ class BongoEngine {
                 Log.w(TAG, "Error in native setLayout: ${e.message}")
             }
         }
+        resetSession()
     }
 
     fun hasSession(): Boolean {
         if (nativePtr != 0L) {
             return BongoNative.engineHasSession(nativePtr)
+        }
+        if (isFixedLayout()) {
+            return fixedEngine.hasSession()
         }
         return buffer.isNotEmpty()
     }
@@ -78,7 +94,15 @@ class BongoEngine {
             }
         }
 
-        // Built-in Kotlin fallback
+        if (isFixedLayout()) {
+            val actualChar = if (ch in 'a'..'z' && (isShift || ch.isUpperCase())) ch.uppercaseChar() else ch
+            val current = fixedEngine.feedChar(actualChar)
+            preedit = current
+            candidates = if (current.isNotEmpty()) listOf(current) else emptyList()
+            return true
+        }
+
+        // Built-in Kotlin fallback (Avro Phonetic)
         candidates = fallbackEngine.getCandidates(buffer)
         preedit = candidates.firstOrNull() ?: buffer
         applyCustomShortcuts()
@@ -129,6 +153,20 @@ class BongoEngine {
             }
         }
 
+        if (isFixedLayout()) {
+            val hasRemaining = fixedEngine.handleBackspace()
+            if (buffer.isNotEmpty()) buffer = buffer.dropLast(1)
+            if (hasRemaining) {
+                val current = fixedEngine.preedit()
+                preedit = current
+                candidates = if (current.isNotEmpty()) listOf(current) else emptyList()
+                return true
+            } else {
+                resetSession()
+                return false
+            }
+        }
+
         if (buffer.isNotEmpty()) {
             buffer = buffer.dropLast(1)
             if (buffer.isEmpty()) {
@@ -144,7 +182,9 @@ class BongoEngine {
     }
 
     fun commitCandidate(index: Int = 0): String {
-        val committedText = if (index in candidates.indices) {
+        val committedText = if (nativePtr == 0L && isFixedLayout()) {
+            fixedEngine.commitText()
+        } else if (index in candidates.indices) {
             candidates[index]
         } else {
             preedit.ifEmpty { buffer }
@@ -158,6 +198,7 @@ class BongoEngine {
             }
         }
 
+        fixedEngine.reset()
         buffer = ""
         candidates = emptyList()
         preedit = ""
@@ -172,6 +213,7 @@ class BongoEngine {
                 Log.w(TAG, "Error in native reset: ${e.message}")
             }
         }
+        fixedEngine.reset()
         buffer = ""
         candidates = emptyList()
         preedit = ""

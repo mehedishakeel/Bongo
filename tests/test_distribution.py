@@ -494,6 +494,7 @@ class DistributionTests(unittest.TestCase):
             'app/src/main/java/app/getbongo/ime/model/UserPreferences.kt',
             'app/src/main/java/app/getbongo/ime/model/UserDictionaryManager.kt',
             'app/src/main/java/app/getbongo/ime/model/ThemePalette.kt',
+            'app/src/main/java/app/getbongo/ime/engine/FixedLayoutEngine.kt',
             'app/src/main/java/app/getbongo/ime/ui/BongoKeyboardView.kt',
             'app/src/main/java/app/getbongo/ime/ui/CandidateStripView.kt',
             'app/src/main/java/app/getbongo/ime/ui/ClipboardKeyboardView.kt',
@@ -514,6 +515,10 @@ class DistributionTests(unittest.TestCase):
         self.assertIn('"/" -> \'/\'', keyboard_kt)
         self.assertIn("'/' to '" + chr(92) + chr(92) + "'", keyboard_kt)
         self.assertNotIn('",", "/" -> if (isUriInput)', keyboard_kt)
+        self.assertIn("SwitchInputMode", keyboard_kt)
+
+        strip_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/ui/CandidateStripView.kt').read_text(encoding='utf-8')
+        self.assertNotIn("ShortcutAction.ToggleLanguage", strip_kt)
 
         service_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/BongoInputMethodService.kt').read_text(encoding='utf-8')
         self.assertIn("ch == '/' || ch == '\\\\'", service_kt)
@@ -546,7 +551,9 @@ class DistributionTests(unittest.TestCase):
         self.assertNotIn('Bangla.phonetic', strings_xml)
 
         keyboard_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/ui/BongoKeyboardView.kt').read_text(encoding='utf-8')
-        self.assertIn('"SPACE" -> if (isBangla) "Bongo" else "English"', keyboard_kt)
+        self.assertIn('"SPACE" -> getInputModeLabel()', keyboard_kt)
+        for label in ('"Bongo"', '"National"', '"Borno"', '"English"'):
+            self.assertIn(label, keyboard_kt)
         self.assertNotIn('Bangla.phonetic', keyboard_kt)
 
     def test_linguistic_converter_and_utilities(self):

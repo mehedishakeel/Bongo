@@ -49,7 +49,7 @@ class UserPreferences(context: Context) {
         set(value) = prefs.edit().putBoolean(KEY_LONG_PRESS_SYMBOLS, value).apply()
 
     var cursorScrubbing: Boolean
-        get() = prefs.getBoolean(KEY_CURSOR_SCRUBBING, true)
+        get() = prefs.getBoolean(KEY_CURSOR_SCRUBBING, false)
         set(value) = prefs.edit().putBoolean(KEY_CURSOR_SCRUBBING, value).apply()
 
     var bengaliDigits: Boolean

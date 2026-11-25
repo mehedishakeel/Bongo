@@ -215,7 +215,7 @@ class BongoInputMethodService : InputMethodService() {
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
-            setBanglaMode(isBanglaMode)
+            setInputMode(isBanglaMode, userPrefs.keyboardLayout)
             applyTheme(palette)
             onKeyClickListener = { action ->
                 handleKeyAction(action)
@@ -462,9 +462,8 @@ class BongoInputMethodService : InputMethodService() {
         // For security and accuracy, switch to English mode in password fields
         if (isPassword && isBanglaMode) {
             isBanglaMode = false
-            keyboardView?.setBanglaMode(false)
         }
-        candidateStripView?.setBanglaActive(isBanglaMode)
+        keyboardView?.setInputMode(isBanglaMode, userPrefs.keyboardLayout)
         updateAutoCapitalization()
     }
 
@@ -621,9 +620,6 @@ class BongoInputMethodService : InputMethodService() {
         val ic = currentInputConnection ?: return
 
         when (action) {
-            is CandidateStripView.ShortcutAction.ToggleLanguage -> {
-                handleKeyAction(BongoKeyboardView.KeyAction.ToggleLanguage)
-            }
             is CandidateStripView.ShortcutAction.Undo -> {
                 performUndoDelete()
             }
@@ -916,7 +912,11 @@ class BongoInputMethodService : InputMethodService() {
                     bongoEngine.feedChar(ch, keyboardView?.isShifted == true)
                     val composing = bongoEngine.preedit
                     ic.setComposingText(composing, 1)
-                    candidateStripView?.setCandidates(bongoEngine.candidates.take(userPrefs.candidateCount))
+                    if (bongoEngine.isFixedLayout()) {
+                        candidateStripView?.clear()
+                    } else {
+                        candidateStripView?.setCandidates(bongoEngine.candidates.take(userPrefs.candidateCount))
+                    }
                 } else {
                     commitOngoingComposition()
                     ic.commitText(ch.toString(), 1)
@@ -1111,18 +1111,19 @@ class BongoInputMethodService : InputMethodService() {
                 ic.commitText("\n", 1)
                 updateAutoCapitalization()
             }
+            is BongoKeyboardView.KeyAction.SwitchInputMode -> {
+                cycleInputMode(action.forward)
+            }
             is BongoKeyboardView.KeyAction.ToggleLanguage -> {
                 if (isEmojiSearchMode || isClipboardSearchMode) {
                     isBanglaMode = !isBanglaMode
-                    keyboardView?.setBanglaMode(isBanglaMode)
-                    candidateStripView?.setBanglaActive(isBanglaMode)
+                    keyboardView?.setInputMode(isBanglaMode, userPrefs.keyboardLayout)
                     bongoEngine.resetSession()
                     if (isEmojiSearchMode) updateEmojiSearchStrip() else updateClipboardSearchStrip()
                 } else {
                     commitOngoingComposition()
                     isBanglaMode = !isBanglaMode
-                    keyboardView?.setBanglaMode(isBanglaMode)
-                    candidateStripView?.setBanglaActive(isBanglaMode)
+                    keyboardView?.setInputMode(isBanglaMode, userPrefs.keyboardLayout)
                 }
                 updateAutoCapitalization()
             }
@@ -1238,6 +1239,33 @@ class BongoInputMethodService : InputMethodService() {
         }
     }
 
+    private fun cycleInputMode(forward: Boolean) {
+        val currentIdx = if (!isBanglaMode) 3 else userPrefs.keyboardLayout.coerceIn(0, 2)
+        val nextIdx = if (forward) (currentIdx + 1) % 4 else (currentIdx + 3) % 4
+
+        val nextBangla = nextIdx != 3
+        val nextLayout = if (nextBangla) nextIdx else userPrefs.keyboardLayout.coerceIn(0, 2)
+
+        if (isEmojiSearchMode || isClipboardSearchMode) {
+            isBanglaMode = nextBangla
+            if (nextBangla && userPrefs.keyboardLayout != nextLayout) {
+                userPrefs.keyboardLayout = nextLayout
+            }
+            bongoEngine.setLayout(nextLayout)
+            keyboardView?.setInputMode(nextBangla, nextLayout)
+            if (isEmojiSearchMode) updateEmojiSearchStrip() else updateClipboardSearchStrip()
+        } else {
+            commitOngoingComposition()
+            isBanglaMode = nextBangla
+            if (nextBangla && userPrefs.keyboardLayout != nextLayout) {
+                userPrefs.keyboardLayout = nextLayout
+            }
+            bongoEngine.setLayout(nextLayout)
+            keyboardView?.setInputMode(nextBangla, nextLayout)
+        }
+        updateAutoCapitalization()
+    }
+
     private fun resetComposition() {
         bongoEngine.resetSession()
         isCtrlActive = false
@@ -1251,8 +1279,7 @@ class BongoInputMethodService : InputMethodService() {
         if (keyCode == KeyEvent.KEYCODE_SPACE && (event.isCtrlPressed || event.isMetaPressed)) {
             commitOngoingComposition()
             isBanglaMode = !isBanglaMode
-            keyboardView?.setBanglaMode(isBanglaMode)
-            candidateStripView?.setBanglaActive(isBanglaMode)
+            keyboardView?.setInputMode(isBanglaMode, userPrefs.keyboardLayout)
             updateAutoCapitalization()
             return true
         }
@@ -1305,9 +1332,11 @@ class BongoInputMethodService : InputMethodService() {
 
     private fun handlePreferenceChange(key: String?) {
         if (key == UserPreferences.KEY_KEYBOARD_LAYOUT) {
-            bongoEngine.setLayout(userPrefs.keyboardLayout)
-            bongoEngine.resetSession()          // flush any in-progress composition
-            keyboardView?.buildKeyboard()       // redraw keys for new layout
+            if (bongoEngine.currentLayout != userPrefs.keyboardLayout) {
+                bongoEngine.setLayout(userPrefs.keyboardLayout)
+            }
+            keyboardView?.setInputMode(isBanglaMode, userPrefs.keyboardLayout)
+            return
         }
         if (key == UserPreferences.KEY_ONE_HANDED_MODE) {
             applyOneHandedMode()

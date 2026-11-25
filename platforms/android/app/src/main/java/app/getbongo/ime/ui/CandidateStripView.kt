@@ -26,7 +26,6 @@ class CandidateStripView @JvmOverloads constructor(
 ) : HorizontalScrollView(context, attrs, defStyleAttr) {
 
     sealed class ShortcutAction {
-        object ToggleLanguage : ShortcutAction()
         object Emoji : ShortcutAction()
         object Theme : ShortcutAction()
         object Settings : ShortcutAction()
@@ -58,7 +57,6 @@ class CandidateStripView @JvmOverloads constructor(
     private var palette: ThemePalette = ThemePalette.getPalette("midnight")
     private var isCtrlActive = false
     private var isIncognito = false
-    private var isBanglaActive = true
     private var canUndo = false
     private var ctrlTextView: TextView? = null
     private var isShowingCandidates = false
@@ -201,13 +199,6 @@ class CandidateStripView @JvmOverloads constructor(
     fun setIncognito(active: Boolean) {
         if (isIncognito != active) {
             isIncognito = active
-            if (!isShowingCandidates) showShortcuts()
-        }
-    }
-
-    fun setBanglaActive(active: Boolean) {
-        if (isBanglaActive != active) {
-            isBanglaActive = active
             if (!isShowingCandidates) showShortcuts()
         }
     }
@@ -366,7 +357,6 @@ class CandidateStripView @JvmOverloads constructor(
         voicePromptView = null
 
         val shortcuts = mutableListOf<Triple<String, ShortcutAction, Boolean>>()
-        shortcuts.add(Triple(if (isBanglaActive) "🌐 বাং" else "🌐 EN", ShortcutAction.ToggleLanguage, false))
         if (canUndo) {
             shortcuts.add(Triple("↩ Undo", ShortcutAction.Undo, true))
         }

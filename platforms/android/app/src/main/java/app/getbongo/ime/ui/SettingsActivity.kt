@@ -75,7 +75,7 @@ class SettingsActivity : Activity() {
             setTextColor(Color.WHITE)
         }
         val verName = try {
-            packageManager.getPackageInfo(packageName, 0).versionName ?: "1.2.2"
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "1.2.3"
         } catch (_: Exception) {
             "1.2.1"
         }
@@ -336,7 +336,7 @@ class SettingsActivity : Activity() {
 
         gesturesCard.addView(createSwitchRow(
             "Spacebar Trackpad Scrubbing",
-            "Slide spacebar horizontally to move text cursor",
+            "Drag spacebar to move cursor (disables spacebar swipe-to-switch)",
             userPrefs.cursorScrubbing
         ) { userPrefs.cursorScrubbing = it })
         gesturesCard.addView(createDivider())
