@@ -186,9 +186,9 @@ class FixedLayoutEngine {
         if (value.isEmpty()) return
         val rmc = buffer.lastOrNull()
 
-        // Zo-fola insertion (্ + য)
-        if (value == "$B_HASANTA$B_ZA") {
-            if (rmc == B_R && (buffer.length < 2 || buffer[buffer.length - 2] != B_HASANTA)) {
+        // Zo-fola (্য) and Ro-fola (্র) insertion
+        if (value == "$B_HASANTA$B_ZA" || value == "$B_HASANTA$B_R") {
+            if (value == "$B_HASANTA$B_ZA" && rmc == B_R && (buffer.length < 2 || buffer[buffer.length - 2] != B_HASANTA)) {
                 buffer.append(B_ZWJ)
             }
             if (rmc != null && rmc in LEFT_STANDING_KARS) {

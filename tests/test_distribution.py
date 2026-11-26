@@ -509,6 +509,8 @@ class DistributionTests(unittest.TestCase):
 
         manifest_xml = (android_dir / 'app/src/main/AndroidManifest.xml').read_text(encoding='utf-8')
         self.assertIn('android:allowBackup="false"', manifest_xml)
+        self.assertIn('android:dataExtractionRules="@xml/data_extraction_rules"', manifest_xml)
+        self.assertTrue((android_dir / 'app/src/main/res/xml/data_extraction_rules.xml').is_file())
 
         # 5. Slash and Backslash key handling verification
         keyboard_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/ui/BongoKeyboardView.kt').read_text(encoding='utf-8')
@@ -521,7 +523,7 @@ class DistributionTests(unittest.TestCase):
         self.assertNotIn("ShortcutAction.ToggleLanguage", strip_kt)
 
         service_kt = (android_dir / 'app/src/main/java/app/getbongo/ime/BongoInputMethodService.kt').read_text(encoding='utf-8')
-        self.assertIn("ch == '/' || ch == '\\\\'", service_kt)
+        self.assertIn("ch == '/' || (!bongoEngine.isFixedLayout() && ch == '\\\\')", service_kt)
         self.assertIn("userDictionary.getShortcuts()", service_kt)
         self.assertIn("showClipboardKeyboard", service_kt)
         self.assertIn("EXTRA_IS_SENSITIVE", service_kt)

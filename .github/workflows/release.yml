@@ -256,7 +256,7 @@ jobs:
             echo "body_path=" >> $GITHUB_OUTPUT
           fi
           if [ "$TAG_NAME" = "v1.2.1" ]; then
-            echo "title=Bongo v1.2.1 — Multi-Layout Spacebar, Glide Typing, Security & Cross-Platform Parity" >> $GITHUB_OUTPUT
+            echo "title=Bongo v1.2.1 — Multi-Layout Spacebar, Privacy & Cross-Platform Parity" >> $GITHUB_OUTPUT
           elif [ "$TAG_NAME" = "v1.2.0" ]; then
             echo "title=Bongo v1.2.0 — Borno Layout, Windows Tray & System Startup" >> $GITHUB_OUTPUT
           elif [ "$TAG_NAME" = "v1.1.0" ]; then

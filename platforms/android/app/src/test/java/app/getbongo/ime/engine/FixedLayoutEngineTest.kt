@@ -33,6 +33,16 @@ class FixedLayoutEngineTest {
         engine.feedChar('g')
         assertEquals("আ", engine.feedChar('f'))
         assertEquals("আ", engine.commitText())
+
+        // Ro-fola after pre-base kar: d (ি) + j (ক) + z (্র) -> ক্রি
+        engine.feedChar('d')
+        engine.feedChar('j')
+        assertEquals("ক্রি", engine.feedChar('z'))
+        assertEquals("ক্রি", engine.commitText())
+
+        // Backslash maps to ৎ in National
+        assertEquals("ৎ", engine.feedChar('\\'))
+        assertEquals("ৎ", engine.commitText())
     }
 
     @Test
@@ -48,10 +58,15 @@ class FixedLayoutEngineTest {
         assertEquals("খঅ", engine.feedChar('A'))
         assertEquals("খঅ", engine.commitText())
 
-        // Pre-base kar i (ি) + k (ক) -> কি
+        // Pre-base kar i (ি) + k (ক) -> কি, then P (্র) -> ক্রি
         assertEquals("ি", engine.feedChar('i'))
         assertEquals("কি", engine.feedChar('k'))
-        assertEquals("কি", engine.commitText())
+        assertEquals("ক্রি", engine.feedChar('P'))
+        assertEquals("ক্রি", engine.commitText())
+
+        // Backslash maps to ৱ in Borno
+        assertEquals("ৱ", engine.feedChar('\\'))
+        assertEquals("ৱ", engine.commitText())
     }
 
     @Test

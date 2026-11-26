@@ -264,7 +264,9 @@ class BongoKeyboardView @JvmOverloads constructor(
         periodKeyView?.text = if (isBangla) "।" else "."
 
         for ((key, tv) in letterKeyViews) {
-            tv.text = getKeyCapLabel(key)
+            val label = getKeyCapLabel(key)
+            tv.text = label
+            (tv.parent as? View)?.contentDescription = "Key $label"
         }
 
         if (!userPrefs.showNumberRow && !isAutoNumberRow && !isTablet && userPrefs.longPressSymbols) {
@@ -307,13 +309,20 @@ class BongoKeyboardView @JvmOverloads constructor(
 
     private fun updateShiftViews() {
         for ((key, tv) in letterKeyViews) {
-            tv.text = getKeyCapLabel(key)
+            val label = getKeyCapLabel(key)
+            tv.text = label
+            (tv.parent as? View)?.contentDescription = "Key $label"
         }
         shiftKeyView?.apply {
             text = when {
                 isCapsLocked -> "⇪"
                 isShifted -> "⇧"
                 else -> "⇧"
+            }
+            (parent as? View)?.contentDescription = when {
+                isCapsLocked -> "Caps Lock"
+                isShifted -> "Shift ON"
+                else -> "Shift"
             }
             setTextColor(
                 when {
@@ -803,7 +812,11 @@ class BongoKeyboardView @JvmOverloads constructor(
             isFocusable = true
             // Accessibility: TalkBack content description for each key
             contentDescription = when (key) {
-                "SHIFT"               -> if (isShifted) "Caps Lock" else "Shift"
+                "SHIFT"               -> when {
+                                            isCapsLocked -> "Caps Lock"
+                                            isShifted -> "Shift ON"
+                                            else -> "Shift"
+                                         }
                 "BACKSPACE"           -> "Backspace"
                 "RETURN", "ACTION"    -> when (actionLabel) {
                                             "Search" -> "Search"
@@ -823,12 +836,12 @@ class BongoKeyboardView @JvmOverloads constructor(
                 "ESC"                 -> "Escape"
                 "CTRL"                -> "Control"
                 "↕"                   -> "Resize keyboard"
-                else                  -> if (key.length == 1) "Key $key" else key
+                else                  -> if (key.length == 1) "Key ${getKeyCapLabel(key)}" else key
             }
         }
 
         val displayLabel = when (key) {
-            "SHIFT" -> if (isShifted) "⇪" else "⇧"
+            "SHIFT" -> if (isCapsLocked) "⇪" else "⇧"
             "BACKSPACE" -> "⌫"
             "RETURN", "ACTION" -> when (actionLabel) {
                 "Search" -> "🔍"
@@ -1040,6 +1053,9 @@ class BongoKeyboardView @JvmOverloads constructor(
                 when {
                     hintChar != null -> {
                         onKeyClickListener?.invoke(KeyAction.CharacterKey(hintChar))
+                        if (isShifted && !isCapsLocked) {
+                            setShift(false, lockCaps = false)
+                        }
                     }
                     key == "," -> {
                         onKeyClickListener?.invoke(KeyAction.OpenSettings)
@@ -1076,7 +1092,7 @@ class BongoKeyboardView @JvmOverloads constructor(
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    val slop = dp(14)
+                    val slop = dp(24)
                     if (event.x < -slop || event.x > v.width + slop || event.y < -slop || event.y > v.height + slop) {
                         if (isInsideKey) {
                             isInsideKey = false

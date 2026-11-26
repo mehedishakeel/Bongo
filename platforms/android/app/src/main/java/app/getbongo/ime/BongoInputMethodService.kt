@@ -905,7 +905,7 @@ class BongoInputMethodService : InputMethodService() {
 
                 isMathCandidateActive = false
 
-                if (ch == '/' || ch == '\\' || ch == ',' || ch == '।' || (!isBanglaMode && ch == '.')) {
+                if (ch == '/' || (!bongoEngine.isFixedLayout() && ch == '\\') || ch == ',' || ch == '।' || (!isBanglaMode && ch == '.')) {
                     commitOngoingComposition()
                     ic.commitText(ch.toString(), 1)
                     updateAutoCapitalization()
@@ -956,7 +956,11 @@ class BongoInputMethodService : InputMethodService() {
                     val hasRemaining = bongoEngine.handleBackspace()
                     if (hasRemaining && bongoEngine.preedit.isNotEmpty()) {
                         ic.setComposingText(bongoEngine.preedit, 1)
-                        candidateStripView?.setCandidates(bongoEngine.candidates.take(userPrefs.candidateCount))
+                        if (bongoEngine.isFixedLayout()) {
+                            candidateStripView?.clear()
+                        } else {
+                            candidateStripView?.setCandidates(bongoEngine.candidates.take(userPrefs.candidateCount))
+                        }
                     } else {
                         ic.setComposingText("", 0)
                         candidateStripView?.clear()
@@ -1246,7 +1250,24 @@ class BongoInputMethodService : InputMethodService() {
         updateAutoCapitalization()
     }
 
+    override fun onUpdateSelection(
+        oldSelStart: Int, oldSelEnd: Int,
+        newSelStart: Int, newSelEnd: Int,
+        candidatesStart: Int, candidatesEnd: Int
+    ) {
+        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
+        if (bongoEngine.hasSession() && (newSelStart != candidatesEnd || newSelEnd != candidatesEnd)) {
+            if (candidatesStart == -1 && candidatesEnd == -1) {
+                bongoEngine.resetSession()
+                candidateStripView?.clear()
+            }
+        }
+    }
+
     private fun resetComposition() {
+        if (bongoEngine.hasSession()) {
+            currentInputConnection?.setComposingText("", 0)
+        }
         bongoEngine.resetSession()
         isCtrlActive = false
         candidateStripView?.clear()
