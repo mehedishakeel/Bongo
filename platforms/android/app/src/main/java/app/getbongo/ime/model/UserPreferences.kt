@@ -92,10 +92,6 @@ class UserPreferences(context: Context) {
         get() = prefs.getInt(KEY_CANDIDATE_COUNT, 9).coerceIn(3, 9)
         set(value) = prefs.edit().putInt(KEY_CANDIDATE_COUNT, value.coerceIn(3, 9)).apply()
 
-    var glideTyping: Boolean
-        get() = prefs.getBoolean(KEY_GLIDE_TYPING, true)
-        set(value) = prefs.edit().putBoolean(KEY_GLIDE_TYPING, value).apply()
-
     var autoCapitalization: Boolean
         get() = prefs.getBoolean(KEY_AUTO_CAP, true)
         set(value) = prefs.edit().putBoolean(KEY_AUTO_CAP, value).apply()
@@ -112,20 +108,13 @@ class UserPreferences(context: Context) {
         get() = prefs.getInt(KEY_STATS_EN_WORDS, 0)
         set(value) = prefs.edit().putInt(KEY_STATS_EN_WORDS, value).apply()
 
-    var statsGlidesUsed: Int
-        get() = prefs.getInt(KEY_STATS_GLIDES, 0)
-        set(value) = prefs.edit().putInt(KEY_STATS_GLIDES, value).apply()
-
-    fun recordTypedWord(isBangla: Boolean, isGlide: Boolean = false) {
+    fun recordTypedWord(isBangla: Boolean) {
         val editor = prefs.edit()
             .putInt(KEY_STATS_WORDS, statsWordsTyped + 1)
         if (isBangla) {
             editor.putInt(KEY_STATS_BN_WORDS, statsBanglaWords + 1)
         } else {
             editor.putInt(KEY_STATS_EN_WORDS, statsEnglishWords + 1)
-        }
-        if (isGlide) {
-            editor.putInt(KEY_STATS_GLIDES, statsGlidesUsed + 1)
         }
         editor.apply()
     }
@@ -135,7 +124,6 @@ class UserPreferences(context: Context) {
             .putInt(KEY_STATS_WORDS, 0)
             .putInt(KEY_STATS_BN_WORDS, 0)
             .putInt(KEY_STATS_EN_WORDS, 0)
-            .putInt(KEY_STATS_GLIDES, 0)
             .apply()
     }
 
@@ -214,11 +202,9 @@ class UserPreferences(context: Context) {
         const val KEY_LEARNED_SELECTIONS = "learned_selections"
         const val KEY_CLIPBOARD_HISTORY = "clipboard_history"
         const val KEY_CANDIDATE_COUNT = "candidate_count"
-        const val KEY_GLIDE_TYPING = "glide_typing"
         const val KEY_AUTO_CAP = "auto_capitalization"
         const val KEY_STATS_WORDS = "stats_words_typed"
         const val KEY_STATS_BN_WORDS = "stats_bangla_words"
         const val KEY_STATS_EN_WORDS = "stats_english_words"
-        const val KEY_STATS_GLIDES = "stats_glides_used"
     }
 }

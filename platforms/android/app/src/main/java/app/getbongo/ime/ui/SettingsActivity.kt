@@ -363,13 +363,6 @@ class SettingsActivity : Activity() {
         gesturesCard.addView(createDivider())
 
         gesturesCard.addView(createSwitchRow(
-            "Glide Typing (Swipe-to-Type)",
-            "Slide across letters to enter Bengali or English words",
-            userPrefs.glideTyping
-        ) { userPrefs.glideTyping = it })
-        gesturesCard.addView(createDivider())
-
-        gesturesCard.addView(createSwitchRow(
             "Auto-Capitalization (English)",
             "Automatically shift at sentence start and after '.', '!', '?'",
             userPrefs.autoCapitalization
@@ -856,8 +849,7 @@ class SettingsActivity : Activity() {
             statsSummaryView.text =
                 "Words Typed: ${userPrefs.statsWordsTyped}  •  " +
                 "Bangla: ${userPrefs.statsBanglaWords}  •  " +
-                "English: ${userPrefs.statsEnglishWords}  •  " +
-                "Glide: ${userPrefs.statsGlidesUsed}"
+                "English: ${userPrefs.statsEnglishWords}"
         }
         refreshStatsSummary()
         privacyCard.addView(statsSummaryView)

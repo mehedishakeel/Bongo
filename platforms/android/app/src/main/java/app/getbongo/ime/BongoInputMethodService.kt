@@ -938,30 +938,6 @@ class BongoInputMethodService : InputMethodService() {
                 ic.commitText(action.text, 1)
                 updateAutoCapitalization()
             }
-            is BongoKeyboardView.KeyAction.GlideWord -> {
-                isMathCandidateActive = false
-                commitOngoingComposition()
-                val matches = bongoEngine.matchGlidePath(action.keySequence, isBanglaMode)
-                if (matches.isNotEmpty()) {
-                    val best = matches.first()
-                    val finalBest = if (userPrefs.bengaliDigits) best.tobengaliDigits() else best
-                    val before = ic.getTextBeforeCursor(1, 0)?.toString()
-                    val prefixSpace = if (!before.isNullOrEmpty() && !before[0].isWhitespace()) " " else ""
-                    ic.commitText("$prefixSpace$finalBest ", 1)
-                    if (!isIncognito()) {
-                        userPrefs.recordTypedWord(isBangla = isBanglaMode, isGlide = true)
-                    }
-                    val rest = matches.drop(1).take(userPrefs.candidateCount)
-                    if (rest.isNotEmpty()) {
-                        candidateStripView?.setCandidates(rest)
-                    } else if (isBanglaMode) {
-                        showNextWordPredictions(finalBest)
-                    } else {
-                        candidateStripView?.clear()
-                    }
-                    updateAutoCapitalization()
-                }
-            }
             is BongoKeyboardView.KeyAction.Backspace -> {
                 isMathCandidateActive = false
                 if (isEmojiSearchMode || isClipboardSearchMode) {
@@ -1025,7 +1001,7 @@ class BongoInputMethodService : InputMethodService() {
                     val finalText = if (userPrefs.bengaliDigits) committed.tobengaliDigits() else committed
                     ic.commitText("$finalText ", 1)
                     if (!isIncognito()) {
-                        userPrefs.recordTypedWord(isBangla = true, isGlide = false)
+                        userPrefs.recordTypedWord(isBangla = true)
                     }
                     showNextWordPredictions(finalText)
                     lastSpaceTime = SystemClock.uptimeMillis()
@@ -1040,7 +1016,7 @@ class BongoInputMethodService : InputMethodService() {
                         lastSpaceTime = 0L
                     } else {
                         if (!isBanglaMode && !beforeSpace.isNullOrEmpty() && beforeSpace.last().isLetter() && !isIncognito()) {
-                            userPrefs.recordTypedWord(isBangla = false, isGlide = false)
+                            userPrefs.recordTypedWord(isBangla = false)
                         }
                         ic.commitText(" ", 1)
                         lastSpaceTime = now
@@ -1078,13 +1054,13 @@ class BongoInputMethodService : InputMethodService() {
                     val finalText = if (userPrefs.bengaliDigits) committed.tobengaliDigits() else committed
                     ic.commitText(finalText, 1)
                     if (!isIncognito()) {
-                        userPrefs.recordTypedWord(isBangla = true, isGlide = false)
+                        userPrefs.recordTypedWord(isBangla = true)
                     }
                     candidateStripView?.clear()
                 } else if (!isBanglaMode && !isIncognito()) {
                     val beforeReturn = ic.getTextBeforeCursor(24, 0)?.toString()
                     if (!beforeReturn.isNullOrEmpty() && beforeReturn.last().isLetter()) {
-                        userPrefs.recordTypedWord(isBangla = false, isGlide = false)
+                        userPrefs.recordTypedWord(isBangla = false)
                     }
                 }
                 val editorInfo = currentInputEditorInfo
@@ -1199,15 +1175,15 @@ class BongoInputMethodService : InputMethodService() {
             val finalText = if (userPrefs.bengaliDigits) committed.tobengaliDigits() else committed
             ic.commitText("$finalText ", 1)
             if (!isIncognito()) {
-                userPrefs.recordTypedWord(isBangla = true, isGlide = false)
+                userPrefs.recordTypedWord(isBangla = true)
             }
             showNextWordPredictions(finalText)
         } else {
-            // Next-word or glide alternative prediction tapped
+            // Next-word prediction tapped
             val finalCandidate = if (userPrefs.bengaliDigits) candidate.tobengaliDigits() else candidate
             ic.commitText("$finalCandidate ", 1)
             if (!isIncognito()) {
-                userPrefs.recordTypedWord(isBangla = isBanglaMode, isGlide = false)
+                userPrefs.recordTypedWord(isBangla = isBanglaMode)
             }
             showNextWordPredictions(finalCandidate)
         }

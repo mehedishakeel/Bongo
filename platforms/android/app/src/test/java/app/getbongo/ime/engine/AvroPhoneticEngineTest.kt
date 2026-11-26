@@ -27,16 +27,4 @@ class AvroPhoneticEngineTest {
         assertTrue(nexts.isNotEmpty())
         assertTrue(nexts.contains("তোমাকে") || nexts.contains("ভালো"))
     }
-
-    @Test
-    fun glidePathMatchesEnglishAndBanglaVocabulary() {
-        val en = engine.matchGlidePath("qwrtq", isBangla = false)
-        assertTrue("Expected English glide candidates", en.isNotEmpty() || engine.matchGlidePath("hello", isBangla = false).isNotEmpty())
-
-        val exactEn = engine.matchGlidePath("hello", isBangla = false)
-        assertTrue(exactEn.contains("hello"))
-
-        val bn = engine.matchGlidePath("ami", isBangla = true)
-        assertTrue(bn.contains("আমি"))
-    }
 }

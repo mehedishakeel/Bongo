@@ -2,11 +2,7 @@ package app.getbongo.ime.ui
 
 import android.content.Context
 import android.content.res.Configuration
-import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.StateListDrawable
@@ -94,30 +90,12 @@ class BongoKeyboardView @JvmOverloads constructor(
 
     // View recycling and in-place reference caching for zero-latency updates
     private val letterKeyViews = mutableMapOf<String, TextView>()
-    private val letterKeyContainers = mutableMapOf<String, View>()
     private val letterKeyHintViews = mutableMapOf<String, TextView>()
     private var shiftKeyView: TextView? = null
     private var spaceKeyView: TextView? = null
     private var periodKeyView: TextView? = null
     private var commaKeyView: TextView? = null
     private var actionKeyView: TextView? = null
-
-    // Glide typing (Swipe-to-type) state & trail renderer
-    private var isGliding = false
-    private var glideDownX = 0f
-    private var glideDownY = 0f
-    private var glideStartLetter: String? = null
-    private val glideTrailPoints = mutableListOf<Pair<Float, Float>>()
-    private val glideLetterSeq = StringBuilder()
-    private val glideTrailPath = Path()
-    private val glidePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE
-        strokeCap = Paint.Cap.ROUND
-        strokeJoin = Paint.Join.ROUND
-        strokeWidth = dp(4).toFloat()
-        color = palette.stripPrimaryBorder
-        alpha = 210
-    }
 
     // Key Popup Magnifier
     private var activePopupAnchor: View? = null
@@ -166,7 +144,6 @@ class BongoKeyboardView @JvmOverloads constructor(
     sealed class KeyAction {
         data class CharacterKey(val ch: Char) : KeyAction()
         data class StringKey(val text: String) : KeyAction()
-        data class GlideWord(val keySequence: String) : KeyAction()
         object Shift : KeyAction()
         object Backspace : KeyAction()
         object DeleteWord : KeyAction()
@@ -200,7 +177,6 @@ class BongoKeyboardView @JvmOverloads constructor(
 
     init {
         orientation = VERTICAL
-        setWillNotDraw(false)
         setBackgroundColor(palette.surfaceColor)
         applyResponsivePadding()
         buildKeyboard()
@@ -226,8 +202,6 @@ class BongoKeyboardView @JvmOverloads constructor(
 
     fun applyTheme(newPalette: ThemePalette) {
         palette = newPalette
-        glidePaint.color = palette.stripPrimaryBorder
-        glidePaint.alpha = 210
         setBackgroundColor(palette.surfaceColor)
         popupTextView.setTextColor(palette.keyTextColor)
         popupTextView.background = GradientDrawable().apply {
@@ -630,7 +604,6 @@ class BongoKeyboardView @JvmOverloads constructor(
         spaceDismissHandler.removeCallbacks(spaceDismissRunnable)
         keyActionHandler.removeCallbacksAndMessages(null)
         activeLongPressRunnable = null
-        clearGlideTrail()
         if (popupWindow.isShowing) {
             popupWindow.dismiss()
         }
@@ -640,7 +613,6 @@ class BongoKeyboardView @JvmOverloads constructor(
         activePopupAnchor = null
 
         letterKeyViews.clear()
-        letterKeyContainers.clear()
         letterKeyHintViews.clear()
         shiftKeyView = null
         spaceKeyView = null
@@ -896,7 +868,6 @@ class BongoKeyboardView @JvmOverloads constructor(
         if (!isNumberRow && !isSymbols && !isDevMode) {
             if (key.length == 1 && key[0] in 'a'..'z') {
                 letterKeyViews[key] = tv
-                letterKeyContainers[key] = container
             }
             when (key) {
                 "SHIFT" -> shiftKeyView = tv
@@ -1318,120 +1289,6 @@ class BongoKeyboardView @JvmOverloads constructor(
                     }
                 }
             }
-        }
-    }
-
-    private val glideHitRect = Rect()
-
-    private fun findLetterKeyAt(x: Float, y: Float): String? {
-        val ix = x.toInt()
-        val iy = y.toInt()
-        for ((letter, view) in letterKeyContainers) {
-            if (!view.isShown) continue
-            glideHitRect.set(0, 0, view.width, view.height)
-            offsetDescendantRectToMyCoords(view, glideHitRect)
-            if (glideHitRect.contains(ix, iy)) {
-                return letter
-            }
-        }
-        return null
-    }
-
-    private fun clearGlideTrail() {
-        isGliding = false
-        glideStartLetter = null
-        glideTrailPoints.clear()
-        glideLetterSeq.clear()
-        glideTrailPath.reset()
-        invalidate()
-    }
-
-    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        if (!userPrefs.glideTyping || isSymbols || isDevMode || isOptionsVisible ||
-            (isBangla && activeLayout != FixedLayoutEngine.LAYOUT_PHONETIC) || letterKeyContainers.isEmpty()
-        ) {
-            return super.onInterceptTouchEvent(ev)
-        }
-        when (ev.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                glideDownX = ev.x
-                glideDownY = ev.y
-                isGliding = false
-                glideTrailPoints.clear()
-                glideLetterSeq.clear()
-                glideTrailPath.reset()
-                glideStartLetter = findLetterKeyAt(ev.x, ev.y)
-                if (glideStartLetter != null) {
-                    glideTrailPoints.add(ev.x to ev.y)
-                    glideLetterSeq.append(glideStartLetter)
-                }
-            }
-            MotionEvent.ACTION_MOVE -> {
-                val startKey = glideStartLetter ?: return false
-                val dist = kotlin.math.hypot((ev.x - glideDownX).toDouble(), (ev.y - glideDownY).toDouble())
-                val currentKey = findLetterKeyAt(ev.x, ev.y)
-                if (!isGliding && dist > dp(24) && currentKey != null && currentKey != startKey) {
-                    isGliding = true
-                    activeLongPressRunnable?.let { keyActionHandler.removeCallbacks(it) }
-                    hideKeyPopup()
-                    glideTrailPoints.add(ev.x to ev.y)
-                    if (glideLetterSeq.isEmpty() || glideLetterSeq.last().toString() != currentKey) {
-                        glideLetterSeq.append(currentKey)
-                    }
-                    invalidate()
-                    return true
-                }
-            }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                glideStartLetter = null
-                if (!isGliding) {
-                    glideTrailPoints.clear()
-                    glideLetterSeq.clear()
-                }
-            }
-        }
-        return super.onInterceptTouchEvent(ev)
-    }
-
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (!isGliding) return super.onTouchEvent(event)
-        when (event.actionMasked) {
-            MotionEvent.ACTION_MOVE -> {
-                glideTrailPoints.add(event.x to event.y)
-                val key = findLetterKeyAt(event.x, event.y)
-                if (key != null && (glideLetterSeq.isEmpty() || glideLetterSeq.last().toString() != key)) {
-                    glideLetterSeq.append(key)
-                }
-                invalidate()
-                return true
-            }
-            MotionEvent.ACTION_UP -> {
-                val seq = glideLetterSeq.toString()
-                clearGlideTrail()
-                if (seq.length >= 2) {
-                    performHaptic()
-                    playKeySound()
-                    onKeyClickListener?.invoke(KeyAction.GlideWord(seq))
-                }
-                return true
-            }
-            MotionEvent.ACTION_CANCEL -> {
-                clearGlideTrail()
-                return true
-            }
-        }
-        return super.onTouchEvent(event)
-    }
-
-    override fun dispatchDraw(canvas: Canvas) {
-        super.dispatchDraw(canvas)
-        if (isGliding && glideTrailPoints.size >= 2) {
-            glideTrailPath.reset()
-            glideTrailPath.moveTo(glideTrailPoints[0].first, glideTrailPoints[0].second)
-            for (i in 1 until glideTrailPoints.size) {
-                glideTrailPath.lineTo(glideTrailPoints[i].first, glideTrailPoints[i].second)
-            }
-            canvas.drawPath(glideTrailPath, glidePaint)
         }
     }
 
