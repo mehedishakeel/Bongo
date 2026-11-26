@@ -1719,13 +1719,16 @@ class BongoWindowsService:
 
         toggle_key = self.settings.get("toggle_key", "Win+Space")
 
-        # 1. Universal toggle shortcuts: F12 and Ctrl+Space
-        if vk_code == VK_F12 or (is_ctrl and vk_code == VK_SPACE):
+        # Configured toggle shortcut (strictly respects user's Settings choice)
+        if toggle_key == "F12" and vk_code == VK_F12:
             self.toggle_mode()
             return True
 
-        # 2. Win + Space: Configured toggle shortcut
-        if (toggle_key == "Win+Space") and is_win and vk_code == VK_SPACE:
+        if toggle_key == "Ctrl+Space" and (is_ctrl and vk_code == VK_SPACE):
+            self.toggle_mode()
+            return True
+
+        if toggle_key == "Win+Space" and is_win and vk_code == VK_SPACE:
             self.toggle_mode()
             return True
 
